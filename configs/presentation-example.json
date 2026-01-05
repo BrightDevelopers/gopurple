@@ -1,0 +1,90 @@
+./bin/main-presentation-info  --network GregoryCHerlein --id 607164 --json
+{
+    "id": 607164,
+    "name": "faces",
+    "type": "Complete",
+    "lastModifiedDate": "2025-07-03T16:43:12.89Z",
+    "creationDate": "2025-05-10T13:27:06.683Z",
+    "projectFile": {
+        "creationDate": "2025-07-03T16:43:12.850Z",
+        "hash": "SHA1:FA98B11CF43CB4C724AE0B9C1C9928F96EC33C08",
+        "id": 24356895,
+        "lastModifiedDate": "2025-07-03T16:43:12.387Z",
+        "name": "faces.bpfx",
+        "path": "https://bsncloud.s3.amazonaws.com/GregoryCHerlein/59a4539f00cd1b2eecee9cfc4f8d9b8d",
+        "size": 23115,
+        "type": "Stored"
+    },
+    "autoplayFile": {
+        "creationDate": "2025-07-03T16:43:12.790Z",
+        "hash": "SHA1:3C836F9DFCF127A5A33C093878DD25F01EDCC35D",
+        "id": 24356894,
+        "lastModifiedDate": "2025-07-03T16:43:12.387Z",
+        "name": "autoplay-faces.json",
+        "path": "https://bsncloud.s3.amazonaws.com/GregoryCHerlein/dee06b484655b866650f9a610f5795b5",
+        "size": 19996,
+        "type": "Stored"
+    },
+    "resourcesFile": {
+        "creationDate": "2025-05-10T13:30:37.250Z",
+        "hash": "SHA1:DA39A3EE5E6B4B0D3255BFEF95601890AFD80709",
+        "id": 22972417,
+        "lastModifiedDate": "2025-05-10T13:30:38.967Z",
+        "name": "resources.txt",
+        "path": "https://bsncloud.s3.amazonaws.com/GregoryCHerlein/4eff7b5cc3ab4e217d840c1ed75eedb7",
+        "size": 0,
+        "type": "Stored"
+    },
+    "thumbnailFile": {
+        "creationDate": "2025-05-10T13:27:06.637Z",
+        "hash": "SHA1:6A857EE29564654BB88235AAFF1272AD4149D0A2",
+        "id": 22972198,
+        "lastModifiedDate": "2025-05-10T13:27:08.613Z",
+        "name": "faces.thmb.jpg",
+        "path": "https://bsncloud.s3.amazonaws.com/GregoryCHerlein/fa39fdc5cf6216a31c1ab3218e358f02",
+        "size": 1724,
+        "type": "Stored"
+    },
+    "files": [
+        {
+            "creationDate": "2022-08-02T22:31:19.763Z",
+            "hash": "SHA1:A0ACB3E76C85E48D326E802428B23F0325667410",
+            "id": 4482464,
+            "lastModifiedDate": "0001-01-01T00:00:00.000",
+            "name": "autoplugins.brs",
+            "path": "https://bsncloud.s3.amazonaws.com/public/autoplugins.default.brs",
+            "size": 146,
+            "type": "Stored"
+        },
+        {
+            "creationDate": "2025-05-10T13:27:18.763Z",
+            "hash": "SHA1:BD8638F4365D259A6010089934CFCC839E390A36",
+            "id": 22972200,
+            "lastModifiedDate": "2024-10-21T18:40:53.000Z",
+            "mediaType": "Video",
+            "name": "Faces from around the world [Xygk7UjKM2g].f234.mp4",
+            "path": "https://bsncloud.s3.amazonaws.com/GregoryCHerlein/c6ce4fcc2deeb39b68309e1ccde06a49",
+            "size": 2296795,
+            "type": "Media"
+        }
+    ],
+    "autorunPlugins": [],
+    "groups": [],
+    "autorun": {
+        "version": "10.0.108"
+    },
+    "deviceWebPage": {
+        "id": 11383513,
+        "name": "Default_PresentationWebPage"
+    },
+    "deviceModel": "XT1144",
+    "screenSettings": {
+        "videoMode": "1920x1080x30p",
+        "orientation": "Landscape",
+        "connector": "HDMI",
+        "backgroundColor": "RGB:000000",
+        "overscan": "NoOverscan"
+    },
+    "language": "English",
+    "status": "Published"
+}

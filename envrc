@@ -1,0 +1,4 @@
+export BS_CLIENT_ID=id
+export BS_SECRET=secret
+export BS_NETWORK=network
+export BS_USERNAME=username
