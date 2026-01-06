@@ -6,10 +6,10 @@ import (
 	"sync"
 	"time"
 
-	"github.com/brightsign/gopurple/internal/config"
-	"github.com/brightsign/gopurple/internal/errors"
-	"github.com/brightsign/gopurple/internal/http"
-	"github.com/brightsign/gopurple/internal/types"
+	"github.com/brightdevelopers/gopurple/internal/config"
+	"github.com/brightdevelopers/gopurple/internal/errors"
+	"github.com/brightdevelopers/gopurple/internal/http"
+	"github.com/brightdevelopers/gopurple/internal/types"
 )
 
 // AuthManager handles OAuth2 authentication and network selection for BSN.cloud.
@@ -62,7 +62,7 @@ func (a *AuthManager) Authenticate(ctx context.Context) error {
 	// Update token information
 	a.accessToken = tokenResp.AccessToken
 	a.expiresAt = time.Now().Add(time.Duration(tokenResp.ExpiresIn) * time.Second)
-	
+
 	// Reset network state since we have a new token
 	a.networkSet = false
 	a.currentNetwork = nil

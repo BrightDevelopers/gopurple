@@ -12,7 +12,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/brightsign/gopurple"
+	"github.com/brightdevelopers/gopurple"
 )
 
 func main() {
@@ -112,7 +112,7 @@ func main() {
 	if *timeoutFlag > 0 {
 		opts = append(opts, gopurple.WithTimeout(time.Duration(*timeoutFlag)*time.Second))
 	}
-	
+
 	// Add network if specified
 	if *networkFlag != "" {
 		opts = append(opts, gopurple.WithNetwork(*networkFlag))
@@ -164,7 +164,7 @@ func main() {
 	// Confirmation prompt (unless -y flag is used)
 	if !*confirmFlag {
 		fmt.Printf("⚠️  WARNING: This will perform a %s reboot of the device with %s.\n", *typeFlag, deviceInfo)
-		
+
 		// Add specific warnings for destructive reboot types
 		switch rebootType {
 		case gopurple.RebootTypeFactoryReset:
@@ -174,16 +174,16 @@ func main() {
 		case gopurple.RebootTypeDisableAutorun:
 			fmt.Printf("🔧 DISABLE AUTORUN will prevent the current autorun script from starting after reboot.\n")
 		}
-		
+
 		fmt.Printf("The device will be temporarily unavailable during the reboot process.\n\n")
 		fmt.Print("Are you sure you want to continue? (y/N): ")
-		
+
 		scanner := bufio.NewScanner(os.Stdin)
 		if !scanner.Scan() {
 			fmt.Println("❌ Aborted")
 			os.Exit(1)
 		}
-		
+
 		response := strings.ToLower(strings.TrimSpace(scanner.Text()))
 		if response != "y" && response != "yes" {
 			fmt.Println("❌ Reboot cancelled")
@@ -320,7 +320,7 @@ func handleNetworkSelection(ctx context.Context, client *gopurple.Client, reques
 	}
 
 	// Get user selection
-	fmt.Fprint(os.Stderr, "Select network (1-" + strconv.Itoa(len(networks)) + "): ")
+	fmt.Fprint(os.Stderr, "Select network (1-"+strconv.Itoa(len(networks))+"): ")
 	scanner := bufio.NewScanner(os.Stdin)
 	if !scanner.Scan() {
 		return fmt.Errorf("failed to read input")
@@ -350,37 +350,37 @@ func printRebootResponse(response *gopurple.RebootResponse, verbose bool) {
 	default:
 		statusIcon = "❓"
 	}
-	
+
 	fmt.Printf("  Status:           %s %s\n", statusIcon, response.Status)
-	
+
 	if response.DeviceID != "" {
 		fmt.Printf("  Device ID:        %s\n", response.DeviceID)
 	}
-	
+
 	if response.Serial != "" {
 		fmt.Printf("  Serial:           %s\n", response.Serial)
 	}
-	
+
 	if response.Message != "" {
 		fmt.Printf("  Message:          %s\n", response.Message)
 	}
-	
+
 	if !response.Timestamp.IsZero() {
 		fmt.Printf("  Request Time:     %s\n", response.Timestamp.Format("2006-01-02 15:04:05 MST"))
 	}
-	
+
 	if !response.RebootTime.IsZero() {
 		fmt.Printf("  Reboot Time:      %s\n", response.RebootTime.Format("2006-01-02 15:04:05 MST"))
 	}
-	
+
 	if verbose {
 		if response.OperationID != "" {
 			fmt.Printf("  Operation ID:     %s\n", response.OperationID)
 		}
 	}
-	
+
 	fmt.Fprintf(os.Stderr, "\n")
-	
+
 	// Additional information
 	switch strings.ToLower(response.Status) {
 	case "success":

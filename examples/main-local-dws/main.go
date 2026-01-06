@@ -13,8 +13,8 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/brightdevelopers/gopurple"
 	"golang.org/x/term"
-	"github.com/brightsign/gopurple"
 )
 
 func main() {
@@ -173,8 +173,8 @@ func main() {
 	if *enableOnlyFlag {
 		if *jsonFlag {
 			result := map[string]interface{}{
-				"success":         true,
-				"operationMode":   "enable-only",
+				"success":          true,
+				"operationMode":    "enable-only",
 				"enableDWSCommand": enableCmd,
 			}
 			encoder := json.NewEncoder(os.Stdout)
@@ -213,10 +213,10 @@ func main() {
 	// Output as JSON if requested
 	if *jsonFlag {
 		result := map[string]interface{}{
-			"success":             true,
-			"enableDWSCommand":    enableCmd,
-			"setPasswordCommand":  passwordCmd,
-			"passwordProtection":  password != "",
+			"success":            true,
+			"enableDWSCommand":   enableCmd,
+			"setPasswordCommand": passwordCmd,
+			"passwordProtection": password != "",
 		}
 		encoder := json.NewEncoder(os.Stdout)
 		encoder.SetIndent("", "  ")
@@ -340,7 +340,7 @@ func handleNetworkSelection(ctx context.Context, client *gopurple.Client, reques
 
 func promptForPassword(prompt string) string {
 	fmt.Print(prompt)
-	
+
 	// Try to read password without echo
 	if term.IsTerminal(int(syscall.Stdin)) {
 		password, err := term.ReadPassword(int(syscall.Stdin))
@@ -350,7 +350,7 @@ func promptForPassword(prompt string) string {
 		}
 		return string(password)
 	}
-	
+
 	// Fallback to regular input if not a terminal
 	scanner := bufio.NewScanner(os.Stdin)
 	if !scanner.Scan() {

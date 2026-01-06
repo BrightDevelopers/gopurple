@@ -4,10 +4,10 @@ import (
 	"context"
 	"testing"
 
-	"github.com/brightsign/gopurple/internal/auth"
-	"github.com/brightsign/gopurple/internal/config"
-	"github.com/brightsign/gopurple/internal/http"
-	"github.com/brightsign/gopurple/internal/types"
+	"github.com/brightdevelopers/gopurple/internal/auth"
+	"github.com/brightdevelopers/gopurple/internal/config"
+	"github.com/brightdevelopers/gopurple/internal/http"
+	"github.com/brightdevelopers/gopurple/internal/types"
 )
 
 // TestRDWSServiceInterface verifies that our implementation satisfies the interface
@@ -577,16 +577,16 @@ func TestRDWSService_SetSSHStatus(t *testing.T) {
 
 func TestRDWSInfoStructure(t *testing.T) {
 	info := types.RDWSInfo{
-		Serial:        "ABC123DEF456",
-		Model:         "XD1033",
-		FWVersion:     "8.5.25",
-		BootVersion:   "1.2.3",
-		Family:        "4K",
-		IsPlayer:      true,
-		UpTime:        "2 days 5 hours",
-		UpTimeSeconds: 187200,
+		Serial:         "ABC123DEF456",
+		Model:          "XD1033",
+		FWVersion:      "8.5.25",
+		BootVersion:    "1.2.3",
+		Family:         "4K",
+		IsPlayer:       true,
+		UpTime:         "2 days 5 hours",
+		UpTimeSeconds:  187200,
 		ConnectionType: "ethernet",
-		BSNCE:         true,
+		BSNCE:          true,
 	}
 
 	if info.Serial != "ABC123DEF456" {
@@ -643,11 +643,11 @@ func TestRDWSHealthInfoStructure(t *testing.T) {
 
 func TestRDWSDiagnosticsInfoStructure(t *testing.T) {
 	diagnostics := types.RDWSDiagnosticsInfo{
-		Gateway:            "192.168.1.1",
-		DNS:                []string{"8.8.8.8", "8.8.4.4"},
-		ConnectedToRouter:  true,
+		Gateway:             "192.168.1.1",
+		DNS:                 []string{"8.8.8.8", "8.8.4.4"},
+		ConnectedToRouter:   true,
 		ConnectedToInternet: true,
-		ExternalIPAddress:  "203.0.113.42",
+		ExternalIPAddress:   "203.0.113.42",
 	}
 
 	if diagnostics.Gateway != "192.168.1.1" {

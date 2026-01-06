@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"net/url"
 
-	"github.com/brightsign/gopurple/internal/auth"
-	"github.com/brightsign/gopurple/internal/config"
-	"github.com/brightsign/gopurple/internal/errors"
-	"github.com/brightsign/gopurple/internal/http"
-	"github.com/brightsign/gopurple/internal/types"
+	"github.com/brightdevelopers/gopurple/internal/auth"
+	"github.com/brightdevelopers/gopurple/internal/config"
+	"github.com/brightdevelopers/gopurple/internal/errors"
+	"github.com/brightdevelopers/gopurple/internal/http"
+	"github.com/brightdevelopers/gopurple/internal/types"
 )
 
 // BDeployService provides B-Deploy setup record operations.
@@ -29,10 +29,10 @@ type BDeployService interface {
 
 // bDeployService implements the BDeployService interface.
 type bDeployService struct {
-	config          *config.Config
-	httpClient      *http.HTTPClient
-	authManager     *auth.AuthManager
-	currentNetwork  string // Track the current network context for device API calls
+	config         *config.Config
+	httpClient     *http.HTTPClient
+	authManager    *auth.AuthManager
+	currentNetwork string // Track the current network context for device API calls
 }
 
 // NewBDeployService creates a new B-Deploy service.
@@ -633,9 +633,9 @@ func (s *bDeployService) DeleteDevice(ctx context.Context, deviceID string, seri
 
 	// B-Deploy device DELETE endpoint requires Content-Type header even without body
 	err = s.httpClient.DoWithAuth(ctx, token, &http.Request{
-		Method:  "DELETE",
-		URL:     deleteURL,
-		Result:  &response,
+		Method: "DELETE",
+		URL:    deleteURL,
+		Result: &response,
 		Headers: map[string]string{
 			"Content-Type": "application/json",
 		},
