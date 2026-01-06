@@ -11,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/brightsign/gopurple"
+	"github.com/brightdevelopers/gopurple"
 )
 
 func main() {
@@ -317,12 +317,12 @@ func getNetworkName(requestedNetwork string, client *gopurple.Client, ctx contex
 func confirmDeletion() bool {
 	reader := bufio.NewReader(os.Stdin)
 	fmt.Print("Are you sure you want to delete this record? (y/N): ")
-	
+
 	response, err := reader.ReadString('\n')
 	if err != nil {
 		log.Fatalf("❌ Failed to read input: %v", err)
 	}
-	
+
 	response = strings.TrimSpace(strings.ToLower(response))
 	return response == "y" || response == "yes"
 }

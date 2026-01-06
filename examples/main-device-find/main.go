@@ -9,18 +9,18 @@ import (
 	"os"
 	"time"
 
-	"github.com/brightsign/gopurple"
+	"github.com/brightdevelopers/gopurple"
 )
 
 // SearchResult represents the result of searching for a device
 type SearchResult struct {
-	Found         bool                     `json:"found"`
-	Serial        string                   `json:"serial"`
-	NetworkName   string                   `json:"networkName,omitempty"`
-	NetworkID     int                      `json:"networkId,omitempty"`
-	Device        *gopurple.Device         `json:"device,omitempty"`
-	NetworksCount int                      `json:"networksSearched"`
-	Error         string                   `json:"error,omitempty"`
+	Found         bool             `json:"found"`
+	Serial        string           `json:"serial"`
+	NetworkName   string           `json:"networkName,omitempty"`
+	NetworkID     int              `json:"networkId,omitempty"`
+	Device        *gopurple.Device `json:"device,omitempty"`
+	NetworksCount int              `json:"networksSearched"`
+	Error         string           `json:"error,omitempty"`
 }
 
 func main() {

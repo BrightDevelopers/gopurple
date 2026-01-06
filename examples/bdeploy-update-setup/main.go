@@ -10,8 +10,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/brightsign/gopurple"
-	"github.com/brightsign/gopurple/internal/types"
+	"github.com/brightdevelopers/gopurple"
+	"github.com/brightdevelopers/gopurple/internal/types"
 )
 
 // Config represents the JSON configuration file structure

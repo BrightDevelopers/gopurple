@@ -33,31 +33,31 @@ package gopurple
 import (
 	"context"
 
-	"github.com/brightsign/gopurple/internal/auth"
-	"github.com/brightsign/gopurple/internal/config"
-	"github.com/brightsign/gopurple/internal/errors"
-	"github.com/brightsign/gopurple/internal/http"
-	"github.com/brightsign/gopurple/internal/services"
-	"github.com/brightsign/gopurple/internal/types"
+	"github.com/brightdevelopers/gopurple/internal/auth"
+	"github.com/brightdevelopers/gopurple/internal/config"
+	"github.com/brightdevelopers/gopurple/internal/errors"
+	"github.com/brightdevelopers/gopurple/internal/http"
+	"github.com/brightdevelopers/gopurple/internal/services"
+	"github.com/brightdevelopers/gopurple/internal/types"
 )
 
 // Re-export public types from internal packages
 type (
 	// Network represents a BSN.cloud network.
 	Network = types.Network
-	
+
 	// NetworkSubscription represents subscription details for a network.
 	NetworkSubscription = types.NetworkSubscription
-	
+
 	// NetworkSettings represents network configuration settings.
 	NetworkSettings = types.NetworkSettings
-	
+
 	// Device represents a BrightSign device in the network.
 	Device = types.Device
-	
+
 	// DeviceSettings represents device configuration settings.
 	DeviceSettings = types.DeviceSettings
-	
+
 	// Group represents a device group.
 	Group = types.Group
 
@@ -66,67 +66,67 @@ type (
 
 	// DeviceList represents a paginated list of devices.
 	DeviceList = types.DeviceList
-	
+
 	// Region represents a rectangular region for screenshots.
 	Region = types.Region
-	
+
 	// DeviceStatus represents the current operational status of a device.
 	DeviceStatus = types.DeviceStatus
-	
+
 	// DeviceError represents an error log entry from a device.
 	DeviceError = types.DeviceError
-	
+
 	// DeviceErrorList represents a paginated list of device errors.
 	DeviceErrorList = types.DeviceErrorList
-	
+
 	// RebootResponse represents the response from a device reboot request.
 	RebootResponse = types.RebootResponse
-	
+
 	// RebootType represents the type of reboot to perform.
 	RebootType = types.RebootType
-	
+
 	// ReprovisionResponse represents the response from a device re-provision request.
 	ReprovisionResponse = types.ReprovisionResponse
-	
+
 	// DWSPasswordRequest represents a request to set the DWS password.
 	DWSPasswordRequest = types.DWSPasswordRequest
-	
+
 	// DWSPasswordInfo represents information about the DWS password.
 	DWSPasswordInfo = types.DWSPasswordInfo
-	
+
 	// DWSPasswordGetResponse represents the response from getting DWS password info.
 	DWSPasswordGetResponse = types.DWSPasswordGetResponse
-	
+
 	// DWSPasswordSetResponse represents the response from setting DWS password.
 	DWSPasswordSetResponse = types.DWSPasswordSetResponse
-	
+
 	// BDeployRecord represents a B-Deploy setup record.
 	BDeployRecord = types.BDeployRecord
-	
+
 	// BDeployRecordList represents a list of B-Deploy setup records.
 	BDeployRecordList = types.BDeployRecordList
-	
+
 	// BDeploySetupRecord represents a complete B-Deploy setup record for creation.
 	BDeploySetupRecord = types.BDeploySetupRecord
-	
+
 	// BDeployCreateResponse represents the response from creating a B-Deploy record.
 	BDeployCreateResponse = types.BDeployCreateResponse
-	
+
 	// BDeployDeleteResponse represents the response from deleting a B-Deploy record.
 	BDeployDeleteResponse = types.BDeployDeleteResponse
-	
+
 	// BDeployInfo represents the B-Deploy section of a setup record.
 	BDeployInfo = types.BDeployInfo
-	
+
 	// BSNTokenEntity represents the BSN device registration token.
 	BSNTokenEntity = types.BSNTokenEntity
-	
+
 	// NetworkInterface represents a network interface configuration.
 	NetworkInterface = types.NetworkInterface
-	
+
 	// NetworkConfig represents network configuration.
 	NetworkConfig = types.NetworkConfig
-	
+
 	// NetworkContextRequest represents a request to set the network context.
 	NetworkContextRequest = types.NetworkContextRequest
 
@@ -442,13 +442,13 @@ const (
 var (
 	// IsAuthenticationError checks if an error is authentication-related.
 	IsAuthenticationError = errors.IsAuthenticationError
-	
+
 	// IsNetworkError checks if an error is network-related.
 	IsNetworkError = errors.IsNetworkError
-	
+
 	// IsConfigurationError checks if an error is configuration-related.
 	IsConfigurationError = errors.IsConfigurationError
-	
+
 	// IsRetryableError checks if an error might succeed on retry.
 	IsRetryableError = errors.IsRetryableError
 )
@@ -493,11 +493,11 @@ type Client struct {
 //
 // By default, the client will load credentials from environment variables:
 //   - BS_CLIENT_ID: BSN.cloud API client ID
-//   - BS_SECRET: BSN.cloud API client secret  
+//   - BS_SECRET: BSN.cloud API client secret
 //   - BS_NETWORK: BSN.cloud network name (optional)
 func New(opts ...Option) (*Client, error) {
 	cfg := config.DefaultConfig()
-	
+
 	// Load configuration from environment variables
 	cfg.LoadFromEnv()
 
@@ -633,10 +633,10 @@ func (c *Client) WithNetworkContext(ctx context.Context, fn func() error) error 
 	if err := c.EnsureReady(ctx); err != nil {
 		return err
 	}
-	
+
 	if !c.IsNetworkSet() {
 		return errors.NewAuthError("no network selected - use SetNetwork() or configure BS_NETWORK", nil)
 	}
-	
+
 	return fn()
 }

@@ -13,7 +13,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/brightsign/gopurple"
+	"github.com/brightdevelopers/gopurple"
 )
 
 func main() {
@@ -139,12 +139,12 @@ func main() {
 	// Output as JSON if requested
 	if *jsonFlag {
 		result := map[string]interface{}{
-			"success":          success,
-			"serial":           *serialFlag,
-			"destinationPath":  *pathFlag,
-			"filename":         fileName,
-			"sizeBytes":        fileSize,
-			"mimeType":         fileType,
+			"success":         success,
+			"serial":          *serialFlag,
+			"destinationPath": *pathFlag,
+			"filename":        fileName,
+			"sizeBytes":       fileSize,
+			"mimeType":        fileType,
 		}
 		encoder := json.NewEncoder(os.Stdout)
 		encoder.SetIndent("", "  ")
