@@ -1,4 +1,4 @@
-module github.com/brightsign/gopurple
+module github.com/brightdevelopers/gopurple
 
 go 1.24.0
 
