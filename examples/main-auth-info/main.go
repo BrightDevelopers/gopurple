@@ -9,7 +9,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/brightsign/gopurple"
+	"github.com/brightdevelopers/gopurple"
 )
 
 func min(a, b int) int {

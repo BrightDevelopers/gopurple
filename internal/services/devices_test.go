@@ -5,10 +5,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/brightsign/gopurple/internal/auth"
-	"github.com/brightsign/gopurple/internal/config"
-	"github.com/brightsign/gopurple/internal/http"
-	"github.com/brightsign/gopurple/internal/types"
+	"github.com/brightdevelopers/gopurple/internal/auth"
+	"github.com/brightdevelopers/gopurple/internal/config"
+	"github.com/brightdevelopers/gopurple/internal/http"
+	"github.com/brightdevelopers/gopurple/internal/types"
 )
 
 func TestDeviceService_List(t *testing.T) {
@@ -16,10 +16,10 @@ func TestDeviceService_List(t *testing.T) {
 	cfg := config.DefaultConfig()
 	cfg.ClientID = "test-id"
 	cfg.ClientSecret = "test-secret"
-	
+
 	httpClient := http.NewHTTPClient(cfg)
 	authManager := auth.NewAuthManager(cfg, httpClient)
-	
+
 	deviceService := NewDeviceService(cfg, httpClient, authManager)
 
 	ctx := context.Background()
@@ -36,10 +36,10 @@ func TestDeviceService_Get(t *testing.T) {
 	cfg := config.DefaultConfig()
 	cfg.ClientID = "test-id"
 	cfg.ClientSecret = "test-secret"
-	
+
 	httpClient := http.NewHTTPClient(cfg)
 	authManager := auth.NewAuthManager(cfg, httpClient)
-	
+
 	deviceService := NewDeviceService(cfg, httpClient, authManager)
 
 	ctx := context.Background()
@@ -62,10 +62,10 @@ func TestDeviceService_GetByID(t *testing.T) {
 	cfg := config.DefaultConfig()
 	cfg.ClientID = "test-id"
 	cfg.ClientSecret = "test-secret"
-	
+
 	httpClient := http.NewHTTPClient(cfg)
 	authManager := auth.NewAuthManager(cfg, httpClient)
-	
+
 	deviceService := NewDeviceService(cfg, httpClient, authManager)
 
 	ctx := context.Background()
@@ -201,7 +201,7 @@ func TestDeviceListStructure(t *testing.T) {
 			},
 			{
 				ID:     2,
-				Serial: "DEV002", 
+				Serial: "DEV002",
 				Model:  "HD1023",
 			},
 		},
@@ -229,10 +229,10 @@ func TestDeviceService_GetStatus(t *testing.T) {
 	cfg := config.DefaultConfig()
 	cfg.ClientID = "test-id"
 	cfg.ClientSecret = "test-secret"
-	
+
 	httpClient := http.NewHTTPClient(cfg)
 	authManager := auth.NewAuthManager(cfg, httpClient)
-	
+
 	deviceService := NewDeviceService(cfg, httpClient, authManager)
 
 	ctx := context.Background()
@@ -260,10 +260,10 @@ func TestDeviceService_GetStatusBySerial(t *testing.T) {
 	cfg := config.DefaultConfig()
 	cfg.ClientID = "test-id"
 	cfg.ClientSecret = "test-secret"
-	
+
 	httpClient := http.NewHTTPClient(cfg)
 	authManager := auth.NewAuthManager(cfg, httpClient)
-	
+
 	deviceService := NewDeviceService(cfg, httpClient, authManager)
 
 	ctx := context.Background()
@@ -286,10 +286,10 @@ func TestDeviceService_GetErrors(t *testing.T) {
 	cfg := config.DefaultConfig()
 	cfg.ClientID = "test-id"
 	cfg.ClientSecret = "test-secret"
-	
+
 	httpClient := http.NewHTTPClient(cfg)
 	authManager := auth.NewAuthManager(cfg, httpClient)
-	
+
 	deviceService := NewDeviceService(cfg, httpClient, authManager)
 
 	ctx := context.Background()
@@ -312,7 +312,7 @@ func TestDeviceService_GetErrors(t *testing.T) {
 	}
 
 	// Test with options
-	_, err = deviceService.GetErrors(ctx, 123, 
+	_, err = deviceService.GetErrors(ctx, 123,
 		WithPageSize(10),
 		WithFilter("severity=critical"),
 		WithSort("timestamp"),
@@ -327,10 +327,10 @@ func TestDeviceService_GetErrorsBySerial(t *testing.T) {
 	cfg := config.DefaultConfig()
 	cfg.ClientID = "test-id"
 	cfg.ClientSecret = "test-secret"
-	
+
 	httpClient := http.NewHTTPClient(cfg)
 	authManager := auth.NewAuthManager(cfg, httpClient)
-	
+
 	deviceService := NewDeviceService(cfg, httpClient, authManager)
 
 	ctx := context.Background()
@@ -432,7 +432,7 @@ func TestDeviceErrorListStructure(t *testing.T) {
 			{
 				ID:        2,
 				ErrorCode: "E002",
-				Message:   "Error 2", 
+				Message:   "Error 2",
 				Severity:  "critical",
 			},
 		},

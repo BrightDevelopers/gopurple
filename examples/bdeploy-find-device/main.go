@@ -9,7 +9,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/brightsign/gopurple"
+	"github.com/brightdevelopers/gopurple"
 )
 
 func main() {
@@ -137,8 +137,8 @@ func main() {
 	// Output as JSON if requested
 	if *jsonFlag {
 		result := map[string]interface{}{
-			"found":         found,
-			"serial":        *serialFlag,
+			"found":            found,
+			"serial":           *serialFlag,
 			"searchedNetworks": len(networks),
 		}
 		if found {
