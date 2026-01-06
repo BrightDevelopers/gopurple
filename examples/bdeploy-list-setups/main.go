@@ -12,18 +12,18 @@ import (
 	"strings"
 	"text/tabwriter"
 
-	"github.com/brightsign/gopurple"
+	"github.com/brightdevelopers/gopurple"
 )
 
 func main() {
 	var (
-		helpFlag      = flag.Bool("help", false, "Display usage information")
-		jsonFlag      = flag.Bool("json", false, "Output as JSON")
-		verboseFlag   = flag.Bool("verbose", false, "Show detailed information")
-		debugFlag     = flag.Bool("debug", false, "Show raw API request and response details")
-		networkFlag   = flag.String("network", "", "Network name (uses BS_NETWORK env var if not provided)")
-		usernameFlag  = flag.String("username", "", "Username to filter setups (optional)")
-		packageFlag   = flag.String("package", "", "Package name to filter setups (optional)")
+		helpFlag     = flag.Bool("help", false, "Display usage information")
+		jsonFlag     = flag.Bool("json", false, "Output as JSON")
+		verboseFlag  = flag.Bool("verbose", false, "Show detailed information")
+		debugFlag    = flag.Bool("debug", false, "Show raw API request and response details")
+		networkFlag  = flag.String("network", "", "Network name (uses BS_NETWORK env var if not provided)")
+		usernameFlag = flag.String("username", "", "Username to filter setups (optional)")
+		packageFlag  = flag.String("package", "", "Package name to filter setups (optional)")
 	)
 
 	// Custom usage output

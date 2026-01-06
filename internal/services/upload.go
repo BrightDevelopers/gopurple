@@ -11,11 +11,11 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/brightsign/gopurple/internal/auth"
-	"github.com/brightsign/gopurple/internal/config"
-	"github.com/brightsign/gopurple/internal/errors"
-	httpclient "github.com/brightsign/gopurple/internal/http"
-	"github.com/brightsign/gopurple/internal/types"
+	"github.com/brightdevelopers/gopurple/internal/auth"
+	"github.com/brightdevelopers/gopurple/internal/config"
+	"github.com/brightdevelopers/gopurple/internal/errors"
+	httpclient "github.com/brightdevelopers/gopurple/internal/http"
+	"github.com/brightdevelopers/gopurple/internal/types"
 )
 
 const (

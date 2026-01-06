@@ -9,7 +9,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/brightsign/gopurple"
+	"github.com/brightdevelopers/gopurple"
 )
 
 func main() {
@@ -167,9 +167,9 @@ func main() {
 	// Resolve setup ID if setup-name is provided
 	var setupID string
 	if *setupNameFlag != "" {
-	if !*jsonFlag {
-		fmt.Fprintf(os.Stderr, "🔍 Looking up setup with package name: %s\n", *setupNameFlag)
-	}
+		if !*jsonFlag {
+			fmt.Fprintf(os.Stderr, "🔍 Looking up setup with package name: %s\n", *setupNameFlag)
+		}
 
 		// Query setup records by package name
 		records, err := client.BDeploy.GetSetupRecords(ctx,
@@ -202,9 +202,9 @@ func main() {
 
 		// Found exactly one exact match
 		setupID = exactMatches[0].ID
-	if !*jsonFlag {
-		fmt.Fprintf(os.Stderr, "✅ Found setup: ID=%s, Package=%s\n", setupID, exactMatches[0].PackageName)
-	}
+		if !*jsonFlag {
+			fmt.Fprintf(os.Stderr, "✅ Found setup: ID=%s, Package=%s\n", setupID, exactMatches[0].PackageName)
+		}
 	} else {
 		setupID = *setupIDFlag
 	}
@@ -231,9 +231,9 @@ func main() {
 		device := deviceResponse.Result.Players[0]
 		deviceID = device.ID
 		deviceExists = true
-	if !*jsonFlag {
-		fmt.Fprintf(os.Stderr, "✅ Found existing device: %s\n", device.Serial)
-	}
+		if !*jsonFlag {
+			fmt.Fprintf(os.Stderr, "✅ Found existing device: %s\n", device.Serial)
+		}
 		if device.SetupID != "" {
 			fmt.Fprintf(os.Stderr, "   Current setup ID: %s\n", device.SetupID)
 		} else {
@@ -241,9 +241,9 @@ func main() {
 		}
 	} else {
 		// Serial lookup failed or returned no results - try listing all devices
-	if !*jsonFlag {
-		fmt.Fprintf(os.Stderr, "   Device not found by serial, checking device list...\n")
-	}
+		if !*jsonFlag {
+			fmt.Fprintf(os.Stderr, "   Device not found by serial, checking device list...\n")
+		}
 		allDevices, listErr := client.BDeploy.GetAllDevices(ctx)
 
 		if *verboseFlag && listErr != nil {
@@ -263,9 +263,9 @@ func main() {
 				if dev.Serial == *serialFlag {
 					deviceID = dev.ID
 					deviceExists = true
-	if !*jsonFlag {
-		fmt.Fprintf(os.Stderr, "✅ Found existing device in list: %s\n", dev.Serial)
-	}
+					if !*jsonFlag {
+						fmt.Fprintf(os.Stderr, "✅ Found existing device in list: %s\n", dev.Serial)
+					}
 					if dev.SetupID != "" {
 						fmt.Fprintf(os.Stderr, "   Current setup ID: %s\n", dev.SetupID)
 					} else {
@@ -280,9 +280,9 @@ func main() {
 			if !*createFlag {
 				log.Fatalf("❌ Device not found. Use --create to create it")
 			}
-	if !*jsonFlag {
-		fmt.Fprintf(os.Stderr, "⚠️  Device not found - will create new device record\n")
-	}
+			if !*jsonFlag {
+				fmt.Fprintf(os.Stderr, "⚠️  Device not found - will create new device record\n")
+			}
 		}
 	}
 
@@ -292,9 +292,9 @@ func main() {
 			log.Fatalf("❌ Device not found. Cannot dissociate a non-existent device")
 		}
 
-	if !*jsonFlag {
-		fmt.Fprintf(os.Stderr, "📝 Creating device record...\n")
-	}
+		if !*jsonFlag {
+			fmt.Fprintf(os.Stderr, "📝 Creating device record...\n")
+		}
 
 		deviceName := *nameFlag
 		if deviceName == "" {
@@ -318,20 +318,20 @@ func main() {
 		if err != nil {
 			log.Fatalf("❌ Failed to create device: %v", err)
 		}
-	if !*jsonFlag {
-		fmt.Fprintf(os.Stderr, "✅ Device created with ID: %s\n", deviceID)
-	}
+		if !*jsonFlag {
+			fmt.Fprintf(os.Stderr, "✅ Device created with ID: %s\n", deviceID)
+		}
 	}
 
 	// Handle dissociate or associate
 	if *dissociateFlag {
-	if !*jsonFlag {
-		fmt.Fprintf(os.Stderr, "🔓 Removing setup association from device...\n")
-	}
+		if !*jsonFlag {
+			fmt.Fprintf(os.Stderr, "🔓 Removing setup association from device...\n")
+		}
 	} else {
-	if !*jsonFlag {
-		fmt.Fprintf(os.Stderr, "🔗 Associating device with setup ID: %s\n", setupID)
-	}
+		if !*jsonFlag {
+			fmt.Fprintf(os.Stderr, "🔗 Associating device with setup ID: %s\n", setupID)
+		}
 	}
 
 	deviceName := *nameFlag
