@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/brightsign/gopurple"
+	"github.com/brightdevelopers/gopurple"
 )
 
 // SetupConfig represents the JSON configuration file with optional timeout field

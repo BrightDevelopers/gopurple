@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/brightsign/gopurple/internal/config"
-	"github.com/brightsign/gopurple/internal/errors"
+	"github.com/brightdevelopers/gopurple/internal/config"
+	"github.com/brightdevelopers/gopurple/internal/errors"
 	"github.com/go-resty/resty/v2"
 )
 
@@ -51,11 +51,11 @@ func NewHTTPClient(cfg *config.Config) *HTTPClient {
 
 // Request represents an HTTP request to be made.
 type Request struct {
-	Method string
-	URL    string
-	Body   interface{}
-	Result interface{}
-	Headers map[string]string
+	Method      string
+	URL         string
+	Body        interface{}
+	Result      interface{}
+	Headers     map[string]string
 	QueryParams map[string]string
 }
 
@@ -253,28 +253,28 @@ func (h *HTTPClient) DeleteWithAuth(ctx context.Context, token, url string, resu
 // PostForm performs a POST request with form data (for OAuth token requests).
 func (h *HTTPClient) PostForm(ctx context.Context, url string, data map[string]string, result interface{}) error {
 	request := h.client.R().SetContext(ctx)
-	
+
 	// Set form data
 	request.SetFormData(data)
 	request.SetHeader("Content-Type", "application/x-www-form-urlencoded")
-	
+
 	// Set result
 	if result != nil {
 		request.SetResult(result)
 	}
-	
+
 	// Set error structure
 	var apiError struct {
 		Error            string `json:"error"`
 		ErrorDescription string `json:"error_description"`
 	}
 	request.SetError(&apiError)
-	
+
 	resp, err := request.Post(url)
 	if err != nil {
 		return errors.NewNetworkError(fmt.Sprintf("POST %s", url), err)
 	}
-	
+
 	if !resp.IsSuccess() {
 		return h.handleAPIError(resp, &struct {
 			Error            string `json:"error"`
@@ -285,7 +285,7 @@ func (h *HTTPClient) PostForm(ctx context.Context, url string, data map[string]s
 			ErrorDescription: apiError.ErrorDescription,
 		})
 	}
-	
+
 	return nil
 }
 

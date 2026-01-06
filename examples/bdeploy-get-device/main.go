@@ -9,17 +9,17 @@ import (
 	"os"
 	"time"
 
-	"github.com/brightsign/gopurple"
+	"github.com/brightdevelopers/gopurple"
 )
 
 func main() {
 	var (
-		helpFlag     = flag.Bool("help", false, "Display usage information")
-		jsonFlag     = flag.Bool("json", false, "Output as JSON")
-		verboseFlag  = flag.Bool("verbose", false, "Show detailed information")
-		timeoutFlag  = flag.Int("timeout", 30, "Request timeout in seconds")
-		serialFlag   = flag.String("serial", "", "Device serial number to lookup")
-		networkFlag  *string
+		helpFlag    = flag.Bool("help", false, "Display usage information")
+		jsonFlag    = flag.Bool("json", false, "Output as JSON")
+		verboseFlag = flag.Bool("verbose", false, "Show detailed information")
+		timeoutFlag = flag.Int("timeout", 30, "Request timeout in seconds")
+		serialFlag  = flag.String("serial", "", "Device serial number to lookup")
+		networkFlag *string
 	)
 
 	// Set up network flags to point to the same variable
@@ -96,7 +96,7 @@ func main() {
 		log.Fatalf("❌ Failed to authenticate: %v", err)
 	}
 
-	// Get network name from command line or environment  
+	// Get network name from command line or environment
 	networkName := *networkFlag
 	if networkName == "" {
 		networkName = os.Getenv("BS_NETWORK")

@@ -5,7 +5,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/brightsign/gopurple/internal/errors"
+	"github.com/brightdevelopers/gopurple/internal/errors"
 )
 
 // Config holds all configuration for the BSN.cloud SDK client.

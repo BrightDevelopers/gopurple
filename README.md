@@ -79,7 +79,7 @@ This SDK abstracts the complexity of BSN.cloud integration:
 ### Installation
 
 ```bash
-go get github.com/brightsign/gopurple
+go get github.com/brightdevelopers/gopurple
 ```
 
 ### Basic Usage
@@ -90,7 +90,7 @@ package main
 import (
     "context"
     "log"
-    "github.com/brightsign/gopurple"
+    "github.com/brightdevelopers/gopurple"
 )
 
 func main() {
@@ -562,7 +562,7 @@ This is an unofficial SDK for BSN.cloud integration.
 ### Links
 
 - **BSN.cloud Admin Panel**: https://bsn.cloud/
-- **GitHub Repository**: https://github.com/brightsign/gopurple
+- **GitHub Repository**: https://github.com/brightdevelopers/gopurple
 
 ## Disclaimer
 

@@ -12,7 +12,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/brightsign/gopurple"
+	"github.com/brightdevelopers/gopurple"
 )
 
 func main() {
@@ -25,7 +25,7 @@ func main() {
 		serialFlag  = flag.String("serial", "", "Get status for device with serial number")
 		idFlag      = flag.Int("id", 0, "Get status for device with ID")
 	)
-	
+
 	// Set up network flags to point to the same variable
 	networkFlag = flag.String("network", "", "Network name to use (overrides BS_NETWORK)")
 	flag.StringVar(networkFlag, "n", "", "Network name to use (overrides BS_NETWORK) [alias for --network]")
@@ -74,11 +74,11 @@ func main() {
 
 	// Create client with options
 	var opts []gopurple.Option
-	
+
 	if *timeoutFlag != 30 {
 		opts = append(opts, gopurple.WithTimeout(time.Duration(*timeoutFlag)*time.Second))
 	}
-	
+
 	if *networkFlag != "" {
 		opts = append(opts, gopurple.WithNetwork(*networkFlag))
 	}
@@ -231,7 +231,7 @@ func handleNetworkSelection(ctx context.Context, client *gopurple.Client, reques
 	}
 
 	// Get user selection
-	fmt.Fprint(os.Stderr, "Select network (1-" + strconv.Itoa(len(networks)) + "): ")
+	fmt.Fprint(os.Stderr, "Select network (1-"+strconv.Itoa(len(networks))+"): ")
 	scanner := bufio.NewScanner(os.Stdin)
 	if !scanner.Scan() {
 		return fmt.Errorf("failed to read input")
@@ -253,7 +253,7 @@ func printStatus(status *gopurple.DeviceStatus, verbose bool) {
 	fmt.Fprintf(os.Stderr, "  Serial:           %s\n", status.Serial)
 	fmt.Fprintf(os.Stderr, "  Model:            %s\n", status.Model)
 	fmt.Fprintf(os.Stderr, "  Firmware:         %s\n", status.FirmwareVersion)
-	
+
 	// Status indicator with emoji
 	statusIcon := "🔴"
 	if status.IsOnline {
@@ -261,7 +261,7 @@ func printStatus(status *gopurple.DeviceStatus, verbose bool) {
 	}
 	fmt.Fprintf(os.Stderr, "  Online Status:    %s %v\n", statusIcon, status.IsOnline)
 	fmt.Fprintf(os.Stderr, "  Status:           %s\n", status.Status)
-	
+
 	// Health status with emoji
 	healthIcon := "❓"
 	switch status.HealthStatus {
@@ -273,7 +273,7 @@ func printStatus(status *gopurple.DeviceStatus, verbose bool) {
 		healthIcon = "❌"
 	}
 	fmt.Fprintf(os.Stderr, "  Health Status:    %s %s\n", healthIcon, status.HealthStatus)
-	
+
 	// Last seen time
 	fmt.Fprintf(os.Stderr, "  Last Seen:        %s", status.LastSeen.Format("2006-01-02 15:04:05 MST"))
 	timeSince := time.Since(status.LastSeen)
@@ -298,24 +298,24 @@ func printStatus(status *gopurple.DeviceStatus, verbose bool) {
 
 	if verbose {
 		fmt.Fprintf(os.Stderr, "  Last Health Check: %s\n", status.LastHealthCheck.Format("2006-01-02 15:04:05 MST"))
-		
+
 		if status.IPAddress != "" {
 			fmt.Fprintf(os.Stderr, "  IP Address:       %s\n", status.IPAddress)
 		}
-		
+
 		if status.ConnectionType != "" {
 			connIcon := "🔌"
 			if status.ConnectionType == "wifi" {
 				connIcon = "📶"
 			}
 			fmt.Fprintf(os.Stderr, "  Connection:       %s %s\n", connIcon, status.ConnectionType)
-			
+
 			if status.SignalStrength > 0 && status.ConnectionType == "wifi" {
 				signalIcon := "📶"
 				if status.SignalStrength < 25 {
 					signalIcon = "📶" // weak
 				} else if status.SignalStrength < 50 {
-					signalIcon = "📶" // fair  
+					signalIcon = "📶" // fair
 				} else if status.SignalStrength < 75 {
 					signalIcon = "📶" // good
 				} else {
@@ -325,6 +325,6 @@ func printStatus(status *gopurple.DeviceStatus, verbose bool) {
 			}
 		}
 	}
-	
+
 	fmt.Fprintf(os.Stderr, "\n")
 }

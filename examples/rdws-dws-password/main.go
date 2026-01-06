@@ -13,22 +13,22 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/brightsign/gopurple"
+	"github.com/brightdevelopers/gopurple"
 	"golang.org/x/term"
 )
 
 func main() {
 	var (
-		helpFlag     = flag.Bool("help", false, "Display usage information")
-		jsonFlag     = flag.Bool("json", false, "Output as JSON")
-		verboseFlag  = flag.Bool("verbose", false, "Show detailed information")
-		timeoutFlag  = flag.Int("timeout", 30, "Request timeout in seconds")
-		networkFlag  *string
-		serialFlag   = flag.String("serial", "", "Device serial number")
-		idFlag       = flag.Int("id", 0, "Device ID")
-		getFlag      = flag.Bool("get", false, "Get current DWS password info only")
-		passwordFlag = flag.String("password", "", "New DWS password (empty to remove password)")
-		prevPassFlag = flag.String("prev-password", "", "Previous DWS password (empty if none set)")
+		helpFlag        = flag.Bool("help", false, "Display usage information")
+		jsonFlag        = flag.Bool("json", false, "Output as JSON")
+		verboseFlag     = flag.Bool("verbose", false, "Show detailed information")
+		timeoutFlag     = flag.Int("timeout", 30, "Request timeout in seconds")
+		networkFlag     *string
+		serialFlag      = flag.String("serial", "", "Device serial number")
+		idFlag          = flag.Int("id", 0, "Device ID")
+		getFlag         = flag.Bool("get", false, "Get current DWS password info only")
+		passwordFlag    = flag.String("password", "", "New DWS password (empty to remove password)")
+		prevPassFlag    = flag.String("prev-password", "", "Previous DWS password (empty if none set)")
 		interactiveFlag = flag.Bool("interactive", false, "Prompt for passwords interactively")
 	)
 
@@ -167,11 +167,11 @@ func main() {
 	if *getFlag {
 		if *jsonFlag {
 			result := map[string]interface{}{
-				"serial":          *serialFlag,
-				"deviceID":        *idFlag,
-				"passwordInfo":    currentInfo,
-				"isPasswordSet":   currentInfo.Password != nil && !currentInfo.Password.IsBlank,
-				"isResultValid":   currentInfo.Password != nil && currentInfo.Password.IsResultValid,
+				"serial":        *serialFlag,
+				"deviceID":      *idFlag,
+				"passwordInfo":  currentInfo,
+				"isPasswordSet": currentInfo.Password != nil && !currentInfo.Password.IsBlank,
+				"isResultValid": currentInfo.Password != nil && currentInfo.Password.IsResultValid,
 			}
 			encoder := json.NewEncoder(os.Stdout)
 			encoder.SetIndent("", "  ")
@@ -238,14 +238,14 @@ func main() {
 	// Output as JSON if requested
 	if *jsonFlag {
 		result := map[string]interface{}{
-			"success":          setResponse.Success,
-			"serial":           *serialFlag,
-			"deviceID":         *idFlag,
-			"passwordRemoved":  newPassword == "",
-			"passwordSet":      newPassword != "",
-			"rebootRequired":   setResponse.Reboot,
-			"changeVerified":   changeVerified,
-			"verifyInfo":       verifyInfo,
+			"success":         setResponse.Success,
+			"serial":          *serialFlag,
+			"deviceID":        *idFlag,
+			"passwordRemoved": newPassword == "",
+			"passwordSet":     newPassword != "",
+			"rebootRequired":  setResponse.Reboot,
+			"changeVerified":  changeVerified,
+			"verifyInfo":      verifyInfo,
 		}
 		encoder := json.NewEncoder(os.Stdout)
 		encoder.SetIndent("", "  ")

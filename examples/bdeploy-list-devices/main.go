@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/brightsign/gopurple"
+	"github.com/brightdevelopers/gopurple"
 )
 
 func main() {
@@ -114,7 +114,7 @@ func main() {
 		log.Fatalf("❌ Failed to authenticate: %v", err)
 	}
 
-	// Get network name from command line or environment  
+	// Get network name from command line or environment
 	networkName := *networkFlag
 	if networkName == "" {
 		networkName = os.Getenv("BS_NETWORK")

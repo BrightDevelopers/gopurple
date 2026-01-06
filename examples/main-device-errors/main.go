@@ -12,26 +12,26 @@ import (
 	"strings"
 	"time"
 
-	"github.com/brightsign/gopurple"
+	"github.com/brightdevelopers/gopurple"
 )
 
 func main() {
 	var (
-		helpFlag     = flag.Bool("help", false, "Display usage information")
-		jsonFlag     = flag.Bool("json", false, "Output as JSON")
-		verboseFlag  = flag.Bool("verbose", false, "Show detailed information")
-		timeoutFlag  = flag.Int("timeout", 30, "Request timeout in seconds")
-		networkFlag  *string
-		serialFlag   = flag.String("serial", "", "Get errors for device with serial number")
-		idFlag       = flag.Int("id", 0, "Get errors for device with ID")
-		pageSizeFlag = flag.Int("page-size", 20, "Number of errors to show per page")
-		filterFlag   = flag.String("filter", "", "Filter expression for error listing")
-		sortFlag     = flag.String("sort", "", "Sort expression for error listing")
-		severityFlag = flag.String("severity", "", "Filter by severity: info, warning, error, critical")
-		typeFlag     = flag.String("type", "", "Filter by error type: system, content, network, etc.")
+		helpFlag       = flag.Bool("help", false, "Display usage information")
+		jsonFlag       = flag.Bool("json", false, "Output as JSON")
+		verboseFlag    = flag.Bool("verbose", false, "Show detailed information")
+		timeoutFlag    = flag.Int("timeout", 30, "Request timeout in seconds")
+		networkFlag    *string
+		serialFlag     = flag.String("serial", "", "Get errors for device with serial number")
+		idFlag         = flag.Int("id", 0, "Get errors for device with ID")
+		pageSizeFlag   = flag.Int("page-size", 20, "Number of errors to show per page")
+		filterFlag     = flag.String("filter", "", "Filter expression for error listing")
+		sortFlag       = flag.String("sort", "", "Sort expression for error listing")
+		severityFlag   = flag.String("severity", "", "Filter by severity: info, warning, error, critical")
+		typeFlag       = flag.String("type", "", "Filter by error type: system, content, network, etc.")
 		unresolvedFlag = flag.Bool("unresolved", false, "Show only unresolved errors")
 	)
-	
+
 	// Set up network flags to point to the same variable
 	networkFlag = flag.String("network", "", "Network name to use (overrides BS_NETWORK)")
 	flag.StringVar(networkFlag, "n", "", "Network name to use (overrides BS_NETWORK) [alias for --network]")
@@ -82,11 +82,11 @@ func main() {
 
 	// Create client with options
 	var opts []gopurple.Option
-	
+
 	if *timeoutFlag != 30 {
 		opts = append(opts, gopurple.WithTimeout(time.Duration(*timeoutFlag)*time.Second))
 	}
-	
+
 	if *networkFlag != "" {
 		opts = append(opts, gopurple.WithNetwork(*networkFlag))
 	}
@@ -309,7 +309,7 @@ func handleNetworkSelection(ctx context.Context, client *gopurple.Client, reques
 	}
 
 	// Get user selection
-	fmt.Fprint(os.Stderr, "Select network (1-" + strconv.Itoa(len(networks)) + "): ")
+	fmt.Fprint(os.Stderr, "Select network (1-"+strconv.Itoa(len(networks))+"): ")
 	scanner := bufio.NewScanner(os.Stdin)
 	if !scanner.Scan() {
 		return fmt.Errorf("failed to read input")
@@ -337,7 +337,7 @@ func printError(deviceError *gopurple.DeviceError, verbose bool) {
 	if severity == "" {
 		severity = "unknown"
 	}
-	
+
 	// Severity with emoji
 	severityIcon := "ℹ️"
 	switch strings.ToLower(severity) {
@@ -359,13 +359,13 @@ func printError(deviceError *gopurple.DeviceError, verbose bool) {
 	if message == "" {
 		message = deviceError.Name
 	}
-	
+
 	// Determine error type/code
 	errorType := deviceError.ErrorType
 	if errorType == "" {
 		errorType = deviceError.Type
 	}
-	
+
 	errorCode := deviceError.ErrorCode
 	if errorCode == "" {
 		errorCode = deviceError.Code
@@ -392,30 +392,30 @@ func printError(deviceError *gopurple.DeviceError, verbose bool) {
 	if timestamp.IsZero() {
 		timestamp = deviceError.LastModifiedDate
 	}
-	
+
 	// Display basic fields
 	if deviceError.ID > 0 {
 		fmt.Printf("  ID:           %d\n", deviceError.ID)
 	} else {
 		fmt.Printf("  ID:           %s\n", "N/A")
 	}
-	
+
 	fmt.Printf("  Severity:     %s %s\n", severityIcon, severity)
 	fmt.Printf("  Type:         %s\n", errorType)
 	fmt.Printf("  Code:         %s\n", errorCode)
 	fmt.Printf("  Status:       %s %s\n", statusIcon, status)
 	fmt.Printf("  Message:      %s\n", message)
-	
+
 	if deviceError.Details != "" && verbose {
 		fmt.Printf("  Details:      %s\n", deviceError.Details)
 	}
-	
+
 	if !timestamp.IsZero() {
 		fmt.Printf("  Timestamp:    %s\n", timestamp.Format("2006-01-02 15:04:05 MST"))
 	} else {
 		fmt.Printf("  Timestamp:    %s\n", "N/A")
 	}
-	
+
 	if verbose {
 		// Show all populated fields in verbose mode
 		if deviceError.DeviceID != "" {
@@ -430,23 +430,23 @@ func printError(deviceError *gopurple.DeviceError, verbose bool) {
 		if deviceError.Component != "" {
 			fmt.Printf("  Component:    %s\n", deviceError.Component)
 		}
-		
+
 		if deviceError.Resolved && deviceError.ResolvedAt != nil {
 			fmt.Printf("  Resolved At:  %s\n", deviceError.ResolvedAt.Format("2006-01-02 15:04:05 MST"))
 		}
-		
+
 		// Debug: Show raw structure in verbose mode to understand API response
 		fmt.Printf("  [DEBUG] Raw error data:\n")
 		fmt.Printf("    ID: %d, DeviceID: '%s', Serial: '%s'\n", deviceError.ID, deviceError.DeviceID, deviceError.Serial)
-		fmt.Printf("    ErrorCode: '%s', ErrorType: '%s', Code: '%s', Type: '%s'\n", 
+		fmt.Printf("    ErrorCode: '%s', ErrorType: '%s', Code: '%s', Type: '%s'\n",
 			deviceError.ErrorCode, deviceError.ErrorType, deviceError.Code, deviceError.Type)
-		fmt.Printf("    Severity: '%s', Level: '%s', Message: '%s'\n", 
+		fmt.Printf("    Severity: '%s', Level: '%s', Message: '%s'\n",
 			deviceError.Severity, deviceError.Level, deviceError.Message)
 		fmt.Printf("    Description: '%s', Name: '%s'\n", deviceError.Description, deviceError.Name)
 		fmt.Printf("    Status: '%s', Resolved: %t\n", deviceError.Status, deviceError.Resolved)
-		fmt.Printf("    Timestamps: Timestamp=%v, CreationDate=%v, LastModifiedDate=%v\n", 
+		fmt.Printf("    Timestamps: Timestamp=%v, CreationDate=%v, LastModifiedDate=%v\n",
 			deviceError.Timestamp, deviceError.CreationDate, deviceError.LastModifiedDate)
 	}
-	
+
 	fmt.Fprintf(os.Stderr, "\n")
 }

@@ -10,19 +10,19 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/brightsign/gopurple"
+	"github.com/brightdevelopers/gopurple"
 )
 
 func main() {
 	var (
-		helpFlag       = flag.Bool("help", false, "Display usage information")
-		jsonFlag       = flag.Bool("json", false, "Output as JSON")
-		verboseFlag    = flag.Bool("verbose", false, "Show detailed information")
-		debugFlag      = flag.Bool("debug", false, "Enable debug logging (shows HTTP requests/responses)")
-		timeoutFlag    = flag.Int("timeout", 30, "Request timeout in seconds")
-		networkFlag    *string
+		helpFlag        = flag.Bool("help", false, "Display usage information")
+		jsonFlag        = flag.Bool("json", false, "Output as JSON")
+		verboseFlag     = flag.Bool("verbose", false, "Show detailed information")
+		debugFlag       = flag.Bool("debug", false, "Enable debug logging (shows HTTP requests/responses)")
+		timeoutFlag     = flag.Int("timeout", 30, "Request timeout in seconds")
+		networkFlag     *string
 		virtualPathFlag = flag.String("virtual-path", "", "Virtual path where the file should be placed (e.g., /videos/)")
-		filePathFlag   = flag.String("file", "", "Path to the file to upload (required)")
+		filePathFlag    = flag.String("file", "", "Path to the file to upload (required)")
 	)
 
 	// Set up network flags to point to the same variable

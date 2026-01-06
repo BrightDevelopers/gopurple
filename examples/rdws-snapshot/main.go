@@ -14,27 +14,27 @@ import (
 	"strings"
 	"time"
 
-	"github.com/brightsign/gopurple"
-	"github.com/brightsign/gopurple/internal/types"
+	"github.com/brightdevelopers/gopurple"
+	"github.com/brightdevelopers/gopurple/internal/types"
 )
 
 func main() {
 	var (
-		helpFlag     = flag.Bool("help", false, "Display usage information")
-		verboseFlag  = flag.Bool("verbose", false, "Show detailed information")
-		timeoutFlag  = flag.Int("timeout", 60, "Request timeout in seconds (snapshots can take time)")
-		networkFlag  *string
-		serialFlag   = flag.String("serial", "", "Device serial number")
-		idFlag       = flag.Int("id", 0, "Device ID")
-		formatFlag   = flag.String("format", "png", "Image format: png, jpeg")
-		qualityFlag  = flag.Int("quality", 90, "JPEG quality (1-100, only for jpeg format)")
-		outputFlag   = flag.String("output", ".", "Output directory for saved snapshots")
-		displayFlag  = flag.Int("display", 0, "Display ID (0 for primary display)")
-		widthFlag    = flag.Int("width", 0, "Crop width (0 for full width)")
-		heightFlag   = flag.Int("height", 0, "Crop height (0 for full height)")
-		xFlag        = flag.Int("x", 0, "Crop X coordinate")
-		yFlag        = flag.Int("y", 0, "Crop Y coordinate")
-		jsonFlag     = flag.Bool("json", false, "Output as JSON")
+		helpFlag    = flag.Bool("help", false, "Display usage information")
+		verboseFlag = flag.Bool("verbose", false, "Show detailed information")
+		timeoutFlag = flag.Int("timeout", 60, "Request timeout in seconds (snapshots can take time)")
+		networkFlag *string
+		serialFlag  = flag.String("serial", "", "Device serial number")
+		idFlag      = flag.Int("id", 0, "Device ID")
+		formatFlag  = flag.String("format", "png", "Image format: png, jpeg")
+		qualityFlag = flag.Int("quality", 90, "JPEG quality (1-100, only for jpeg format)")
+		outputFlag  = flag.String("output", ".", "Output directory for saved snapshots")
+		displayFlag = flag.Int("display", 0, "Display ID (0 for primary display)")
+		widthFlag   = flag.Int("width", 0, "Crop width (0 for full width)")
+		heightFlag  = flag.Int("height", 0, "Crop height (0 for full height)")
+		xFlag       = flag.Int("x", 0, "Crop X coordinate")
+		yFlag       = flag.Int("y", 0, "Crop Y coordinate")
+		jsonFlag    = flag.Bool("json", false, "Output as JSON")
 	)
 
 	// Set up network flags to point to the same variable
@@ -314,7 +314,7 @@ func handleNetworkSelection(ctx context.Context, client *gopurple.Client, reques
 	}
 
 	// Get user selection
-	fmt.Fprint(os.Stderr, "Select network (1-" + strconv.Itoa(len(networks)) + "): ")
+	fmt.Fprint(os.Stderr, "Select network (1-"+strconv.Itoa(len(networks))+"): ")
 	scanner := bufio.NewScanner(os.Stdin)
 	if !scanner.Scan() {
 		return fmt.Errorf("failed to read input")
