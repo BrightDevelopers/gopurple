@@ -7,11 +7,11 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/brightsign/gopurple/internal/auth"
-	"github.com/brightsign/gopurple/internal/config"
-	"github.com/brightsign/gopurple/internal/errors"
-	"github.com/brightsign/gopurple/internal/http"
-	"github.com/brightsign/gopurple/internal/types"
+	"github.com/brightdevelopers/gopurple/internal/auth"
+	"github.com/brightdevelopers/gopurple/internal/config"
+	"github.com/brightdevelopers/gopurple/internal/errors"
+	"github.com/brightdevelopers/gopurple/internal/http"
+	"github.com/brightdevelopers/gopurple/internal/types"
 )
 
 // DeviceService provides device management operations.
@@ -134,7 +134,7 @@ func (s *deviceService) Get(ctx context.Context, serial string) (*types.Device, 
 	}
 
 	// Build URL - using direct serial endpoint format
-	deviceURL := fmt.Sprintf("%s/%s/Devices/%s", 
+	deviceURL := fmt.Sprintf("%s/%s/Devices/%s",
 		s.config.BSNBaseURL, s.config.APIVersion, serial)
 
 	// Get access token
@@ -147,7 +147,7 @@ func (s *deviceService) Get(ctx context.Context, serial string) (*types.Device, 
 	var device types.Device
 	err = s.httpClient.GetWithAuth(ctx, token, deviceURL, &device)
 	if err != nil {
-		return nil, errors.NewAPIError(0, "device_get_failed", 
+		return nil, errors.NewAPIError(0, "device_get_failed",
 			fmt.Sprintf("Failed to get device with serial '%s'", serial), err.Error())
 	}
 
@@ -170,7 +170,7 @@ func (s *deviceService) GetByID(ctx context.Context, id int) (*types.Device, err
 	}
 
 	// Build URL
-	deviceURL := fmt.Sprintf("%s/%s/Devices/%d", 
+	deviceURL := fmt.Sprintf("%s/%s/Devices/%d",
 		s.config.BSNBaseURL, s.config.APIVersion, id)
 
 	// Get access token
@@ -183,7 +183,7 @@ func (s *deviceService) GetByID(ctx context.Context, id int) (*types.Device, err
 	var device types.Device
 	err = s.httpClient.GetWithAuth(ctx, token, deviceURL, &device)
 	if err != nil {
-		return nil, errors.NewAPIError(0, "device_get_failed", 
+		return nil, errors.NewAPIError(0, "device_get_failed",
 			fmt.Sprintf("Failed to get device with ID %d", id), err.Error())
 	}
 
@@ -673,10 +673,10 @@ func (s *deviceService) GetStatus(ctx context.Context, id int) (*types.DeviceSta
 
 	// Convert the embedded status to DeviceStatus
 	status := &types.DeviceStatus{
-		DeviceID: strconv.Itoa(device.ID),
-		Serial:   device.Serial,
-		Model:    device.Model,
-		HealthStatus: "Unknown",
+		DeviceID:      strconv.Itoa(device.ID),
+		Serial:        device.Serial,
+		Model:         device.Model,
+		HealthStatus:  "Unknown",
 		UptimeDisplay: "Unknown",
 	}
 
@@ -685,11 +685,11 @@ func (s *deviceService) GetStatus(ctx context.Context, id int) (*types.DeviceSta
 		status.HealthStatus = device.Status.Health
 		status.UptimeDisplay = device.Status.Uptime
 		status.LastHealthCheck = device.Status.LastModifiedDate
-		
+
 		if device.Status.Firmware != nil {
 			status.FirmwareVersion = device.Status.Firmware.Version
 		}
-		
+
 		if device.Status.Network != nil {
 			// Extract first IP from interfaces if available
 			if len(device.Status.Network.Interfaces) > 0 {
@@ -706,14 +706,14 @@ func (s *deviceService) GetStatus(ctx context.Context, id int) (*types.DeviceSta
 				status.IPAddress = device.Status.Network.ExternalIP
 			}
 		}
-		
+
 		// Parse uptime to seconds if possible
 		if device.Status.Uptime != "" {
 			// Try to parse uptime string (e.g., "1d 2h 3m" or similar)
 			// For now, just use the string display
 			status.UptimeDisplay = device.Status.Uptime
 		}
-		
+
 		// Determine online status based on health
 		status.IsOnline = device.Status.Health == "Healthy" || device.Status.Health == "Good"
 		status.Status = device.Status.Health
@@ -799,7 +799,7 @@ func (s *deviceService) GetErrorsBySerial(ctx context.Context, serial string, op
 	}
 
 	// Build URL - try the Errors endpoint
-	baseURL := fmt.Sprintf("%s/%s/Devices/%d/Errors", 
+	baseURL := fmt.Sprintf("%s/%s/Devices/%d/Errors",
 		s.config.BSNBaseURL, s.config.APIVersion, device.ID)
 	if len(params) > 0 {
 		baseURL += "?" + params.Encode()
@@ -825,7 +825,7 @@ func (s *deviceService) GetErrorsBySerial(ctx context.Context, serial string, op
 				TotalCount:  0,
 			}, nil
 		}
-		return nil, errors.NewAPIError(0, "device_errors_failed", 
+		return nil, errors.NewAPIError(0, "device_errors_failed",
 			fmt.Sprintf("Failed to get errors for device with serial '%s'", serial), err.Error())
 	}
 
@@ -926,7 +926,7 @@ func (s *deviceService) RebootBySerial(ctx context.Context, serial string, reboo
 
 	err = s.httpClient.PutWithAuth(ctx, token, rebootURL, requestBody, &rawResponse)
 	if err != nil {
-		return nil, errors.NewAPIError(0, "device_reboot_failed", 
+		return nil, errors.NewAPIError(0, "device_reboot_failed",
 			fmt.Sprintf("Failed to reboot device with serial '%s'", serial), err.Error())
 	}
 
@@ -1029,7 +1029,7 @@ func (s *deviceService) TakeSnapshotBySerial(ctx context.Context, serial string,
 
 	err = s.httpClient.PostWithAuth(ctx, token, snapshotURL, requestBody, &rawResponse)
 	if err != nil {
-		return nil, errors.NewAPIError(0, "device_snapshot_failed", 
+		return nil, errors.NewAPIError(0, "device_snapshot_failed",
 			fmt.Sprintf("Failed to take snapshot of device with serial '%s'", serial), err.Error())
 	}
 
@@ -1089,7 +1089,7 @@ func (s *deviceService) ReprovisionBySerial(ctx context.Context, serial string) 
 
 	err = s.httpClient.GetWithAuth(ctx, token, reprovisionURL, &rawResponse)
 	if err != nil {
-		return nil, errors.NewAPIError(0, "device_reprovision_failed", 
+		return nil, errors.NewAPIError(0, "device_reprovision_failed",
 			fmt.Sprintf("Failed to re-provision device with serial '%s'", serial), err.Error())
 	}
 
@@ -1149,7 +1149,7 @@ func (s *deviceService) GetDWSPasswordBySerial(ctx context.Context, serial strin
 
 	err = s.httpClient.GetWithAuth(ctx, token, dwsPasswordURL, &rawResponse)
 	if err != nil {
-		return nil, errors.NewAPIError(0, "device_dws_password_get_failed", 
+		return nil, errors.NewAPIError(0, "device_dws_password_get_failed",
 			fmt.Sprintf("Failed to get DWS password info for device with serial '%s'", serial), err.Error())
 	}
 
@@ -1218,7 +1218,7 @@ func (s *deviceService) SetDWSPasswordBySerial(ctx context.Context, serial strin
 
 	err = s.httpClient.PutWithAuth(ctx, token, dwsPasswordURL, requestBody, &rawResponse)
 	if err != nil {
-		return nil, errors.NewAPIError(0, "device_dws_password_set_failed", 
+		return nil, errors.NewAPIError(0, "device_dws_password_set_failed",
 			fmt.Sprintf("Failed to set DWS password for device with serial '%s'", serial), err.Error())
 	}
 

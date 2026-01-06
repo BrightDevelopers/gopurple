@@ -12,7 +12,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/brightsign/gopurple"
+	"github.com/brightdevelopers/gopurple"
 )
 
 func main() {
@@ -117,11 +117,11 @@ func main() {
 	// Output as JSON if requested
 	if *jsonFlag {
 		result := map[string]interface{}{
-			"success":         success,
-			"serial":          *serialFlag,
-			"time":            timeStr,
-			"date":            dateStr,
-			"apply_timezone":  *tzFlag,
+			"success":        success,
+			"serial":         *serialFlag,
+			"time":           timeStr,
+			"date":           dateStr,
+			"apply_timezone": *tzFlag,
 		}
 		encoder := json.NewEncoder(os.Stdout)
 		encoder.SetIndent("", "  ")
@@ -195,7 +195,7 @@ func handleNetworkSelection(ctx context.Context, client *gopurple.Client, reques
 		fmt.Fprintf(os.Stderr, "  %d. %s (ID: %d)\n", i+1, network.Name, network.ID)
 	}
 
-	fmt.Fprint(os.Stderr, "Select network (1-" + strconv.Itoa(len(networks)) + "): ")
+	fmt.Fprint(os.Stderr, "Select network (1-"+strconv.Itoa(len(networks))+"): ")
 	scanner := bufio.NewScanner(os.Stdin)
 	if !scanner.Scan() {
 		return fmt.Errorf("failed to read input")

@@ -12,17 +12,17 @@ import (
 	"strings"
 	"time"
 
-	"github.com/brightsign/gopurple"
+	"github.com/brightdevelopers/gopurple"
 )
 
 func main() {
 	var (
-		helpFlag    = flag.Bool("help", false, "Display usage information")
-		verboseFlag = flag.Bool("verbose", false, "Show detailed information")
-		timeoutFlag = flag.Int("timeout", 30, "Request timeout in seconds")
-		networkFlag *string
-		idFlag      = flag.Int("id", 0, "Content file ID to download (required)")
-		outputFlag  = flag.String("output", "", "Output file path (default: use original filename)")
+		helpFlag     = flag.Bool("help", false, "Display usage information")
+		verboseFlag  = flag.Bool("verbose", false, "Show detailed information")
+		timeoutFlag  = flag.Int("timeout", 30, "Request timeout in seconds")
+		networkFlag  *string
+		idFlag       = flag.Int("id", 0, "Content file ID to download (required)")
+		outputFlag   = flag.String("output", "", "Output file path (default: use original filename)")
 		infoOnlyFlag = flag.Bool("info-only", false, "Show file info without downloading")
 	)
 
@@ -170,7 +170,7 @@ func handleNetworkSelection(ctx context.Context, client *gopurple.Client, reques
 	}
 
 	// Get user selection
-	fmt.Fprint(os.Stderr, "Select network (1-" + strconv.Itoa(len(networks)) + "): ")
+	fmt.Fprint(os.Stderr, "Select network (1-"+strconv.Itoa(len(networks))+"): ")
 	scanner := bufio.NewScanner(os.Stdin)
 	if !scanner.Scan() {
 		return fmt.Errorf("failed to read input")

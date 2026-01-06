@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/brightsign/gopurple"
+	"github.com/brightdevelopers/gopurple"
 )
 
 func main() {

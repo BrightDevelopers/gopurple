@@ -12,16 +12,16 @@ import (
 	"strings"
 	"time"
 
-	"github.com/brightsign/gopurple"
+	"github.com/brightdevelopers/gopurple"
 )
 
 func main() {
 	var (
-		helpFlag    = flag.Bool("help", false, "Display usage information")
-		jsonFlag    = flag.Bool("json", false, "Output as JSON")
-		verboseFlag = flag.Bool("verbose", false, "Show detailed information")
-		timeoutFlag = flag.Int("timeout", 30, "Request timeout in seconds")
-		networkFlag *string
+		helpFlag     = flag.Bool("help", false, "Display usage information")
+		jsonFlag     = flag.Bool("json", false, "Output as JSON")
+		verboseFlag  = flag.Bool("verbose", false, "Show detailed information")
+		timeoutFlag  = flag.Int("timeout", 30, "Request timeout in seconds")
+		networkFlag  *string
 		pageSizeFlag = flag.Int("page-size", 100, "Number of items per page")
 		filterFlag   = flag.String("filter", "", "Filter expression (e.g., \"type eq 'Video'\")")
 		sortFlag     = flag.String("sort", "", "Sort expression (e.g., \"name asc\")")
@@ -188,7 +188,7 @@ func handleNetworkSelection(ctx context.Context, client *gopurple.Client, reques
 	}
 
 	// Get user selection
-	fmt.Fprint(os.Stderr, "Select network (1-" + strconv.Itoa(len(networks)) + "): ")
+	fmt.Fprint(os.Stderr, "Select network (1-"+strconv.Itoa(len(networks))+"): ")
 	scanner := bufio.NewScanner(os.Stdin)
 	if !scanner.Scan() {
 		return fmt.Errorf("failed to read input")
@@ -202,8 +202,8 @@ func handleNetworkSelection(ctx context.Context, client *gopurple.Client, reques
 	selectedNetwork := networks[selection-1]
 	if !jsonMode {
 		if !jsonMode {
-		fmt.Fprintf(os.Stderr, "Selected network: %s (ID: %d)\n", selectedNetwork.Name, selectedNetwork.ID)
-	}
+			fmt.Fprintf(os.Stderr, "Selected network: %s (ID: %d)\n", selectedNetwork.Name, selectedNetwork.ID)
+		}
 	}
 
 	return client.SetNetworkByID(ctx, selectedNetwork.ID)

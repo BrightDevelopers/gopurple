@@ -12,7 +12,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/brightsign/gopurple"
+	"github.com/brightdevelopers/gopurple"
 )
 
 func main() {
@@ -29,7 +29,7 @@ func main() {
 		serialFlag   = flag.String("serial", "", "Get specific device by serial number")
 		idFlag       = flag.Int("id", 0, "Get specific device by ID")
 	)
-	
+
 	// Set up network flags to point to the same variable
 	networkFlag = flag.String("network", "", "Network name to use (overrides BS_NETWORK)")
 	flag.StringVar(networkFlag, "n", "", "Network name to use (overrides BS_NETWORK) [alias for --network]")
@@ -67,12 +67,12 @@ func main() {
 
 	// Create client with options
 	var opts []gopurple.Option
-	
+
 	// Add timeout if specified
 	if *timeoutFlag != 30 {
 		opts = append(opts, gopurple.WithTimeout(time.Duration(*timeoutFlag)*time.Second))
 	}
-	
+
 	// Add network if specified
 	if *networkFlag != "" {
 		opts = append(opts, gopurple.WithNetwork(*networkFlag))

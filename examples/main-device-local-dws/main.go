@@ -12,7 +12,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/brightsign/gopurple"
+	"github.com/brightdevelopers/gopurple"
 )
 
 func main() {
@@ -295,7 +295,7 @@ func handleNetworkSelection(ctx context.Context, client *gopurple.Client, reques
 
 func confirmAction(action, deviceInfo string) bool {
 	fmt.Printf("⚠️  WARNING: This will %s the local DWS on the device with %s.\n", action, deviceInfo)
-	
+
 	if action == "enable" {
 		fmt.Println("🔧 ENABLE will allow direct access to the device's diagnostic web server.")
 		fmt.Println("   This may expose diagnostic information on the local network.")
@@ -303,7 +303,7 @@ func confirmAction(action, deviceInfo string) bool {
 		fmt.Println("🔧 DISABLE will prevent direct access to the device's diagnostic web server.")
 		fmt.Println("   You will need to use rDWS for diagnostics after this change.")
 	}
-	
+
 	fmt.Println("The device may reboot to apply this change.")
 	fmt.Printf("\nAre you sure you want to %s local DWS? (y/N): ", action)
 
