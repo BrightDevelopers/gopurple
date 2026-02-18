@@ -729,6 +729,15 @@ This SDK prioritizes the most commonly used BSN.cloud operations. If you need ad
 4. Add tests and example programs
 5. Update documentation
 
+### For Maintainers
+
+**Creating releases:**
+```bash
+./scripts/release.sh v1.2.0 "Release Description"
+```
+
+See [RELEASING.md](RELEASING.md) for the complete release workflow and [docs/versioning.md](docs/versioning.md) for version management guidelines.
+
 ## License
 
 This is an unofficial SDK for BSN.cloud integration.
@@ -739,6 +748,9 @@ This is an unofficial SDK for BSN.cloud integration.
 
 - **BSN.cloud Documentation**: https://docs.brightsign.biz/
 - **Complete API Endpoint Reference**: [docs/all-apis.md](docs/all-apis.md)
+- **Type Safety Guide**: [docs/type-safety.md](docs/type-safety.md)
+- **Version Management**: [docs/versioning.md](docs/versioning.md)
+- **Release Process**: [RELEASING.md](RELEASING.md)
 - **Example Programs Guide**: [examples/README.md](examples/README.md)
 - **B-Deploy Configuration Reference**: [docs/bdeploy-config-reference.md](docs/bdeploy-config-reference.md)
 - **B-Deploy Device Association**: [docs/bdeploy-association.md](docs/bdeploy-association.md)
