@@ -2,7 +2,7 @@
 
 ![Gopurple Logo](images/logo.png)
 
-**Status:** ALPHA, INTERNAL USE ONLY
+**Status:** EXTERNAL BETA RELEASE
 
 ## Why Go Instead of Python?
 
