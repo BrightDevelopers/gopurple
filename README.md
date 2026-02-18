@@ -81,9 +81,22 @@ This SDK abstracts the complexity of BSN.cloud integration:
 
 ### Installation
 
+**Recommended: Pin to a specific version**
+```bash
+go get github.com/brightdevelopers/gopurple@v1.2.0
+```
+
+**Or use latest (development)**
 ```bash
 go get github.com/brightdevelopers/gopurple
 ```
+
+**In your go.mod:**
+```go
+require github.com/brightdevelopers/gopurple v1.2.0
+```
+
+See [versioning docs](docs/versioning.md) for version management details.
 
 ### Basic Usage
 
@@ -199,6 +212,96 @@ setup := &gopurple.BDeploySetupRecord{
     },
 }
 ```
+
+## Version Management
+
+### Using Versioned Releases (Recommended)
+
+Always pin to specific versions in production to ensure reproducible builds:
+
+```bash
+# Install specific version
+go get github.com/brightdevelopers/gopurple@v1.2.0
+```
+
+**In your go.mod:**
+```go
+require github.com/brightdevelopers/gopurple v1.2.0
+```
+
+### Checking Available Versions
+
+```bash
+# List all available versions
+go list -m -versions github.com/brightdevelopers/gopurple
+
+# View current installed version
+go list -m github.com/brightdevelopers/gopurple
+
+# View release notes
+gh release list --repo brightdevelopers/gopurple
+```
+
+### Updating to Newer Versions
+
+```bash
+# Update to specific version
+go get github.com/brightdevelopers/gopurple@v1.3.0
+
+# Update to latest version
+go get -u github.com/brightdevelopers/gopurple
+
+# Update to latest patch only (safer)
+go get -u=patch github.com/brightdevelopers/gopurple
+```
+
+### Semantic Versioning
+
+The SDK follows [Semantic Versioning 2.0.0](https://semver.org/):
+
+- **v1.x.x → v1.x.x** - Backward compatible (safe to update)
+- **v1.x.x → v2.0.0** - Breaking changes (review migration guide)
+- **v1.x.x-beta.x** - Pre-release versions (test before production)
+
+**Version compatibility:**
+```bash
+# All v1 releases are compatible with each other
+v1.0.0, v1.1.0, v1.2.0  ✅ Compatible
+
+# Major version changes may require code updates
+v1.x.x → v2.0.0  ⚠️ Review breaking changes
+```
+
+### CI/CD Integration
+
+**GitHub Actions:**
+```yaml
+- name: Install gopurple
+  run: go get github.com/brightdevelopers/gopurple@v1.2.0
+```
+
+**Dockerfile:**
+```dockerfile
+FROM golang:1.24-alpine
+WORKDIR /app
+COPY go.mod go.sum ./
+RUN go mod download
+# gopurple version pinned in go.mod
+COPY . .
+RUN go build -o app
+```
+
+### For Maintainers: Creating Releases
+
+```bash
+# Create a new release
+./scripts/release.sh v1.2.0 "Release Description"
+
+# Create a pre-release
+./scripts/release.sh v1.3.0-beta.1 "Beta: New Features"
+```
+
+See [RELEASING.md](RELEASING.md) for the complete release process and [docs/versioning.md](docs/versioning.md) for detailed version management documentation.
 
 ## Authentication
 
