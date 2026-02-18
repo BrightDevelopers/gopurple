@@ -67,6 +67,9 @@ This SDK abstracts the complexity of BSN.cloud integration:
 - **Network Management** - Handle multiple networks, groups, permissions
 
 **Key Features:**
+- **Full type safety** - All nested types exported for compile-time checking and IDE autocomplete
+- **Device status monitoring** - Type-safe access to firmware, network, storage, and sync information
+- **Screenshot capture** - Request and response types for device snapshots with region support
 - Structured error types with context
 - Pagination support for large datasets
 - Network context management with `BS_NETWORK` environment variable support
@@ -114,6 +117,86 @@ func main() {
     }
 
     log.Printf("Found %d devices", len(devices.Items))
+}
+```
+
+### Working with Device Status
+
+The SDK provides full type safety for device status information, including firmware, network, storage, and synchronization details:
+
+```go
+// Get device with full status information
+device, err := client.Devices.Get(ctx, "ABC123")
+if err != nil {
+    log.Fatal(err)
+}
+
+// Access device status with full type safety
+if device.Status != nil {
+    // Check firmware version
+    if device.Status.Firmware != nil {
+        log.Printf("Firmware: %s", device.Status.Firmware.Version)
+    }
+
+    // Check network connectivity
+    if device.Status.Network != nil {
+        log.Printf("IP: %s", device.Status.Network.ExternalIP)
+        for _, iface := range device.Status.Network.Interfaces {
+            log.Printf("  %s: %s", iface.Name, iface.Type)
+        }
+    }
+
+    // Monitor storage usage
+    for _, storage := range device.Status.Storage {
+        pct := float64(storage.Used) / float64(storage.Total) * 100
+        log.Printf("Storage: %.1f%% used", pct)
+    }
+}
+```
+
+### Taking Screenshots
+
+Capture device screenshots with specific regions and quality settings:
+
+```go
+// Take a full-screen screenshot
+req := &gopurple.SnapshotRequest{
+    Format:  "png",
+    Quality: 90,
+}
+
+resp, err := client.RDWS.Snapshot(ctx, "ABC123", req)
+if err != nil {
+    log.Fatal(err)
+}
+log.Printf("Screenshot: %s (%dx%d)", resp.Filename, resp.Width, resp.Height)
+
+// Capture specific region
+regionReq := &gopurple.SnapshotRequest{
+    Format:  "jpeg",
+    Quality: 85,
+    Region: &gopurple.Region{
+        X:      100,
+        Y:      100,
+        Width:  1920,
+        Height: 1080,
+    },
+}
+```
+
+### Type-Safe B-Deploy Configuration
+
+Build device setup records with full compile-time type checking:
+
+```go
+setup := &gopurple.BDeploySetupRecord{
+    Version: "1.0",
+    BDeploy: &gopurple.BDeployInfo{
+        // ... your B-Deploy configuration
+    },
+    IdleScreenColor: &gopurple.IdleScreenColor{
+        R: 0, G: 0, B: 0, A: 1,  // Black idle screen
+    },
 }
 ```
 

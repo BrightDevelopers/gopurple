@@ -254,4 +254,73 @@ func TestPublicTypeExports(t *testing.T) {
 	if len(errorList.Items) != 1 {
 		t.Error("DeviceErrorList type export failed")
 	}
+
+	// Test Device Status nested types
+	t.Run("DeviceStatusEmbed", func(t *testing.T) {
+		status := &DeviceStatusEmbed{
+			Uptime: "12:34:56",
+			Health: "Healthy",
+			Firmware: &FirmwareInfo{
+				Version: "8.5.42",
+			},
+			Script: &ScriptInfo{
+				Type:    "BrightScript",
+				Version: "1.0",
+			},
+			Synchronization: &SyncSettings{
+				Status: SyncPeriod{Period: "5m"},
+			},
+			Storage: []StorageInfo{
+				{Total: 1000000, Used: 500000},
+			},
+			Network: &NetworkInfo{
+				ExternalIP: "192.168.1.100",
+				Interfaces: []NetworkInterfaceBSN{
+					{Name: "eth0", Type: "ethernet"},
+				},
+			},
+		}
+		if status.Firmware.Version != "8.5.42" {
+			t.Errorf("DeviceStatusEmbed firmware access failed")
+		}
+	})
+
+	// Test Snapshot types
+	t.Run("SnapshotTypes", func(t *testing.T) {
+		req := &SnapshotRequest{
+			Format:  "png",
+			Quality: 90,
+			Region:  &Region{X: 0, Y: 0, Width: 1920, Height: 1080},
+		}
+		resp := &SnapshotResponse{
+			Filename:  "snapshot.png",
+			Timestamp: "2024-01-01T12:00:00Z",
+			Width:     1920,
+			Height:    1080,
+		}
+		if req.Format != "png" || resp.Width != 1920 {
+			t.Errorf("Snapshot types access failed")
+		}
+	})
+
+	// Test RDWS nested type
+	t.Run("RDWSInfoSubResult", func(t *testing.T) {
+		info := &RDWSInfo{
+			Serial: "ABC123",
+			Power:  &RDWSInfoSubResult{Result: map[string]interface{}{"voltage": "12V"}},
+		}
+		if info.Power == nil {
+			t.Errorf("RDWSInfoSubResult access failed")
+		}
+	})
+
+	// Test B-Deploy nested type
+	t.Run("IdleScreenColor", func(t *testing.T) {
+		setup := &BDeploySetupRecord{
+			IdleScreenColor: &IdleScreenColor{R: 255, G: 0, B: 0, A: 1},
+		}
+		if setup.IdleScreenColor.R != 255 {
+			t.Errorf("IdleScreenColor access failed")
+		}
+	})
 }

@@ -67,8 +67,38 @@ type (
 	// DeviceList represents a paginated list of devices.
 	DeviceList = types.DeviceList
 
+	// DeviceStatusEmbed represents the embedded status information in a device.
+	DeviceStatusEmbed = types.DeviceStatusEmbed
+
+	// SyncSettings represents synchronization settings for a device.
+	SyncSettings = types.SyncSettings
+
+	// SyncPeriod represents a synchronization period configuration.
+	SyncPeriod = types.SyncPeriod
+
+	// ScriptInfo represents script-related information for a device.
+	ScriptInfo = types.ScriptInfo
+
+	// FirmwareInfo represents firmware version information.
+	FirmwareInfo = types.FirmwareInfo
+
+	// StorageInfo represents storage device information.
+	StorageInfo = types.StorageInfo
+
+	// NetworkInfo represents network connectivity information.
+	NetworkInfo = types.NetworkInfo
+
+	// NetworkInterfaceBSN represents a network interface from BSN.cloud.
+	NetworkInterfaceBSN = types.NetworkInterfaceBSN
+
 	// Region represents a rectangular region for screenshots.
 	Region = types.Region
+
+	// SnapshotRequest represents a request to capture a device screenshot.
+	SnapshotRequest = types.SnapshotRequest
+
+	// SnapshotResponse represents the response from a device snapshot request.
+	SnapshotResponse = types.SnapshotResponse
 
 	// DeviceStatus represents the current operational status of a device.
 	DeviceStatus = types.DeviceStatus
@@ -118,6 +148,9 @@ type (
 	// BDeployInfo represents the B-Deploy section of a setup record.
 	BDeployInfo = types.BDeployInfo
 
+	// IdleScreenColor represents RGBA color for idle screen configuration.
+	IdleScreenColor = types.IdleScreenColor
+
 	// BSNTokenEntity represents the BSN device registration token.
 	BSNTokenEntity = types.BSNTokenEntity
 
@@ -144,6 +177,9 @@ type (
 
 	// RDWSInfo represents player information from the rDWS /info/ endpoint
 	RDWSInfo = types.RDWSInfo
+
+	// RDWSInfoSubResult represents nested result objects in the info response.
+	RDWSInfoSubResult = types.RDWSInfoSubResult
 
 	// RDWSNetworkInterface represents a network interface from the player
 	RDWSNetworkInterface = types.RDWSNetworkInterface
