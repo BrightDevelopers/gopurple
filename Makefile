@@ -69,15 +69,45 @@ EXAMPLE_MAIN_PRESENTATION_UPDATE=main-presentation-update
 EXAMPLE_MAIN_PRESENTATION_DELETE_BY_FILTER=main-presentation-delete-by-filter
 EXAMPLE_MAIN_GET_REGTOKEN=main-get-regtoken
 EXAMPLE_MAIN_DEVICE_FIND=main-device-find
+EXAMPLE_MAIN_SCHEDULE_ADD_ONETIME=main-schedule-add-onetime
+EXAMPLE_MAIN_SCHEDULE_ADD_RECURRING_DAILY=main-schedule-add-recurring-daily
+EXAMPLE_MAIN_SCHEDULE_LIST_GROUP=main-schedule-list-group
+EXAMPLE_MAIN_SCHEDULE_ADD_WEEKDAYS=main-schedule-add-weekdays
+EXAMPLE_MAIN_SCHEDULE_DELETE=main-schedule-delete
+EXAMPLE_MAIN_SCHEDULE_ADD_DAYPARTING=main-schedule-add-dayparting
+EXAMPLE_MAIN_SCHEDULE_INTERRUPT=main-schedule-interrupt
+EXAMPLE_MAIN_SCHEDULE_EXPIRATION=main-schedule-expiration
+EXAMPLE_MAIN_SCHEDULE_COMPLEX_RECURRENCE=main-schedule-complex-recurrence
+EXAMPLE_MAIN_SCHEDULE_UPDATE=main-schedule-update
 
 # Build directory
 BUILDDIR=bin
+
+# Default target - print all available targets
+.DEFAULT_GOAL := list-targets
+
+list-targets:
+	@echo "Available make targets:"
+	@echo ""
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-35s\033[0m %s\n", $$1, $$2}'
+	@echo ""
+	@echo "Main targets:"
+	@echo "  all                    - Run tests and build all examples"
+	@echo "  test                   - Run all tests"
+	@echo "  build                  - Build all examples"
+	@echo "  build-examples         - Build all example programs"
+	@echo "  clean                  - Clean build artifacts"
+	@echo "  deps                   - Download and tidy dependencies"
+	@echo "  help                   - Show detailed help message"
+	@echo ""
+	@echo "To see all targets including individual examples:"
+	@echo "  make help"
 
 all: test build-examples
 
 build: build-examples
 
-build-examples: build-main--devices-list build-main-device-status build-main-device-info build-main-device-errors build-rdws-reboot build-main-device-local-dws build-rdws-snapshot build-rdws-reprovision build-rdws-dws-password build-main-device-change-group build-main-device-delete build-main-device-downloads build-main-device-operations build-main-group-info build-main-group-update build-main-group-delete build-main-local-dws build-main-auth-info build-main-token-test build-main-endpoints-test build-rdws-info build-rdws-time build-rdws-health build-bdeploy-get-setup build-bdeploy-delete-setup build-bdeploy-delete-device build-bdeploy-get-device build-bdeploy-list-devices build-bdeploy-add-setup build-bdeploy-update-setup build-bdeploy-list-setups build-bdeploy-associate build-bdeploy-find-device build-rdws-files-list build-rdws-files-upload build-rdws-files-rename build-rdws-files-delete build-rdws-logs-get build-rdws-crashdump-get build-rdws-firmware-download build-rdws-reformat-storage build-rdws-ssh build-rdws-telnet build-rdws-registry-get build-rdws-registry-set build-main-content-list build-main-content-delete build-main-content-upload build-main-content-download build-main-subscriptions-list build-main-subscription-count build-main-subscription-operations build-main-presentation-count build-main-presentation-info build-main-presentation-list build-main-presentation-delete build-main-presentation-info-by-name build-main-presentation-create build-main-presentation-update build-main-presentation-delete-by-filter build-main-get-regtoken build-main-device-find
+build-examples: build-main--devices-list build-main-device-status build-main-device-info build-main-device-errors build-rdws-reboot build-main-device-local-dws build-rdws-snapshot build-rdws-reprovision build-rdws-dws-password build-main-device-change-group build-main-device-delete build-main-device-downloads build-main-device-operations build-main-group-info build-main-group-update build-main-group-delete build-main-local-dws build-main-auth-info build-main-token-test build-main-endpoints-test build-rdws-info build-rdws-time build-rdws-health build-bdeploy-get-setup build-bdeploy-delete-setup build-bdeploy-delete-device build-bdeploy-get-device build-bdeploy-list-devices build-bdeploy-add-setup build-bdeploy-update-setup build-bdeploy-list-setups build-bdeploy-associate build-bdeploy-find-device build-rdws-files-list build-rdws-files-upload build-rdws-files-rename build-rdws-files-delete build-rdws-logs-get build-rdws-crashdump-get build-rdws-firmware-download build-rdws-reformat-storage build-rdws-ssh build-rdws-telnet build-rdws-registry-get build-rdws-registry-set build-main-content-list build-main-content-delete build-main-content-upload build-main-content-download build-main-subscriptions-list build-main-subscription-count build-main-subscription-operations build-main-presentation-count build-main-presentation-info build-main-presentation-list build-main-presentation-delete build-main-presentation-info-by-name build-main-presentation-create build-main-presentation-update build-main-presentation-delete-by-filter build-main-get-regtoken build-main-device-find build-main-schedule-add-onetime build-main-schedule-add-recurring-daily build-main-schedule-list-group build-main-schedule-add-weekdays build-main-schedule-delete build-main-schedule-add-dayparting build-main-schedule-interrupt build-main-schedule-expiration build-main-schedule-complex-recurrence build-main-schedule-update
 
 build-main--devices-list:
 	mkdir -p $(BUILDDIR)
@@ -326,6 +356,46 @@ build-main-get-regtoken:
 build-main-device-find:
 	mkdir -p $(BUILDDIR)
 	$(GOBUILD) -o $(BUILDDIR)/$(EXAMPLE_MAIN_DEVICE_FIND) -v ./examples/main-device-find
+
+build-main-schedule-add-onetime:
+	mkdir -p $(BUILDDIR)
+	$(GOBUILD) -o $(BUILDDIR)/$(EXAMPLE_MAIN_SCHEDULE_ADD_ONETIME) -v ./examples/main-schedule-add-onetime
+
+build-main-schedule-add-recurring-daily:
+	mkdir -p $(BUILDDIR)
+	$(GOBUILD) -o $(BUILDDIR)/$(EXAMPLE_MAIN_SCHEDULE_ADD_RECURRING_DAILY) -v ./examples/main-schedule-add-recurring-daily
+
+build-main-schedule-list-group:
+	mkdir -p $(BUILDDIR)
+	$(GOBUILD) -o $(BUILDDIR)/$(EXAMPLE_MAIN_SCHEDULE_LIST_GROUP) -v ./examples/main-schedule-list-group
+
+build-main-schedule-add-weekdays:
+	mkdir -p $(BUILDDIR)
+	$(GOBUILD) -o $(BUILDDIR)/$(EXAMPLE_MAIN_SCHEDULE_ADD_WEEKDAYS) -v ./examples/main-schedule-add-weekdays
+
+build-main-schedule-delete:
+	mkdir -p $(BUILDDIR)
+	$(GOBUILD) -o $(BUILDDIR)/$(EXAMPLE_MAIN_SCHEDULE_DELETE) -v ./examples/main-schedule-delete
+
+build-main-schedule-add-dayparting:
+	mkdir -p $(BUILDDIR)
+	$(GOBUILD) -o $(BUILDDIR)/$(EXAMPLE_MAIN_SCHEDULE_ADD_DAYPARTING) -v ./examples/main-schedule-add-dayparting
+
+build-main-schedule-interrupt:
+	mkdir -p $(BUILDDIR)
+	$(GOBUILD) -o $(BUILDDIR)/$(EXAMPLE_MAIN_SCHEDULE_INTERRUPT) -v ./examples/main-schedule-interrupt
+
+build-main-schedule-expiration:
+	mkdir -p $(BUILDDIR)
+	$(GOBUILD) -o $(BUILDDIR)/$(EXAMPLE_MAIN_SCHEDULE_EXPIRATION) -v ./examples/main-schedule-expiration
+
+build-main-schedule-complex-recurrence:
+	mkdir -p $(BUILDDIR)
+	$(GOBUILD) -o $(BUILDDIR)/$(EXAMPLE_MAIN_SCHEDULE_COMPLEX_RECURRENCE) -v ./examples/main-schedule-complex-recurrence
+
+build-main-schedule-update:
+	mkdir -p $(BUILDDIR)
+	$(GOBUILD) -o $(BUILDDIR)/$(EXAMPLE_MAIN_SCHEDULE_UPDATE) -v ./examples/main-schedule-update
 
 build-all-examples:
 	mkdir -p $(BUILDDIR)
@@ -599,7 +669,7 @@ help:
 
 .PHONY: all build test clean run deps build-linux dev-deps lint fmt install \
 	build-examples build-all-examples run-examples \
-	build-main--devices-list build-main-device-status build-main-device-info build-main-device-errors build-rdws-reboot build-main-device-local-dws build-rdws-snapshot build-rdws-reprovision build-rdws-dws-password build-main-device-change-group build-main-device-delete build-main-device-downloads build-main-device-operations build-main-group-info build-main-group-update build-main-group-delete build-main-local-dws build-main-auth-info build-main-token-test build-main-endpoints-test build-rdws-info build-rdws-time build-rdws-health build-bdeploy-get-setup build-bdeploy-delete-setup build-bdeploy-delete-device build-bdeploy-get-device build-bdeploy-list-devices build-bdeploy-add-setup build-bdeploy-update-setup build-bdeploy-list-setups build-bdeploy-associate build-bdeploy-find-device build-rdws-files-list build-rdws-files-upload build-rdws-files-rename build-rdws-files-delete build-rdws-logs-get build-rdws-crashdump-get build-rdws-firmware-download build-rdws-reformat-storage build-rdws-ssh build-rdws-telnet build-rdws-registry-get build-rdws-registry-set build-main-content-list build-main-content-delete build-main-content-upload build-main-subscriptions-list build-main-subscription-count build-main-subscription-operations build-main-get-regtoken build-main-device-find \
+	build-main--devices-list build-main-device-status build-main-device-info build-main-device-errors build-rdws-reboot build-main-device-local-dws build-rdws-snapshot build-rdws-reprovision build-rdws-dws-password build-main-device-change-group build-main-device-delete build-main-device-downloads build-main-device-operations build-main-group-info build-main-group-update build-main-group-delete build-main-local-dws build-main-auth-info build-main-token-test build-main-endpoints-test build-rdws-info build-rdws-time build-rdws-health build-bdeploy-get-setup build-bdeploy-delete-setup build-bdeploy-delete-device build-bdeploy-get-device build-bdeploy-list-devices build-bdeploy-add-setup build-bdeploy-update-setup build-bdeploy-list-setups build-bdeploy-associate build-bdeploy-find-device build-rdws-files-list build-rdws-files-upload build-rdws-files-rename build-rdws-files-delete build-rdws-logs-get build-rdws-crashdump-get build-rdws-firmware-download build-rdws-reformat-storage build-rdws-ssh build-rdws-telnet build-rdws-registry-get build-rdws-registry-set build-main-content-list build-main-content-delete build-main-content-upload build-main-subscriptions-list build-main-subscription-count build-main-subscription-operations build-main-get-regtoken build-main-device-find build-main-schedule-add-onetime build-main-schedule-add-recurring-daily build-main-schedule-list-group build-main-schedule-add-weekdays build-main-schedule-delete build-main-schedule-add-dayparting build-main-schedule-interrupt build-main-schedule-expiration build-main-schedule-complex-recurrence build-main-schedule-update \
 	run-main--devices-list run-main-device-status run-main-device-info run-main-device-errors run-rdws-reboot run-main-device-local-dws run-rdws-snapshot run-rdws-reprovision run-rdws-dws-password run-main-device-downloads run-main-device-operations run-main-local-dws run-main-auth-info run-main-token-test run-rdws-info run-rdws-time run-rdws-health run-bdeploy-get-setup run-bdeploy-get-device run-bdeploy-list-devices run-rdws-files-list run-rdws-files-upload run-rdws-files-rename run-rdws-files-delete run-rdws-logs-get run-rdws-crashdump-get run-rdws-firmware-download run-rdws-reformat-storage run-rdws-ssh run-rdws-telnet run-rdws-registry-get run-rdws-registry-set run-main-content-list run-main-content-delete run-main-content-upload run-main-subscriptions-list run-main-subscription-count run-main-subscription-operations run-main-get-regtoken run-main-device-find \
 	build-linux-main--devices-list build-linux-main-device-status build-linux-main-device-errors build-linux-rdws-reboot build-linux-main-device-local-dws build-linux-rdws-snapshot build-linux-rdws-reprovision build-linux-rdws-dws-password build-linux-main-local-dws \
 	install-main--devices-list install-main-device-status install-main-device-errors install-rdws-reboot install-main-device-local-dws install-rdws-snapshot install-rdws-reprovision install-rdws-dws-password install-main-local-dws install-main-auth-info \

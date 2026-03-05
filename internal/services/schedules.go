@@ -17,8 +17,14 @@ type ScheduleService interface {
 	// GetGroupSchedule retrieves all scheduled presentations for a group by name
 	GetGroupSchedule(ctx context.Context, groupName string) (*types.ScheduledPresentationList, error)
 
+	// GetScheduledPresentation retrieves a single scheduled presentation by ID
+	GetScheduledPresentation(ctx context.Context, groupName string, scheduleID int) (*types.ScheduledPresentation, error)
+
 	// AddScheduledPresentation adds a scheduled presentation to a group
 	AddScheduledPresentation(ctx context.Context, groupName string, schedule *types.ScheduledPresentation) (*types.ScheduledPresentation, error)
+
+	// UpdateScheduledPresentation modifies an existing scheduled presentation
+	UpdateScheduledPresentation(ctx context.Context, groupName string, scheduleID int, schedule *types.ScheduledPresentation) (*types.ScheduledPresentation, error)
 
 	// DeleteScheduledPresentation removes a scheduled presentation from a group
 	DeleteScheduledPresentation(ctx context.Context, groupName string, scheduleID int) error
@@ -75,6 +81,45 @@ func (s *scheduleService) GetGroupSchedule(ctx context.Context, groupName string
 	return &result, nil
 }
 
+// GetScheduledPresentation retrieves a single scheduled presentation by ID.
+func (s *scheduleService) GetScheduledPresentation(ctx context.Context, groupName string, scheduleID int) (*types.ScheduledPresentation, error) {
+	if groupName == "" {
+		return nil, errors.NewValidationError("groupName", groupName, "group name cannot be empty")
+	}
+
+	if scheduleID <= 0 {
+		return nil, errors.NewValidationError("scheduleID", scheduleID, "schedule ID must be positive")
+	}
+
+	// Ensure we have authentication and network context
+	if err := s.authManager.EnsureValid(ctx); err != nil {
+		return nil, err
+	}
+
+	if err := s.authManager.EnsureNetworkSet(ctx); err != nil {
+		return nil, err
+	}
+
+	// Build URL with schedule ID
+	scheduleURL := fmt.Sprintf("%s/%s/Groups/Regular/%s/schedule/%d/",
+		s.config.BSNBaseURL, s.config.APIVersion, url.PathEscape(groupName), scheduleID)
+
+	// Get access token
+	token, err := s.authManager.GetToken()
+	if err != nil {
+		return nil, err
+	}
+
+	// Make the request
+	var result types.ScheduledPresentation
+	if err := s.httpClient.GetWithAuth(ctx, token, scheduleURL, &result); err != nil {
+		return nil, errors.NewAPIError(0, "schedule_get_failed",
+			fmt.Sprintf("Failed to get schedule %d from group '%s'", scheduleID, groupName), err.Error())
+	}
+
+	return &result, nil
+}
+
 // AddScheduledPresentation adds a scheduled presentation to a group.
 func (s *scheduleService) AddScheduledPresentation(ctx context.Context, groupName string, schedule *types.ScheduledPresentation) (*types.ScheduledPresentation, error) {
 	if groupName == "" {
@@ -113,6 +158,53 @@ func (s *scheduleService) AddScheduledPresentation(ctx context.Context, groupNam
 	if err := s.httpClient.PostWithAuth(ctx, token, scheduleURL, schedule, &result); err != nil {
 		return nil, errors.NewAPIError(0, "schedule_add_failed",
 			fmt.Sprintf("Failed to add scheduled presentation to group '%s'", groupName), err.Error())
+	}
+
+	return &result, nil
+}
+
+// UpdateScheduledPresentation modifies an existing scheduled presentation.
+func (s *scheduleService) UpdateScheduledPresentation(ctx context.Context, groupName string, scheduleID int, schedule *types.ScheduledPresentation) (*types.ScheduledPresentation, error) {
+	if groupName == "" {
+		return nil, errors.NewValidationError("groupName", groupName, "group name cannot be empty")
+	}
+
+	if scheduleID <= 0 {
+		return nil, errors.NewValidationError("scheduleID", scheduleID, "schedule ID must be positive")
+	}
+
+	if schedule == nil {
+		return nil, errors.NewValidationError("schedule", schedule, "schedule cannot be nil")
+	}
+
+	if schedule.PresentationID <= 0 {
+		return nil, errors.NewValidationError("presentationId", schedule.PresentationID, "presentation ID must be positive")
+	}
+
+	// Ensure we have authentication and network context
+	if err := s.authManager.EnsureValid(ctx); err != nil {
+		return nil, err
+	}
+
+	if err := s.authManager.EnsureNetworkSet(ctx); err != nil {
+		return nil, err
+	}
+
+	// Build URL with schedule ID
+	scheduleURL := fmt.Sprintf("%s/%s/Groups/Regular/%s/schedule/%d/",
+		s.config.BSNBaseURL, s.config.APIVersion, url.PathEscape(groupName), scheduleID)
+
+	// Get access token
+	token, err := s.authManager.GetToken()
+	if err != nil {
+		return nil, err
+	}
+
+	// Make the PUT request
+	var result types.ScheduledPresentation
+	if err := s.httpClient.PutWithAuth(ctx, token, scheduleURL, schedule, &result); err != nil {
+		return nil, errors.NewAPIError(0, "schedule_update_failed",
+			fmt.Sprintf("Failed to update schedule %d in group '%s'", scheduleID, groupName), err.Error())
 	}
 
 	return &result, nil
