@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/brightdevelopers/gopurple"
+	"github.com/brightdevelopers/gopurple/examples/shared"
 )
 
 func main() {
@@ -41,7 +42,8 @@ func main() {
 		fmt.Fprintf(os.Stderr, "\nEnvironment Variables:\n")
 		fmt.Fprintf(os.Stderr, "  BS_CLIENT_ID        BSN.cloud API client ID (required)\n")
 		fmt.Fprintf(os.Stderr, "  BS_SECRET          BSN.cloud API client secret (required)\n")
-		fmt.Fprintf(os.Stderr, "  BS_NETWORK         BSN.cloud network name (optional)\n\n")
+		fmt.Fprintf(os.Stderr, "  BS_NETWORK         BSN.cloud network name (optional)\n")
+		fmt.Fprintf(os.Stderr, "  BS_SERIAL          Device serial number (optional, overridden by --serial)\n\n")
 		fmt.Fprintf(os.Stderr, "Examples:\n")
 		fmt.Fprintf(os.Stderr, "  Get device info by serial:\n")
 		fmt.Fprintf(os.Stderr, "    %s --serial A1B2C3D4E5F6\n", os.Args[0])
@@ -61,9 +63,10 @@ func main() {
 		os.Exit(0)
 	}
 
-	// Validate required arguments
-	if *serialFlag == "" {
-		fmt.Fprintf(os.Stderr, "Error: --serial must be specified\n\n")
+	// Get serial number from flag or environment variable
+	serial, err := shared.GetSerialWithFallback(*serialFlag)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error: %v\n\n", err)
 		flag.Usage()
 		os.Exit(1)
 	}
@@ -131,10 +134,10 @@ func main() {
 	}
 
 	if !*jsonFlag {
-		fmt.Printf("Getting real-time device information from player: %s\n", *serialFlag)
+		fmt.Printf("Getting real-time device information from player: %s\n", serial)
 	}
 
-	info, err := client.RDWS.GetInfo(ctx, *serialFlag)
+	info, err := client.RDWS.GetInfo(ctx, serial)
 	if err != nil {
 		log.Fatalf("Failed to get device info: %v", err)
 	}

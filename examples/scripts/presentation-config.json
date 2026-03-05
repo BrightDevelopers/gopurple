@@ -1,0 +1,8 @@
+{
+  "presentation_name": "Store Display Demo",
+  "video_file": "videos/promo.mp4",
+  "image_file": "images/logo.png",
+  "image_duration": 10,
+  "network": "Production",
+  "device_serial": "BS123456789"
+}

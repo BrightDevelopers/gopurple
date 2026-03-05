@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/brightdevelopers/gopurple"
+	"github.com/brightdevelopers/gopurple/examples/shared"
 )
 
 func main() {
@@ -49,7 +50,9 @@ func main() {
 		fmt.Fprintf(os.Stderr, "\nEnvironment Variables:\n")
 		fmt.Fprintf(os.Stderr, "  BS_CLIENT_ID        BSN.cloud API client ID (required)\n")
 		fmt.Fprintf(os.Stderr, "  BS_SECRET          BSN.cloud API client secret (required)\n")
-		fmt.Fprintf(os.Stderr, "  BS_NETWORK         BSN.cloud network name (optional)\n\n")
+		fmt.Fprintf(os.Stderr, "  BS_NETWORK         BSN.cloud network name (optional)\n")
+		fmt.Fprintf(os.Stderr, "  BS_SERIAL          Device serial number (optional, overridden by --serial)\n")
+		fmt.Fprintf(os.Stderr, "  BS_DEVICE_ID       Device ID (optional, overridden by --id)\n\n")
 		fmt.Fprintf(os.Stderr, "Examples:\n")
 		fmt.Fprintf(os.Stderr, "  Normal reboot by serial number:\n")
 		fmt.Fprintf(os.Stderr, "    %s --serial UTD41X000009\n", os.Args[0])
@@ -77,14 +80,18 @@ func main() {
 		os.Exit(1)
 	}
 
+	// Get serial number and device ID from flags or environment variables
+	serial, serialErr := shared.GetSerialWithFallback(*serialFlag)
+	deviceID, idErr := shared.GetDeviceIDWithFallback(*idFlag)
+
 	// Validate input
-	if *serialFlag == "" && *idFlag == 0 {
-		fmt.Fprintf(os.Stderr, "❌ Error: Must specify either --serial or --id\n\n")
+	if serialErr != nil && idErr != nil {
+		fmt.Fprintf(os.Stderr, "❌ Error: Must specify either --serial/BS_SERIAL or --id/BS_DEVICE_ID\n\n")
 		flag.Usage()
 		os.Exit(1)
 	}
 
-	if *serialFlag != "" && *idFlag != 0 {
+	if serialErr == nil && idErr == nil {
 		fmt.Fprintf(os.Stderr, "❌ Error: Cannot specify both --serial and --id\n\n")
 		flag.Usage()
 		os.Exit(1)
@@ -155,10 +162,10 @@ func main() {
 
 	// Get device info and confirm reboot
 	var deviceInfo string
-	if *serialFlag != "" {
-		deviceInfo = fmt.Sprintf("serial number '%s'", *serialFlag)
+	if serialErr == nil {
+		deviceInfo = fmt.Sprintf("serial number '%s'", serial)
 	} else {
-		deviceInfo = fmt.Sprintf("ID %d", *idFlag)
+		deviceInfo = fmt.Sprintf("ID %d", deviceID)
 	}
 
 	// Confirmation prompt (unless -y flag is used)
@@ -193,19 +200,19 @@ func main() {
 
 	// Perform reboot
 	var rebootResponse *gopurple.RebootResponse
-	if *serialFlag != "" {
+	if serialErr == nil {
 		if !*jsonFlag {
-			fmt.Fprintf(os.Stderr, "🔄 Rebooting device with serial: %s (type: %s)\n", *serialFlag, *typeFlag)
+			fmt.Fprintf(os.Stderr, "🔄 Rebooting device with serial: %s (type: %s)\n", serial, *typeFlag)
 		}
-		rebootResponse, err = client.Devices.RebootBySerial(ctx, *serialFlag, rebootType)
+		rebootResponse, err = client.Devices.RebootBySerial(ctx, serial, rebootType)
 		if err != nil {
 			log.Fatalf("❌ Failed to reboot device: %v", err)
 		}
 	} else {
 		if !*jsonFlag {
-			fmt.Fprintf(os.Stderr, "🔄 Rebooting device with ID: %d (type: %s)\n", *idFlag, *typeFlag)
+			fmt.Fprintf(os.Stderr, "🔄 Rebooting device with ID: %d (type: %s)\n", deviceID, *typeFlag)
 		}
-		rebootResponse, err = client.Devices.Reboot(ctx, *idFlag, rebootType)
+		rebootResponse, err = client.Devices.Reboot(ctx, deviceID, rebootType)
 		if err != nil {
 			log.Fatalf("❌ Failed to reboot device: %v", err)
 		}

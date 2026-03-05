@@ -1,0 +1,8 @@
+{
+  "presentation_name": "Store Display Demo",
+  "video_file": "../../test-media/meet-brightsign.mp4",
+  "image_file": "../../test-media/logo.png",
+  "image_duration": 10,
+  "network": "Production",
+  "device_serial": "BS123456789"
+}

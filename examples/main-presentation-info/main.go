@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/brightdevelopers/gopurple"
+	"github.com/brightdevelopers/gopurple/examples/shared"
 )
 
 func main() {
@@ -38,7 +39,8 @@ func main() {
 		fmt.Fprintf(os.Stderr, "\nEnvironment Variables:\n")
 		fmt.Fprintf(os.Stderr, "  BS_CLIENT_ID        BSN.cloud API client ID (required)\n")
 		fmt.Fprintf(os.Stderr, "  BS_SECRET          BSN.cloud API client secret (required)\n")
-		fmt.Fprintf(os.Stderr, "  BS_NETWORK         BSN.cloud network name (optional)\n\n")
+		fmt.Fprintf(os.Stderr, "  BS_NETWORK         BSN.cloud network name (optional)\n")
+		fmt.Fprintf(os.Stderr, "  BS_PRESENTATION_ID Presentation ID (optional, overridden by --id)\n\n")
 		fmt.Fprintf(os.Stderr, "Examples:\n")
 		fmt.Fprintf(os.Stderr, "  Get presentation info:\n")
 		fmt.Fprintf(os.Stderr, "    %s --id 12345\n", os.Args[0])
@@ -55,9 +57,10 @@ func main() {
 		return
 	}
 
-	// Validate required arguments
-	if *idFlag == 0 {
-		fmt.Fprintf(os.Stderr, "Error: --id must be specified\n\n")
+	// Get presentation ID from flag or environment variable
+	presentationID, err := shared.GetPresentationIDWithFallback(*idFlag)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error: %v\n\n", err)
 		flag.Usage()
 		os.Exit(1)
 	}
@@ -109,7 +112,7 @@ func main() {
 	}
 
 	// Get presentation info
-	if err := getPresentationInfo(ctx, client, *idFlag, *jsonFlag, *verboseFlag); err != nil {
+	if err := getPresentationInfo(ctx, client, presentationID, *jsonFlag, *verboseFlag); err != nil {
 		log.Fatalf("Failed to get presentation info: %v", err)
 	}
 }
