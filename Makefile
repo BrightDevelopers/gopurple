@@ -50,23 +50,11 @@ EXAMPLE_RDWS_SSH=rdws-ssh
 EXAMPLE_RDWS_TELNET=rdws-telnet
 EXAMPLE_RDWS_REGISTRY_GET=rdws-registry-get
 EXAMPLE_RDWS_REGISTRY_SET=rdws-registry-set
-EXAMPLE_MAIN_CONTENT_LIST=main-content-list
-EXAMPLE_MAIN_CONTENT_DELETE=main-content-delete
-EXAMPLE_MAIN_CONTENT_UPLOAD=main-content-upload
-EXAMPLE_MAIN_CONTENT_DOWNLOAD=main-content-download
 EXAMPLE_MAIN_DEVICE_DOWNLOADS=main-device-downloads
 EXAMPLE_MAIN_DEVICE_OPERATIONS=main-device-operations
 EXAMPLE_MAIN_LIST_SUBSCRIPTIONS=main-subscriptions-list
 EXAMPLE_MAIN_SUBSCRIPTION_COUNT=main-subscription-count
 EXAMPLE_MAIN_SUBSCRIPTION_OPERATIONS=main-subscription-operations
-EXAMPLE_MAIN_PRESENTATION_COUNT=main-presentation-count
-EXAMPLE_MAIN_PRESENTATION_INFO=main-presentation-info
-EXAMPLE_MAIN_PRESENTATION_LIST=main-presentation-list
-EXAMPLE_MAIN_PRESENTATION_DELETE=main-presentation-delete
-EXAMPLE_MAIN_PRESENTATION_INFO_BY_NAME=main-presentation-info-by-name
-EXAMPLE_MAIN_PRESENTATION_CREATE=main-presentation-create
-EXAMPLE_MAIN_PRESENTATION_UPDATE=main-presentation-update
-EXAMPLE_MAIN_PRESENTATION_DELETE_BY_FILTER=main-presentation-delete-by-filter
 EXAMPLE_MAIN_GET_REGTOKEN=main-get-regtoken
 EXAMPLE_MAIN_DEVICE_FIND=main-device-find
 
@@ -77,7 +65,7 @@ all: test build-examples
 
 build: build-examples
 
-build-examples: build-main--devices-list build-main-device-status build-main-device-info build-main-device-errors build-rdws-reboot build-main-device-local-dws build-rdws-snapshot build-rdws-reprovision build-rdws-dws-password build-main-device-change-group build-main-device-delete build-main-device-downloads build-main-device-operations build-main-group-info build-main-group-update build-main-group-delete build-main-local-dws build-main-auth-info build-main-token-test build-main-endpoints-test build-rdws-info build-rdws-time build-rdws-health build-bdeploy-get-setup build-bdeploy-delete-setup build-bdeploy-delete-device build-bdeploy-get-device build-bdeploy-list-devices build-bdeploy-add-setup build-bdeploy-update-setup build-bdeploy-list-setups build-bdeploy-associate build-bdeploy-find-device build-rdws-files-list build-rdws-files-upload build-rdws-files-rename build-rdws-files-delete build-rdws-logs-get build-rdws-crashdump-get build-rdws-firmware-download build-rdws-reformat-storage build-rdws-ssh build-rdws-telnet build-rdws-registry-get build-rdws-registry-set build-main-content-list build-main-content-delete build-main-content-upload build-main-content-download build-main-subscriptions-list build-main-subscription-count build-main-subscription-operations build-main-presentation-count build-main-presentation-info build-main-presentation-list build-main-presentation-delete build-main-presentation-info-by-name build-main-presentation-create build-main-presentation-update build-main-presentation-delete-by-filter build-main-get-regtoken build-main-device-find
+build-examples: build-main--devices-list build-main-device-status build-main-device-info build-main-device-errors build-rdws-reboot build-main-device-local-dws build-rdws-snapshot build-rdws-reprovision build-rdws-dws-password build-main-device-change-group build-main-device-delete build-main-device-downloads build-main-device-operations build-main-group-info build-main-group-update build-main-group-delete build-main-local-dws build-main-auth-info build-main-token-test build-main-endpoints-test build-rdws-info build-rdws-time build-rdws-health build-bdeploy-get-setup build-bdeploy-delete-setup build-bdeploy-delete-device build-bdeploy-get-device build-bdeploy-list-devices build-bdeploy-add-setup build-bdeploy-update-setup build-bdeploy-list-setups build-bdeploy-associate build-bdeploy-find-device build-rdws-files-list build-rdws-files-upload build-rdws-files-rename build-rdws-files-delete build-rdws-logs-get build-rdws-crashdump-get build-rdws-firmware-download build-rdws-reformat-storage build-rdws-ssh build-rdws-telnet build-rdws-registry-get build-rdws-registry-set build-main-subscriptions-list build-main-subscription-count build-main-subscription-operations build-main-get-regtoken build-main-device-find
 
 build-main--devices-list:
 	mkdir -p $(BUILDDIR)
@@ -259,22 +247,6 @@ build-rdws-registry-set:
 	mkdir -p $(BUILDDIR)
 	$(GOBUILD) -o $(BUILDDIR)/$(EXAMPLE_RDWS_REGISTRY_SET) -v ./examples/rdws-registry-set
 
-build-main-content-list:
-	mkdir -p $(BUILDDIR)
-	$(GOBUILD) -o $(BUILDDIR)/$(EXAMPLE_MAIN_CONTENT_LIST) -v ./examples/main-content-list
-
-build-main-content-delete:
-	mkdir -p $(BUILDDIR)
-	$(GOBUILD) -o $(BUILDDIR)/$(EXAMPLE_MAIN_CONTENT_DELETE) -v ./examples/main-content-delete
-
-build-main-content-upload:
-	mkdir -p $(BUILDDIR)
-	$(GOBUILD) -o $(BUILDDIR)/$(EXAMPLE_MAIN_CONTENT_UPLOAD) -v ./examples/main-content-upload
-
-build-main-content-download:
-	mkdir -p $(BUILDDIR)
-	$(GOBUILD) -o $(BUILDDIR)/$(EXAMPLE_MAIN_CONTENT_DOWNLOAD) -v ./examples/main-content-download
-
 build-main-subscriptions-list:
 	mkdir -p $(BUILDDIR)
 	$(GOBUILD) -o $(BUILDDIR)/$(EXAMPLE_MAIN_LIST_SUBSCRIPTIONS) -v ./examples/main-subscriptions-list
@@ -286,38 +258,6 @@ build-main-subscription-count:
 build-main-subscription-operations:
 	mkdir -p $(BUILDDIR)
 	$(GOBUILD) -o $(BUILDDIR)/$(EXAMPLE_MAIN_SUBSCRIPTION_OPERATIONS) -v ./examples/main-subscription-operations
-
-build-main-presentation-count:
-	mkdir -p $(BUILDDIR)
-	$(GOBUILD) -o $(BUILDDIR)/$(EXAMPLE_MAIN_PRESENTATION_COUNT) -v ./examples/main-presentation-count
-
-build-main-presentation-info:
-	mkdir -p $(BUILDDIR)
-	$(GOBUILD) -o $(BUILDDIR)/$(EXAMPLE_MAIN_PRESENTATION_INFO) -v ./examples/main-presentation-info
-
-build-main-presentation-list:
-	mkdir -p $(BUILDDIR)
-	$(GOBUILD) -o $(BUILDDIR)/$(EXAMPLE_MAIN_PRESENTATION_LIST) -v ./examples/main-presentation-list
-
-build-main-presentation-delete:
-	mkdir -p $(BUILDDIR)
-	$(GOBUILD) -o $(BUILDDIR)/$(EXAMPLE_MAIN_PRESENTATION_DELETE) -v ./examples/main-presentation-delete
-
-build-main-presentation-info-by-name:
-	mkdir -p $(BUILDDIR)
-	$(GOBUILD) -o $(BUILDDIR)/$(EXAMPLE_MAIN_PRESENTATION_INFO_BY_NAME) -v ./examples/main-presentation-info-by-name
-
-build-main-presentation-create:
-	mkdir -p $(BUILDDIR)
-	$(GOBUILD) -o $(BUILDDIR)/$(EXAMPLE_MAIN_PRESENTATION_CREATE) -v ./examples/main-presentation-create
-
-build-main-presentation-update:
-	mkdir -p $(BUILDDIR)
-	$(GOBUILD) -o $(BUILDDIR)/$(EXAMPLE_MAIN_PRESENTATION_UPDATE) -v ./examples/main-presentation-update
-
-build-main-presentation-delete-by-filter:
-	mkdir -p $(BUILDDIR)
-	$(GOBUILD) -o $(BUILDDIR)/$(EXAMPLE_MAIN_PRESENTATION_DELETE_BY_FILTER) -v ./examples/main-presentation-delete-by-filter
 
 build-main-get-regtoken:
 	mkdir -p $(BUILDDIR)
@@ -436,15 +376,6 @@ run-rdws-registry-get: build-rdws-registry-get
 
 run-rdws-registry-set: build-rdws-registry-set
 	./$(BUILDDIR)/$(EXAMPLE_RDWS_REGISTRY_SET)
-
-run-main-content-list: build-main-content-list
-	./$(BUILDDIR)/$(EXAMPLE_MAIN_CONTENT_LIST)
-
-run-main-content-delete: build-main-content-delete
-	./$(BUILDDIR)/$(EXAMPLE_MAIN_CONTENT_DELETE)
-
-run-main-content-upload: build-main-content-upload
-	./$(BUILDDIR)/$(EXAMPLE_MAIN_CONTENT_UPLOAD)
 
 run-main-subscriptions-list: build-main-subscriptions-list
 	./$(BUILDDIR)/$(EXAMPLE_MAIN_LIST_SUBSCRIPTIONS)
