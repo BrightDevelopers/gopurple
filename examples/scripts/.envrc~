@@ -1,0 +1,4 @@
+export BS_CLIENT_ID=a84eb548-e601-49d4-afaf-4f659ace2592
+export BS_SECRET=14iUWH7GYecaLwGoT7k5szA4weTrZLJH
+export BS_NETWORK=Test_Rack
+export BS_USERNAME=gherlein@brightsign.biz
