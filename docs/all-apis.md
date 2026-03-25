@@ -1,11 +1,10 @@
 # BSN.cloud and B-Deploy API Endpoints - Comprehensive List
 
 ## Summary
-- **BSN.cloud Main APIs (2022/06)**: 19 service categories, 313+ endpoints
+- **BSN.cloud Main APIs (2022/06)**: 17 service categories, ~280 endpoints
 - **B-Deploy Provisioning APIs**: 3 service categories (v2 and v3), 14 endpoints
-- **Upload API**: OpenAPI 2.0 specification (multiple endpoints)
-- **Total**: ~327 endpoints
-- **SDK Implementation Status**: 61 endpoints DONE, 266 endpoints NOT-DONE (18.7% coverage)
+- **Total**: ~294 endpoints
+- **SDK Implementation Status**: 43 endpoints DONE (excluding removed content/presentation/upload)
 
 **Legend:**
 - `[DONE]` - API endpoint implemented in SDK with example CLI
@@ -25,42 +24,6 @@
 - `[NOT-DONE]` `GET /{id:int}/` - Returns the specified autorun plugin on a network
 - `[NOT-DONE]` `PUT /{id:int}/` - Update a specified autorun plugin on a network
 - `[NOT-DONE]` `DELETE /{id:int}/` - Remove a specified autorun plugin from a network
-
-## Content
-**Base URL:** `https://api.bsn.cloud/2022/06/REST/Content`
-
-- `[DONE]` `GET /` - Returns a list of content files on a network (Example: `main-content-list`)
-- `[DONE]` `DELETE /` - Removes content files, specified by a filter, from a network (Example: `main-content-delete`)
-- `[NOT-DONE]` `GET /Root/{*virtualPath}/` - Retrieves a list of content files in the specified virtual directory folder
-- `[NOT-DONE]` `POST /Root/{*virtualPath}/` - Creates a content folder in the specified virtual directory folder
-- `[DONE]` `GET /Count/` - Retrieves the number of content files on the network (via ContentService.GetCount())
-- `[DONE]` `GET /{id:int}/` - Retrieves the specified content file metadata and downloads file data (Example: `main-content-download`)
-- `[NOT-DONE]` `PUT /{id:int}/` - Update the specified content files
-- `[NOT-DONE]` `PATCH /{id:int}/` - Applies a sequence of changes to a specific content entity
-- `[NOT-DONE]` `DELETE /{id:int}/` - Deletes specified content file or folder
-- `[NOT-DONE]` `GET /{id:int}/Tags/` - Returns tags associated with the specified content file
-- `[NOT-DONE]` `POST /{id:int}/Tags/` - Adds one or more tags to the specified content file
-- `[NOT-DONE]` `DELETE /{id:int}/Tags/` - Removes one or more tags from the specified content file
-- `[NOT-DONE]` `GET /Operations/` - Returns operational permissions granted to roles
-- `[NOT-DONE]` `GET /{id:int}/Permissions/` - Returns object permissions for a given content instance
-- `[NOT-DONE]` `POST /{id:int}/Permissions/` - Adds permissions to the specified content instance
-- `[NOT-DONE]` `DELETE /{id:int}/Permissions/` - Removes permissions from the specified content file
-
-## Upload API
-**Base URL:** `https://api.bsn.cloud/Upload/2019/03/REST`
-
-**Note:** The Upload API is documented via OpenAPI Specification 2.0. The machine-readable YAML specification is available at: https://api.bsn.cloud/Upload/2019/03/REST/OAS/
-
-This API provides endpoints for uploading content files to BSN.cloud.
-
-- `[DONE]` `POST /` - Upload a content file to the network (Example: `main-content-upload`)
-
-Additional endpoints defined in the OpenAPI specification (not yet implemented):
-- Multipart upload support
-- Upload session management
-- Content validation and processing
-
-For detailed endpoint documentation, refer to the OpenAPI specification or generate a client using an OpenAPI-compatible code generator.
 
 ## Device Subscriptions
 **Base URL:** `https://api.bsn.cloud/2022/06/REST/Subscriptions`
@@ -282,29 +245,6 @@ For detailed endpoint documentation, refer to the OpenAPI specification or gener
 - `[NOT-DONE]` `GET /{name}/Permissions/` - Includes object permissions for a given tagged playlist
 - `[NOT-DONE]` `POST /{name}/Permissions/` - Retrieves permissions for the specified tagged playlist
 - `[NOT-DONE]` `DELETE /{name}/Permissions/` - Removes permissions for the specified tagged playlist
-
-## Presentations
-**Base URL:** `https://api.bsn.cloud/2022/06/REST/Presentations`
-
-**Note:** The `/Count/` endpoint returns a plain integer (e.g., `5`) instead of a JSON object like other Count endpoints.
-
-- `[DONE]` `GET /` - Retrieves a list of presentations on the network (Example: `main-presentation-list`)
-- `[DONE]` `POST /` - Creates a new presentation on the network (Example: `main-presentation-create`)
-- `[DONE]` `DELETE /` - Removes presentations, specified by a filter, from a network (Example: `main-presentation-delete-by-filter`)
-- `[DONE]` `GET /Count/` - Retrieves the number of presentations on the network (Example: `main-presentation-count`)
-- `[DONE]` `GET /{id:int}/` - Returns the specified presentation (Example: `main-presentation-info`)
-- `[DONE]` `PUT /{id:int}/` - Modifies the specified presentation (Example: `main-presentation-update`)
-- `[DONE]` `DELETE /{id:int}/` - Removes the specified presentation (Example: `main-presentation-delete`)
-- `[DONE]` `GET /{name}/` - Returns the specified presentation (Example: `main-presentation-info-by-name`)
-- `[NOT-DONE]` `PUT /{name}/` - Modifies the specified presentation
-- `[NOT-DONE]` `DELETE /{name}/` - Removes the specified presentation
-- `[NOT-DONE]` `GET /Operations/` - Returns operational permissions granted to roles
-- `[NOT-DONE]` `GET /{id:int}/Permissions/` - Includes object permissions for a given presentation
-- `[NOT-DONE]` `POST /{id:int}/Permissions/` - Adds permissions for the specified presentation
-- `[NOT-DONE]` `DELETE /{id:int}/Permissions/` - Removes permissions for the specified presentation
-- `[NOT-DONE]` `GET /{name}/Permissions/` - Includes object permissions for a given presentation
-- `[NOT-DONE]` `POST /{name}/Permissions/` - Adds permissions for the specified presentation
-- `[NOT-DONE]` `DELETE /{name}/Permissions/` - Removes permissions for the specified presentation
 
 ## Provisioning
 **Base URL:** `https://api.bsn.cloud/2022/06/REST/Provisioning`
@@ -597,12 +537,11 @@ For detailed endpoint documentation, refer to the OpenAPI specification or gener
 ## Implementation Statistics
 
 ### BSN.cloud Main APIs (2022/06)
-- **Implemented**: 16 endpoints (5%)
-- **Not Implemented**: 297 endpoints (95%)
+- **Implemented**: 16 endpoints
+- **Not Implemented**: ~248 endpoints
 
 **Breakdown by Category:**
 - Autoruns/Plugins: 0/7 (0%)
-- Content: 0/16 (0%)
 - **Device Subscriptions: 3/3 (100%)** ✓
 - DeviceWebPages: 0/14 (0%)
 - **Devices: 9/54 (17%)** ✓
@@ -612,7 +551,6 @@ For detailed endpoint documentation, refer to the OpenAPI specification or gener
 - Groups/Tagged: 0/17 (0%)
 - Playlists/Dynamic: 0/17 (0%)
 - Playlists/Tagged: 0/17 (0%)
-- Presentations: 0/17 (0%)
 - **Provisioning: 2/3 (67%)** ✓
 - Roles: 0/16 (0%)
 - **Self: 1/48 (2%)** ✓
@@ -631,12 +569,12 @@ For detailed endpoint documentation, refer to the OpenAPI specification or gener
 - **Setup (v3): 5/5 (100%)** ✓
 
 ### Overall Summary
-- **Total Endpoints**: 327
-- **Implemented with Examples**: 57 (17.4%)
-- **Not Implemented**: 270 (82.6%)
+- **Total Endpoints**: ~294
+- **Implemented with Examples**: 43
+- **Not Implemented**: ~251
 
 ### Example Programs Available
-59 working CLI examples across all implemented endpoints covering:
+Working CLI examples covering:
 - **Main API** - Device management (list, info, status, errors, downloads, delete, update, change group)
 - **Main API** - Group management (list, create, info, update, delete)
 - **Main API** - Subscription management (list, count, operations)

@@ -322,74 +322,11 @@ type (
 	// RDWSRecoveryURL represents the player's recovery URL setting
 	RDWSRecoveryURL = types.RDWSRecoveryURL
 
-	// ContentFile represents a content file in BSN.cloud
-	ContentFile = types.ContentFile
-
-	// ContentFileList represents a paginated list of content files
-	ContentFileList = types.ContentFileList
-
-	// ContentFileCount represents the count of content files
-	ContentFileCount = types.ContentFileCount
-
-	// ContentDeleteResult represents the result of deleting content files
-	ContentDeleteResult = types.ContentDeleteResult
-
-	// Presentation represents a presentation in BSN.cloud
-	Presentation = types.Presentation
-
-	// PresentationCount represents the count of presentations
-	PresentationCount = types.PresentationCount
-
-	// PresentationList represents a paginated list of presentations
-	PresentationList = types.PresentationList
-
-	// ScheduleSettings represents scheduling configuration for presentations
-	ScheduleSettings = types.ScheduleSettings
-
-	// PresentationCreateRequest represents a request to create a new presentation
-	PresentationCreateRequest = types.PresentationCreateRequest
-
-	// PresentationAutorun represents autorun configuration for a presentation
-	PresentationAutorun = types.PresentationAutorun
-
-	// PresentationDeviceWebPage represents device web page configuration
-	PresentationDeviceWebPage = types.PresentationDeviceWebPage
-
-	// PresentationScreenSettings represents screen configuration for a presentation
-	PresentationScreenSettings = types.PresentationScreenSettings
-
-	// PresentationDeleteResult represents the result of deleting presentations by filter
-	PresentationDeleteResult = types.PresentationDeleteResult
-
-	// ScheduledPresentation represents a scheduled presentation in a group
-	ScheduledPresentation = types.ScheduledPresentation
-
-	// ScheduledPresentationList represents a paginated list of scheduled presentations
-	ScheduledPresentationList = types.ScheduledPresentationList
-
 	// DeviceWebPage represents a device web page template
 	DeviceWebPage = types.DeviceWebPage
 
 	// DeviceWebPageList represents a paginated list of device web pages
 	DeviceWebPageList = types.DeviceWebPageList
-
-	// UploadRequest represents a file upload request (deprecated)
-	UploadRequest = types.UploadRequest
-
-	// UploadResponse represents the response from a file upload
-	UploadResponse = types.UploadResponse
-
-	// ContentUploadArguments represents arguments for creating a content upload
-	ContentUploadArguments = types.ContentUploadArguments
-
-	// UploadSessionResponse represents the response from creating an upload session
-	UploadSessionResponse = types.UploadSessionResponse
-
-	// ContentUploadStatus represents the status of a content upload
-	ContentUploadStatus = types.ContentUploadStatus
-
-	// ChunkUploadResponse represents the response from uploading a chunk
-	ChunkUploadResponse = types.ChunkUploadResponse
 )
 
 // Re-export configuration options
@@ -504,10 +441,6 @@ type Client struct {
 	Provisioning   services.ProvisioningService
 	RDWS           services.RDWSService
 	Subscriptions  services.SubscriptionService
-	Content        services.ContentService
-	Upload         services.UploadService
-	Presentations  services.PresentationService
-	Schedules      services.ScheduleService
 	DeviceWebPages services.DeviceWebPageService
 }
 
@@ -564,10 +497,6 @@ func New(opts ...Option) (*Client, error) {
 		Provisioning:   services.NewProvisioningService(cfg, httpClient, authManager),
 		RDWS:           services.NewRDWSService(cfg, httpClient, authManager),
 		Subscriptions:  services.NewSubscriptionService(cfg, httpClient, authManager),
-		Content:        services.NewContentService(cfg, httpClient, authManager),
-		Upload:         services.NewUploadService(cfg, httpClient, authManager),
-		Presentations:  services.NewPresentationService(cfg, httpClient, authManager),
-		Schedules:      services.NewScheduleService(cfg, httpClient, authManager),
 		DeviceWebPages: services.NewDeviceWebPageService(cfg, httpClient, authManager),
 	}
 
