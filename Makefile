@@ -64,9 +64,10 @@ BUILDDIR=bin
 .DEFAULT_GOAL := list-targets
 
 list-targets:
-	@$(MAKE) --print-data-base --question 2>/dev/null | \
-		awk '/^[^.#%][^=]*:/ && !/^[^ ]*=/ { split($$1, a, ":"); print a[1] }' | \
-		sort -u | grep -v '^Makefile$$'
+	@grep -E '^[a-zA-Z0-9][a-zA-Z0-9_-]*:' Makefile | \
+		grep -v ':=' | \
+		sed 's/:.*//' | \
+		sort -u
 
 all: test build-examples
 
