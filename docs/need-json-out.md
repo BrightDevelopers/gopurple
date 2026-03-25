@@ -2,9 +2,9 @@
 
 Programs that do not yet support the `--json` flag for JSON-only output.
 
-**Total:** 37 of 72 programs (51%)
+**Total:** 35 of 60 programs (58%)
 
-**Programs with --json:** 35 of 72 programs (49%)
+**Programs with --json:** 25 of 60 programs (42%)
 
 ## Summary by Category
 
@@ -22,11 +22,10 @@ Programs for B-Deploy provisioning and device management:
 - `bdeploy-list-setups` - List B-Deploy setup records
 - `bdeploy-update-setup` - Update B-Deploy setup records
 
-### Main API Programs (13)
+### Main API Programs (11)
 Programs for BSN.cloud main REST API:
 
 - `main-auth-info` - Display authentication information
-- `main-content-download` - Download content files
 - `main-device-change-group` - Change device group assignment
 - `main-device-delete` - Delete devices from network
 - `main-device-errors` - List device errors
@@ -35,7 +34,6 @@ Programs for BSN.cloud main REST API:
 - `main-group-update` - Update group properties
 - `main--devices-list` - List devices on network
 - `main-local-dws` - Manage local DWS settings
-- `main-presentation-delete` - Delete presentations
 - `main-endpoints-test` - Test API endpoint connectivity
 - `main-token-test` - Test and validate tokens
 
@@ -91,14 +89,12 @@ if *jsonFlag {
 
 Examples of programs that properly implement `--json`:
 
-- `main-content-list` - List content with JSON output
 - `main-device-info` - Get device info with JSON output
 - `main-device-status` - Get device status with JSON output
 - `rdws-info` - Get player info with JSON output
 - `rdws-health` - Get player health with JSON output
 - `rdws-diagnostics` - Run diagnostics with JSON output
 - `rdws-network-config` - Get network config with JSON output
-- All presentation management programs
 
 See these programs for implementation examples.
 

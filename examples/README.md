@@ -1,6 +1,6 @@
 # Examples Documentation
 
-This directory contains 75 example programs demonstrating all SDK features.
+This directory contains 61 example programs demonstrating all SDK features.
 
 ## Quick Start
 
@@ -398,221 +398,6 @@ List and query devices with filtering and pagination.
 ./bin/main--devices-list
 ./bin/main--devices-list --serial BS123456789
 ./bin/main--devices-list --filter 'model=XD1033' --sort 'registrationDate'
-```
-
----
-
-## Content Management (4)
-
-### main-content-upload
-Upload content files to BSN.cloud.
-
-**Flags:**
-- `--file <path>`: Path to file to upload (required)
-- `--virtual-path <path>`: Virtual path where file should be placed (e.g., /videos/)
-- `--network <name>` / `-n`: Network name
-- `--json`: Output as JSON
-- `--verbose`: Show detailed information
-- `--debug`: Enable debug logging (shows HTTP requests/responses)
-- `--timeout 30`: Request timeout in seconds
-
-**Output:** Content ID, file name, size, upload date, media type
-
-**Usage:**
-```bash
-./bin/main-content-upload --file video.mp4
-./bin/main-content-upload --file video.mp4 --virtual-path /videos/
-```
-
-### main-content-download
-Download content files from BSN.cloud.
-
-**Flags:**
-- `--id <id>`: Content file ID to download (required)
-- `--output <path>`: Output file path (default: use original filename)
-- `--info-only`: Show file info without downloading
-- `--network <name>` / `-n`: Network name
-- `--verbose`: Show detailed information
-- `--timeout 30`: Request timeout in seconds
-
-**Usage:**
-```bash
-./bin/main-content-download --id 12345
-./bin/main-content-download --id 12345 --output /tmp/video.mp4
-./bin/main-content-download --id 12345 --info-only
-```
-
-### main-content-list
-List content files on BSN.cloud.
-
-**Flags:**
-- `--network <name>` / `-n`: Network name
-- `--page-size 100`: Number of items per page
-- `--filter <expr>`: Filter expression
-- `--sort <expr>`: Sort expression
-- `--all`: Retrieve all content files (paginate through all results)
-- `--json`: Output as JSON
-- `--verbose`: Show detailed information
-- `--timeout 30`: Request timeout in seconds
-
-**Usage:**
-```bash
-./bin/main-content-list
-./bin/main-content-list --filter "mediaType eq 'Video'"
-./bin/main-content-list --all
-```
-
-### main-content-delete
-Delete content files from BSN.cloud.
-
-**Flags:**
-- `--filter <expr>`: Filter expression (required)
-- `--network <name>` / `-n`: Network name
-- `--dry-run`: Preview files without deleting
-- `--yes`: Skip confirmation prompt
-- `--json`: Output as JSON
-- `--timeout 30`: Request timeout in seconds
-
-**Filter Examples:**
-- `"name contains 'old'"`
-- `"mediaType eq 'Video' and fileSize lt 1000000"`
-- `"name startsWith 'temp_'"`
-
-**Usage:**
-```bash
-./bin/main-content-delete --filter "name contains 'old'" --dry-run
-./bin/main-content-delete --filter "name startsWith 'temp_'" --yes
-```
-
----
-
-## Presentation Management (7)
-
-### main-presentation-create
-Create presentations on BSN.cloud.
-
-**Flags:**
-- `--name <name>`: Presentation name (required)
-- `--network <name>` / `-n`: Network name
-- `--json`: Output as JSON
-- `--verbose`: Show detailed information
-- `--timeout 30`: Request timeout in seconds
-
-**Usage:**
-```bash
-./bin/main-presentation-create --name "Retail Display"
-```
-
-### main-presentation-list
-List presentations on BSN.cloud.
-
-**Flags:**
-- `--network <name>` / `-n`: Network name
-- `--page-size 100`: Number of items per page
-- `--filter <expr>`: Filter expression
-- `--sort <expr>`: Sort expression
-- `--all`: Retrieve all presentations
-- `--json`: Output as JSON
-- `--verbose`: Show detailed information
-- `--timeout 30`: Request timeout in seconds
-
-**Usage:**
-```bash
-./bin/main-presentation-list
-./bin/main-presentation-list --filter "name contains 'Retail'"
-```
-
-### main-presentation-info
-Retrieve presentation details by ID.
-
-**Flags:**
-- `--id <id>`: Presentation ID (required)
-- `--network <name>` / `-n`: Network name
-- `--json`: Output as JSON
-- `--verbose`: Show detailed information
-- `--timeout 30`: Request timeout in seconds
-
-**Usage:**
-```bash
-./bin/main-presentation-info --id 12345
-```
-
-### main-presentation-info-by-name
-Retrieve presentation details by name.
-
-**Flags:**
-- `--name <name>`: Presentation name (required)
-- `--network <name>` / `-n`: Network name
-- `--json`: Output as JSON
-- `--verbose`: Show detailed information
-- `--timeout 30`: Request timeout in seconds
-
-**Usage:**
-```bash
-./bin/main-presentation-info-by-name --name "Retail Display"
-```
-
-### main-presentation-update
-Update presentations on BSN.cloud.
-
-**Flags:**
-- `--id <id>`: Presentation ID (required)
-- `--name <name>`: New presentation name
-- `--network <name>` / `-n`: Network name
-- `--json`: Output as JSON
-- `--verbose`: Show detailed information
-- `--timeout 30`: Request timeout in seconds
-
-**Usage:**
-```bash
-./bin/main-presentation-update --id 12345 --name "Updated Display"
-```
-
-### main-presentation-delete
-Delete presentations from BSN.cloud.
-
-**Flags:**
-- `--id <id>`: Presentation ID to delete (required)
-- `--network <name>` / `-n`: Network name
-- `--force`: Skip confirmation
-- `--json`: Output as JSON
-- `--timeout 30`: Request timeout in seconds
-
-**Usage:**
-```bash
-./bin/main-presentation-delete --id 12345
-./bin/main-presentation-delete --id 12345 --force
-```
-
-### main-presentation-delete-by-filter
-Delete presentations using filters.
-
-**Flags:**
-- `--filter <expr>`: Filter expression (required)
-- `--network <name>` / `-n`: Network name
-- `--dry-run`: Preview presentations without deleting
-- `--yes`: Skip confirmation
-- `--json`: Output as JSON
-- `--timeout 30`: Request timeout in seconds
-
-**Usage:**
-```bash
-./bin/main-presentation-delete-by-filter --filter "name contains 'old'" --dry-run
-./bin/main-presentation-delete-by-filter --filter "name startsWith 'test_'" --yes
-```
-
-### main-presentation-count
-Get count of presentations on network.
-
-**Flags:**
-- `--network <name>` / `-n`: Network name
-- `--filter <expr>`: Filter expression
-- `--timeout 30`: Request timeout in seconds
-
-**Usage:**
-```bash
-./bin/main-presentation-count
-./bin/main-presentation-count --filter "name contains 'Retail'"
 ```
 
 ---
@@ -1335,24 +1120,7 @@ Complete workflow for adding new devices:
 ./bin/main-device-status --serial BS123456789
 ```
 
-### 2. Content Upload & Display
-Upload content and create presentations:
-
-```bash
-# Step 1: Upload content
-./bin/main-content-upload --file video.mp4 --virtual-path /videos/
-# Output: Content ID
-
-# Step 2: Create presentation
-./bin/main-presentation-create --name "Retail Display"
-# Output: Presentation ID
-
-# Step 3: Assign to devices via group management
-./bin/main-group-update --id 42 --name "Retail Stores"
-./bin/main-device-change-group --serial BS123456789 --group 42
-```
-
-### 3. Remote Device Management
+### 2. Remote Device Management
 Monitor and manage devices remotely:
 
 ```bash
@@ -1372,7 +1140,7 @@ Monitor and manage devices remotely:
 ./bin/rdws-logs-get --serial BS123456789 --output /tmp/logs/
 ```
 
-### 4. Bulk Operations
+### 3. Bulk Device Operations
 Automate operations across multiple devices:
 
 ```bash
@@ -1384,10 +1152,6 @@ for serial in $(jq -r '.items[].serial' devices.json); do
   echo "Processing $serial"
   ./bin/rdws-health --serial $serial --json
 done
-
-# Delete old content in bulk
-./bin/main-content-delete --filter "name contains 'old'" --dry-run
-./bin/main-content-delete --filter "name contains 'old'" --yes
 ```
 
 ---
