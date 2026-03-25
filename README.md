@@ -52,7 +52,7 @@ As the Go team notes, [Go is excellent for building LLM-powered applications](ht
 
 Go compiles to native machine code, delivering [significantly better performance](https://uvik.net/blog/go-vs-python/) than interpreted Python for CPU-bound operations. For an SDK making hundreds of API calls, parsing large responses, and processing device data, this translates to faster execution and lower resource usage.
 
-A comprehensive Go SDK providing type-safe access to BrightSign Network (BSN.cloud) APIs. Includes both the main REST API and Remote Diagnostic Web Server (RDWS) functionality with 73 working example programs.
+A comprehensive Go SDK providing type-safe access to BrightSign Network (BSN.cloud) APIs. Includes both the main REST API and Remote Diagnostic Web Server (RDWS) functionality with 61 working example programs.
 
 ## What It Does
 
@@ -61,9 +61,7 @@ This SDK abstracts the complexity of BSN.cloud integration:
 - **OAuth2 Authentication** - Automatic token management and refresh
 - **Device Management** - List, monitor, control, and provision BrightSign players
 - **Remote Operations** - Screenshots, reboots, file management, diagnostics via RDWS
-- **Content Management** - Upload, download, organize media files
 - **B-Deploy Provisioning** - Create and manage player setup configurations
-- **Presentation Management** - Create, update, schedule presentations
 - **Network Management** - Handle multiple networks, groups, permissions
 
 **Key Features:**
@@ -74,7 +72,7 @@ This SDK abstracts the complexity of BSN.cloud integration:
 - Pagination support for large datasets
 - Network context management with `BS_NETWORK` environment variable support
 - Concurrent-safe token handling
-- 73 example CLI tools demonstrating all features
+- 61 example CLI tools demonstrating all features
 - Flexible output modes (JSON, stdout, file) for automation and scripting
 
 ## Quick Start
@@ -332,7 +330,7 @@ client, err := gopurple.New(
 
 ## Examples
 
-The SDK includes **73 working example programs** demonstrating all functionality. Each example is a standalone CLI tool you can use immediately.
+The SDK includes **61 working example programs** demonstrating all functionality. Each example is a standalone CLI tool you can use immediately.
 
 See **[examples/README.md](examples/README.md)** for complete documentation of all examples with usage instructions.
 
@@ -343,8 +341,6 @@ See **[examples/README.md](examples/README.md)** for complete documentation of a
 | **Authentication** | 2 | Token management, credential testing |
 | **B-Deploy Provisioning** | 10 | Setup records, device association, configuration |
 | **Device Management** | 9 | List, status, errors, operations, group management |
-| **Content Management** | 4 | Upload, download, list, delete media files |
-| **Presentation Management** | 8 | Create, update, list, delete presentations |
 | **Group Management** | 3 | Group info, updates, deletion |
 | **Subscription Management** | 3 | Device subscriptions, counts, operations |
 | **Remote DWS (RDWS)** | 34 | Remote control, diagnostics, file operations, screenshots |
@@ -360,9 +356,6 @@ make build-examples
 
 # Get device info via RDWS
 ./bin/rdws-info --serial BS123456789
-
-# Upload content
-./bin/main-content-upload --file video.mp4
 
 # Capture screenshot
 ./bin/rdws-snapshot --serial BS123456789 --output screenshot.png
@@ -396,7 +389,6 @@ The comprehensive configuration includes:
 
 - **`bsn-control.json`** - BSN.cloud network control setup example
 - **`lfn-control.json`** - Local File Network (LFN) control setup example
-- **`presentation-example.json`** - Presentation structure example
 
 ### Update Configurations (`examples/bdeploy-update-setup/`)
 
@@ -409,7 +401,7 @@ These show the JSON structure expected by various SDK methods and can be used as
 
 ## API Coverage
 
-**Implementation Status:** 61 of 327 endpoints (18.7% coverage)
+**Implementation Status:** 43 of ~294 endpoints
 
 See **[docs/all-apis.md](docs/all-apis.md)** for a comprehensive list of all BSN.cloud API endpoints with implementation status (`[DONE]` or `[NOT-DONE]`).
 
@@ -438,17 +430,6 @@ See **[docs/all-apis.md](docs/all-apis.md)** for a comprehensive list of all BSN
 - Create, update, delete setup records
 - Associate devices with setups
 - List and query provisioning configurations
-
-✅ **Content Management** (Core Features)
-- Upload files with progress
-- Download content files
-- List with filtering and pagination
-- Bulk delete operations
-
-✅ **Presentation Management** (Core Features)
-- Create, update, delete presentations
-- List presentations with filtering
-- Query by name or ID
 
 ✅ **Group Management** (Core Features)
 - Get group information
@@ -495,9 +476,7 @@ graph TB
 
     Services --> Devices[Device Service]
     Services --> RDWS[RDWS Service]
-    Services --> Content[Content Service]
     Services --> BDeploy[B-Deploy Service]
-    Services --> Pres[Presentation Service]
 
     HTTP --> BSN[BSN Main API<br/>api.bsn.cloud]
     HTTP --> RDWS_API[Remote DWS API<br/>ws.bsn.cloud]
@@ -579,25 +558,6 @@ files, err := client.RDWS.ListFiles(ctx, serial, "/storage/sd/")
 
 // Upload file to device
 err = client.RDWS.UploadFile(ctx, serial, localPath, remotePath)
-```
-
-### Content Management
-
-```go
-// Upload content
-upload, err := client.Content.Upload(ctx, "video.mp4", "/videos/")
-
-// List content with filtering
-content, err := client.Content.List(ctx, &gopurple.ContentListParams{
-    Filter:   "mediaType eq 'Video'",
-    PageSize: 100,
-})
-
-// Download content
-data, err := client.Content.Download(ctx, contentID)
-
-// Delete content by filter
-err = client.Content.DeleteByFilter(ctx, "name contains 'old'")
 ```
 
 ### B-Deploy Provisioning
@@ -682,7 +642,7 @@ gopurple/
 │   ├── http/                       # HTTP client wrapper
 │   ├── services/                   # API service implementations
 │   └── types/                      # Data structures
-├── examples/                        # 73 example CLI programs
+├── examples/                        # 61 example CLI programs
 │   ├── main--devices-list/
 │   ├── rdws-info/
 │   ├── rdws-logs-get/
@@ -697,13 +657,11 @@ gopurple/
 │   └── ... (70 more examples)
 ├── configs/                         # Global configuration examples
 │   ├── bsn-control.json
-│   ├── lfn-control.json
-│   └── presentation-example.json
+│   └── lfn-control.json
 ├── docs/
 │   ├── all-apis.md                 # Complete API endpoint reference
 │   ├── bdeploy-config-reference.md # B-Deploy configuration guide
 │   ├── bdeploy-association.md      # Device association documentation
-│   ├── download-presentation.md    # Presentation download guide
 │   └── need-json-out.md            # Programs needing JSON output
 ├── images/
 │   └── logo.png                    # Project logo
@@ -754,7 +712,6 @@ This is an unofficial SDK for BSN.cloud integration.
 - **Example Programs Guide**: [examples/README.md](examples/README.md)
 - **B-Deploy Configuration Reference**: [docs/bdeploy-config-reference.md](docs/bdeploy-config-reference.md)
 - **B-Deploy Device Association**: [docs/bdeploy-association.md](docs/bdeploy-association.md)
-- **Presentation Download Guide**: [docs/download-presentation.md](docs/download-presentation.md)
 - **Programs Needing JSON Output**: [docs/need-json-out.md](docs/need-json-out.md)
 
 ### Links
