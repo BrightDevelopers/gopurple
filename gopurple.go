@@ -359,6 +359,11 @@ var (
 
 	// WithDeviceSerial sets a default device serial number for single-device operations.
 	WithDeviceSerial = config.WithDeviceSerial
+
+	// WithAccessToken sets a pre-loaded access token for session reuse.
+	// This allows CLI tools to cache the bearer token between invocations,
+	// skipping the OAuth round-trip when the token is still valid.
+	WithAccessToken = config.WithAccessToken
 )
 
 // Re-export device list options
