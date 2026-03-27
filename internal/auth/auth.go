@@ -25,10 +25,18 @@ type AuthManager struct {
 
 // NewAuthManager creates a new authentication manager.
 func NewAuthManager(cfg *config.Config, httpClient *http.HTTPClient) *AuthManager {
-	return &AuthManager{
+	am := &AuthManager{
 		config:     cfg,
 		httpClient: httpClient,
 	}
+
+	// If a pre-loaded access token was provided, use it
+	if cfg.AccessToken != "" && !cfg.ExpiresAt.IsZero() {
+		am.accessToken = cfg.AccessToken
+		am.expiresAt = cfg.ExpiresAt
+	}
+
+	return am
 }
 
 // Authenticate performs OAuth2 client credentials authentication.
