@@ -30,6 +30,10 @@ type Config struct {
 
 	// Optional device settings
 	DeviceSerial string `json:"device_serial,omitempty"`
+
+	// Pre-loaded access token (for session reuse across CLI invocations)
+	AccessToken string `json:"-"`
+	ExpiresAt   time.Time `json:"-"`
 }
 
 // DefaultConfig returns a Config with sensible default values.
@@ -193,6 +197,25 @@ func WithTokenEndpoint(endpoint string) Option {
 func WithDeviceSerial(serial string) Option {
 	return func(c *Config) error {
 		c.DeviceSerial = serial
+		return nil
+	}
+}
+
+// WithAccessToken sets a pre-loaded access token for session reuse.
+//
+// This allows CLI tools to cache the bearer token between invocations,
+// skipping the OAuth round-trip when the token is still valid. The expiresAt
+// parameter should be the absolute time when the token expires.
+//
+// If the token is expired or near expiry, the SDK will automatically
+// re-authenticate using client credentials.
+func WithAccessToken(token string, expiresAt time.Time) Option {
+	return func(c *Config) error {
+		if token == "" {
+			return nil // silently ignore empty token, will fall back to normal auth
+		}
+		c.AccessToken = token
+		c.ExpiresAt = expiresAt
 		return nil
 	}
 }
