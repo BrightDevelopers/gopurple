@@ -33,6 +33,8 @@ func NewProvisioningService(cfg *config.Config, httpClient *http.HTTPClient, aut
 	}
 }
 
+const provisioningTokenURL = "https://api.bsn.cloud/2022/06/REST/Provisioning/Setups/Tokens/"
+
 // GenerateDeviceToken generates a new device registration token for the current network.
 //
 // This token allows BrightSign players to register themselves with BSN.cloud.
@@ -55,13 +57,9 @@ func (s *provisioningService) GenerateDeviceToken(ctx context.Context) (*types.B
 		return nil, err
 	}
 
-	// Build the provisioning token endpoint
-	// Using the 2020/10 API version which is documented and stable
-	tokenURL := "https://api.bsn.cloud/2020/10/REST/Provisioning/Setups/Tokens/"
-
 	// Make the API request - POST to generate token
 	var response types.BSNTokenEntity
-	err = s.httpClient.PostWithAuth(ctx, token, tokenURL, nil, &response)
+	err = s.httpClient.PostWithAuth(ctx, token, provisioningTokenURL, nil, &response)
 	if err != nil {
 		return nil, errors.NewAPIError(0, "token_generation_failed",
 			"Failed to generate device registration token", err.Error())
@@ -101,7 +99,7 @@ func (s *provisioningService) ValidateDeviceToken(ctx context.Context, tokenValu
 	}
 
 	// Build the token validation endpoint
-	validateURL := fmt.Sprintf("https://api.bsn.cloud/2020/10/REST/Provisioning/Setups/Tokens/%s/", tokenValue)
+	validateURL := fmt.Sprintf("%s%s/", provisioningTokenURL, tokenValue)
 
 	// Make the API request
 	var response types.BSNTokenEntity

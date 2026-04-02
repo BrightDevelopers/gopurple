@@ -18,6 +18,7 @@ type BDeployService interface {
 	GetSetupRecords(ctx context.Context, opts ...BDeployListOption) (*types.BDeployRecordList, error)
 	GetSetupRecord(ctx context.Context, setupID string) (*types.BDeploySetupRecord, error)
 	AddSetupRecord(ctx context.Context, record *types.BDeploySetupRecord) (*types.BDeployCreateResponse, error)
+	AddSetupRecordRaw(ctx context.Context, setupJSON string) (*types.BDeployCreateResponse, error)
 	UpdateSetupRecord(ctx context.Context, setupID string, record *types.BDeploySetupRecord) (*types.BDeploySetupRecord, error)
 	DeleteSetupRecord(ctx context.Context, setupID string) (*types.BDeployDeleteResponse, error)
 	GetDeviceBySerial(ctx context.Context, serial string) (*types.BDeployDeviceResponse, error)
@@ -217,6 +218,47 @@ func (s *bDeployService) AddSetupRecord(ctx context.Context, record *types.BDepl
 	}
 
 	// Convert to simplified response format with just the ID
+	response := &types.BDeployCreateResponse{
+		ID:      apiResponse.Result,
+		Success: true,
+	}
+
+	return response, nil
+}
+
+// AddSetupRecordRaw creates a new B-Deploy setup record from raw JSON,
+// bypassing struct marshalling to preserve all fields exactly as provided.
+func (s *bDeployService) AddSetupRecordRaw(ctx context.Context, setupJSON string) (*types.BDeployCreateResponse, error) {
+	if setupJSON == "" {
+		return nil, errors.NewValidationError("setupJSON", "", "setup JSON cannot be empty")
+	}
+
+	// Ensure we have authentication
+	if err := s.authManager.EnsureValid(ctx); err != nil {
+		return nil, err
+	}
+
+	// Get access token
+	token, err := s.authManager.GetToken()
+	if err != nil {
+		return nil, err
+	}
+
+	// Build the B-Deploy setup creation endpoint
+	createURL := "https://provision.bsn.cloud/rest-setup/v3/setup"
+
+	// Post raw JSON string — resty passes strings directly without re-marshalling
+	var apiResponse types.BDeployCreateAPIResponse
+	err = s.httpClient.PostWithAuth(ctx, token, createURL, setupJSON, &apiResponse)
+	if err != nil {
+		return nil, errors.NewAPIError(0, "bdeploy_create_failed", "Failed to create B-Deploy setup record", err.Error())
+	}
+
+	// Check for API-level errors
+	if apiResponse.Error != nil {
+		return nil, errors.NewAPIError(0, "bdeploy_api_error", "B-Deploy API returned an error", fmt.Sprintf("%v", apiResponse.Error))
+	}
+
 	response := &types.BDeployCreateResponse{
 		ID:      apiResponse.Result,
 		Success: true,
