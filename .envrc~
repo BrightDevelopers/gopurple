@@ -1,8 +1,0 @@
-export BS_PACKAGE_NAME="packagename"
-export BS_DEVICE_NAME"devicename"
-export BS_DEVICE_DESCRIPTION="device description"
-export BS_CLIENT_ID=a5223d31-3a87-4e92-8fd8-aba109208c7a
-export BS_SECRET=5F9oC9xMVE9xy6jCwKohr7EQAIfJ7CZz
-export BS_NETWORK=gch-preflight
-#export BS_NETWORK=BrightSign-AI-Demos
-export BS_USERNAME=gherlein@brightsign.biz
