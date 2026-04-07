@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/brightdevelopers/gopurple"
+	"github.com/brightdevelopers/gopurple/examples/internal/setuptemplate"
 )
 
 // SetupConfig represents the JSON configuration file with optional timeout field
@@ -21,16 +22,26 @@ type SetupConfig struct {
 
 func main() {
 	var (
-		helpFlag    = flag.Bool("help", false, "Display usage information")
-		verboseFlag = flag.Bool("verbose", false, "Show detailed information")
-		jsonFlag    = flag.Bool("json", false, "Output as JSON")
-		timeoutFlag = flag.Int("timeout", 30, "Request timeout in seconds (overrides config file)")
+		helpFlag         = flag.Bool("help", false, "Display usage information")
+		verboseFlag      = flag.Bool("verbose", false, "Show detailed information")
+		jsonFlag         = flag.Bool("json", false, "Output as JSON")
+		timeoutFlag      = flag.Int("timeout", 30, "Request timeout in seconds (overrides config file)")
+		templateFlag     = flag.String("template", setuptemplate.DefaultTemplate, "Path to setup template file")
+		packageNameFlag  = flag.String("package-name", "", "Package name for the setup (required in template mode, env: BS_PACKAGE_NAME)")
+		deviceNameFlag   = flag.String("device-name", "", "Device name (optional, env: BS_DEVICE_NAME)")
+		deviceDescFlag   = flag.String("device-description", "", "Device description (optional, env: BS_DEVICE_DESCRIPTION)")
+		networkFlag      = flag.String("network", "", "Network name (env: BS_NETWORK)")
+		usernameFlag     = flag.String("username", "", "BSN.cloud username (env: BS_CLIENT_ID)")
+		groupFlag        = flag.String("group", "Default", "BSN group name")
 	)
 
 	// Custom usage output
 	flag.Usage = func() {
-		fmt.Fprintf(os.Stderr, "Usage: %s [options] <config.json>\n\n", os.Args[0])
-		fmt.Fprintf(os.Stderr, "A tool to create a B-Deploy setup record using a JSON configuration file.\n\n")
+		fmt.Fprintf(os.Stderr, "Usage: %s [options] [config.json]\n\n", os.Args[0])
+		fmt.Fprintf(os.Stderr, "A tool to create a B-Deploy setup record.\n\n")
+		fmt.Fprintf(os.Stderr, "Two modes of operation:\n")
+		fmt.Fprintf(os.Stderr, "  Template mode: Use --package-name (or BS_PACKAGE_NAME) with the setup template\n")
+		fmt.Fprintf(os.Stderr, "  Config mode:   Pass a JSON configuration file as a positional argument\n\n")
 		fmt.Fprintf(os.Stderr, "This program performs the following workflow:\n")
 		fmt.Fprintf(os.Stderr, "  1. Authenticate with BSN.cloud\n")
 		fmt.Fprintf(os.Stderr, "  2. Select and set the network context\n")
@@ -40,15 +51,23 @@ func main() {
 		fmt.Fprintf(os.Stderr, "Options:\n")
 		flag.PrintDefaults()
 		fmt.Fprintf(os.Stderr, "\nEnvironment Variables:\n")
-		fmt.Fprintf(os.Stderr, "  BS_CLIENT_ID        BSN.cloud API client ID (required)\n")
-		fmt.Fprintf(os.Stderr, "  BS_SECRET          BSN.cloud API client secret (required)\n\n")
+		fmt.Fprintf(os.Stderr, "  BS_CLIENT_ID           BSN.cloud API client ID (required)\n")
+		fmt.Fprintf(os.Stderr, "  BS_SECRET              BSN.cloud API client secret (required)\n")
+		fmt.Fprintf(os.Stderr, "  BS_NETWORK             BSN.cloud network name\n")
+		fmt.Fprintf(os.Stderr, "  BS_PACKAGE_NAME        Setup package name\n")
+		fmt.Fprintf(os.Stderr, "  BS_DEVICE_NAME         Device name\n")
+		fmt.Fprintf(os.Stderr, "  BS_DEVICE_DESCRIPTION  Device description\n\n")
 		fmt.Fprintf(os.Stderr, "Examples:\n")
-		fmt.Fprintf(os.Stderr, "  Create setup using default config:\n")
+		fmt.Fprintf(os.Stderr, "  Create setup using template (recommended):\n")
+		fmt.Fprintf(os.Stderr, "    %s --package-name \"retail-v1\" --network \"Production\"\n", os.Args[0])
+		fmt.Fprintf(os.Stderr, "  Create setup using template with all options:\n")
+		fmt.Fprintf(os.Stderr, "    %s --package-name \"retail-v1\" --network \"Production\" --device-name \"Lobby\" --group \"Stores\"\n", os.Args[0])
+		fmt.Fprintf(os.Stderr, "  Create setup using config file (backward compatible):\n")
 		fmt.Fprintf(os.Stderr, "    %s config.json\n", os.Args[0])
 		fmt.Fprintf(os.Stderr, "  Create setup with verbose output:\n")
 		fmt.Fprintf(os.Stderr, "    %s --verbose config.json\n", os.Args[0])
-		fmt.Fprintf(os.Stderr, "  Use custom timeout:\n")
-		fmt.Fprintf(os.Stderr, "    %s --timeout 60 config.json\n", os.Args[0])
+		fmt.Fprintf(os.Stderr, "  Use custom template:\n")
+		fmt.Fprintf(os.Stderr, "    %s --template my-template.json --package-name \"retail-v1\"\n", os.Args[0])
 		fmt.Fprintf(os.Stderr, "  Output as JSON:\n")
 		fmt.Fprintf(os.Stderr, "    %s --json config.json\n", os.Args[0])
 	}
@@ -60,22 +79,58 @@ func main() {
 		return
 	}
 
-	// Validate command line arguments
-	if flag.NArg() != 1 {
-		fmt.Fprintf(os.Stderr, "Error: config file is required\n\n")
+	// Resolve environment variables
+	resolvedPackageName := setuptemplate.ResolveVar(*packageNameFlag, setuptemplate.EnvPackageName)
+	resolvedDeviceName := setuptemplate.ResolveVar(*deviceNameFlag, setuptemplate.EnvDeviceName)
+	resolvedDeviceDesc := setuptemplate.ResolveVar(*deviceDescFlag, setuptemplate.EnvDeviceDescription)
+	resolvedNetwork := setuptemplate.ResolveVar(*networkFlag, "BS_NETWORK")
+	resolvedUsername := setuptemplate.ResolveVar(*usernameFlag, "BS_CLIENT_ID")
+
+	// Determine mode: template mode (no positional arg) or config file mode (positional arg)
+	var setupConfig *SetupConfig
+
+	if flag.NArg() == 1 {
+		// Config file mode (backward compatible)
+		configFile := flag.Arg(0)
+
+		if !*jsonFlag {
+			fmt.Fprintf(os.Stderr, "📋 Loading configuration from: %s\n", configFile)
+		}
+		var err error
+		setupConfig, err = loadConfig(configFile)
+		if err != nil {
+			log.Fatalf("❌ Failed to load config: %v", err)
+		}
+	} else if flag.NArg() == 0 && resolvedPackageName != "" {
+		// Template mode
+		if !*jsonFlag {
+			fmt.Fprintf(os.Stderr, "📋 Rendering setup from template: %s\n", *templateFlag)
+		}
+
+		vars := setuptemplate.TemplateVars{
+			Username:          resolvedUsername,
+			NetworkName:       resolvedNetwork,
+			PackageName:       resolvedPackageName,
+			GroupName:         *groupFlag,
+			DeviceName:        resolvedDeviceName,
+			DeviceDescription: resolvedDeviceDesc,
+		}
+
+		record, err := setuptemplate.Render(*templateFlag, vars)
+		if err != nil {
+			log.Fatalf("❌ Failed to render template: %v", err)
+		}
+
+		// Clear the token entity so it gets auto-generated after authentication
+		if record.BSNDeviceRegistrationTokenEntity != nil && record.BSNDeviceRegistrationTokenEntity.Token == "" {
+			record.BSNDeviceRegistrationTokenEntity = nil
+		}
+
+		setupConfig = &SetupConfig{BDeploySetupRecord: *record}
+	} else {
+		fmt.Fprintf(os.Stderr, "Error: provide a config file or use --package-name (env: BS_PACKAGE_NAME)\n\n")
 		flag.Usage()
 		os.Exit(1)
-	}
-
-	configFile := flag.Arg(0)
-
-	// Load configuration
-	if !*jsonFlag {
-		fmt.Fprintf(os.Stderr, "📋 Loading configuration from: %s\n", configFile)
-	}
-	setupConfig, err := loadConfig(configFile)
-	if err != nil {
-		log.Fatalf("❌ Failed to load config: %v", err)
 	}
 
 	// Validate configuration

@@ -659,16 +659,17 @@ type NetworkContextRequest struct {
 
 // BDeployDeviceRequest represents a request to create or update a B-Deploy device.
 type BDeployDeviceRequest struct {
-	ID          string `json:"_id,omitempty"`      // Device ID (for updates)
-	Username    string `json:"username"`            // BSN.cloud username
-	Serial      string `json:"serial"`              // Device serial number
-	Name        string `json:"name"`                // Device name
-	NetworkName string `json:"NetworkName"`         // Network name
-	Model       string `json:"model,omitempty"`     // Device model
-	Desc        string `json:"desc,omitempty"`      // Device description
-	SetupID     string `json:"setupId,omitempty"`   // Setup ID to associate with
-	URL         string `json:"url,omitempty"`       // Direct presentation URL (alternative to setupId)
-	UserData    string `json:"userdata,omitempty"`  // Additional header information
+	ID          string `json:"_id,omitempty"`        // Device ID (for updates)
+	Username    string `json:"username"`              // BSN.cloud username
+	Serial      string `json:"serial"`                // Device serial number
+	Name        string `json:"name"`                  // Device name
+	NetworkName string `json:"NetworkName"`           // Network name
+	Model       string `json:"model,omitempty"`       // Device model
+	Desc        string `json:"desc,omitempty"`        // Device description
+	SetupID     string `json:"setupId,omitempty"`     // Setup ID to associate with
+	SetupName   string `json:"setupName,omitempty"`   // Setup package name (required for association to be indexed)
+	URL         string `json:"url,omitempty"`         // Direct presentation URL (alternative to setupId)
+	UserData    string `json:"userdata,omitempty"`    // Additional header information
 }
 
 // BDeployDeviceCreateResponse represents the response from creating a device.
