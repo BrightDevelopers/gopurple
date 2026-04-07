@@ -21,7 +21,6 @@ func main() {
 		timeoutFlag   = flag.Int("timeout", 30, "Request timeout in seconds")
 		summaryFlag   = flag.Bool("summary", false, "Show only summary count")
 		debugFlag     = flag.Bool("debug", false, "Show raw API request and response details")
-		detailedFlag  = flag.Bool("detailed", false, "Fetch full details for each device (slower, but shows setup info)")
 		setupIDFlag   = flag.String("setup-id", "", "Filter by setup ID")
 		setupNameFlag = flag.String("setup-name", "", "Filter by setup package name")
 		networkFlag   *string
@@ -44,8 +43,6 @@ func main() {
 		fmt.Fprintf(os.Stderr, "Examples:\n")
 		fmt.Fprintf(os.Stderr, "  List all devices:\n")
 		fmt.Fprintf(os.Stderr, "    %s --network \"My Network\"\n", os.Args[0])
-		fmt.Fprintf(os.Stderr, "  List devices with setup information (slower):\n")
-		fmt.Fprintf(os.Stderr, "    %s --network \"My Network\" --detailed\n", os.Args[0])
 		fmt.Fprintf(os.Stderr, "  List devices using a specific setup ID:\n")
 		fmt.Fprintf(os.Stderr, "    %s --setup-id \"658f1dbef1d46c829f60a14f\"\n", os.Args[0])
 		fmt.Fprintf(os.Stderr, "  List devices using a specific setup name:\n")
@@ -185,60 +182,53 @@ func main() {
 		fmt.Fprintf(os.Stderr, "\n   Full JSON:\n   %s\n\n", string(initialJSON))
 	}
 
-	// Fetch detailed information for each device if requested
-	if *detailedFlag {
-		if !*jsonFlag {
-			fmt.Fprintf(os.Stderr, "🔍 Fetching detailed information for %d devices...\n", len(response.Players))
+	// Enrich devices with setup info.
+	// The B-Deploy device API does not return setupId in list or detail responses.
+	// It does return setupName. To get setupId, we resolve setupName -> setupId
+	// by fetching setup records and building a lookup map.
+
+	// Step 1: Enrich setupName from individual device lookups (the list endpoint
+	// sometimes omits it, but the detail endpoint includes it).
+	for i := range response.Players {
+		if response.Players[i].SetupName != "" {
+			continue
+		}
+		detailResp, err := client.BDeploy.GetDeviceBySerial(ctx, response.Players[i].Serial)
+		if err != nil {
+			continue
+		}
+		if len(detailResp.Result.Players) > 0 && detailResp.Result.Players[0].SetupName != "" {
+			response.Players[i].SetupName = detailResp.Result.Players[0].SetupName
+		}
+	}
+
+	// Step 2: Collect unique setupNames that need ID resolution.
+	setupNames := make(map[string]bool)
+	for _, dev := range response.Players {
+		if dev.SetupName != "" && dev.SetupID == "" {
+			setupNames[dev.SetupName] = true
+		}
+	}
+
+	// Step 3: Fetch setup records and build name -> ID map.
+	if len(setupNames) > 0 {
+		setupNameToID := make(map[string]string)
+		records, err := client.BDeploy.GetSetupRecords(ctx, gopurple.WithNetworkName(networkName))
+		if err == nil {
+			for _, rec := range records.Items {
+				if setupNames[rec.PackageName] {
+					setupNameToID[rec.PackageName] = rec.ID
+				}
+			}
 		}
 
+		// Step 4: Fill in setupId on each device.
 		for i := range response.Players {
-			if !*jsonFlag && i > 0 && i%10 == 0 {
-				fmt.Fprintf(os.Stderr, "   Progress: %d/%d devices...\n", i, len(response.Players))
-			}
-
-			// Fetch individual device details by serial number
-			detailResp, err := client.BDeploy.GetDeviceBySerial(ctx, response.Players[i].Serial)
-			if err != nil {
-				if !*jsonFlag {
-					fmt.Fprintf(os.Stderr, "⚠️  Failed to get details for device %s: %v\n", response.Players[i].Serial, err)
-				}
-				continue
-			}
-
-			// Update the device with detailed information if available
-			if len(detailResp.Result.Players) > 0 {
-				detailedDevice := detailResp.Result.Players[0]
-
-				// Debug: Show what we got from the API
-				if *debugFlag && !*jsonFlag && i == 0 {
-					fmt.Fprintf(os.Stderr, "\n🔍 DEBUG: First detailed device response:\n")
-					fmt.Fprintf(os.Stderr, "   Serial: %s\n", detailedDevice.Serial)
-					fmt.Fprintf(os.Stderr, "   SetupName: '%s'\n", detailedDevice.SetupName)
-					fmt.Fprintf(os.Stderr, "   SetupID: '%s'\n", detailedDevice.SetupID)
-					fmt.Fprintf(os.Stderr, "   URL: '%s'\n", detailedDevice.URL)
-					fmt.Fprintf(os.Stderr, "   Name: '%s'\n", detailedDevice.Name)
-					detailJSON, _ := json.MarshalIndent(detailedDevice, "   ", "  ")
-					fmt.Fprintf(os.Stderr, "\n   Full JSON:\n   %s\n\n", string(detailJSON))
-				}
-
-				// Copy over the setup information, but only if not empty
-				// Note: GetDeviceBySerial may return setupName but not setupId/url
-				// GetAllDevices may return setupId/url but not setupName
-				// So we only update fields that have values to avoid overwriting
-				if detailedDevice.SetupName != "" {
-					response.Players[i].SetupName = detailedDevice.SetupName
-				}
-				if detailedDevice.SetupID != "" {
-					response.Players[i].SetupID = detailedDevice.SetupID
-				}
-				if detailedDevice.URL != "" {
-					response.Players[i].URL = detailedDevice.URL
+			if response.Players[i].SetupID == "" && response.Players[i].SetupName != "" {
+				if id, ok := setupNameToID[response.Players[i].SetupName]; ok {
+					response.Players[i].SetupID = id
 				}
 			}
-		}
-
-		if !*jsonFlag {
-			fmt.Fprintf(os.Stderr, "✅ Detailed information fetched for all devices\n")
 		}
 	}
 
