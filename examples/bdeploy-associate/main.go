@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/brightdevelopers/gopurple"
+	"github.com/brightdevelopers/gopurple/examples/internal/setuptemplate"
 )
 
 func main() {
@@ -18,17 +19,22 @@ func main() {
 		jsonFlag       = flag.Bool("json", false, "Output as JSON")
 		serialFlag     = flag.String("serial", "", "Device serial number (required)")
 		setupIDFlag    = flag.String("setup-id", "", "Setup ID to associate with device (required unless --dissociate or --setup-name)")
-		setupNameFlag  = flag.String("setup-name", "", "Setup package name to associate with device (alternative to --setup-id)")
+		setupNameFlag  = flag.String("setup-name", "", "Setup package name to associate with device (alternative to --setup-id, env: BS_PACKAGE_NAME)")
 		dissociateFlag = flag.Bool("dissociate", false, "Remove setup association (sets setupId to null)")
 		networkFlag    = flag.String("network", "", "Network name (defaults to BS_NETWORK env var)")
 		usernameFlag   = flag.String("username", "", "BSN.cloud username (defaults to BS_CLIENT_ID env var)")
-		descFlag       = flag.String("description", "", "Device description (optional)")
-		nameFlag       = flag.String("name", "", "Device name (optional)")
+		descFlag       = flag.String("description", "", "Device description (optional, env: BS_DEVICE_DESCRIPTION)")
+		nameFlag       = flag.String("name", "", "Device name (optional, env: BS_DEVICE_NAME)")
 		createFlag     = flag.Bool("create", false, "Create device if it doesn't exist")
 		verboseFlag    = flag.Bool("verbose", false, "Show detailed information")
 		debugFlag      = flag.Bool("debug", false, "Show raw API responses for debugging")
 		timeoutFlag    = flag.Int("timeout", 30, "Request timeout in seconds")
 	)
+
+	// Register flag aliases
+	flag.StringVar(setupNameFlag, "package-name", "", "Alias for --setup-name (env: BS_PACKAGE_NAME)")
+	flag.StringVar(nameFlag, "device-name", "", "Alias for --name (env: BS_DEVICE_NAME)")
+	flag.StringVar(descFlag, "device-description", "", "Alias for --description (env: BS_DEVICE_DESCRIPTION)")
 
 	// Custom usage output
 	flag.Usage = func() {
@@ -63,6 +69,17 @@ func main() {
 	if *helpFlag {
 		flag.Usage()
 		return
+	}
+
+	// Resolve flags from environment variables
+	if *setupNameFlag == "" {
+		*setupNameFlag = setuptemplate.ResolveVar(*setupNameFlag, setuptemplate.EnvPackageName)
+	}
+	if *nameFlag == "" {
+		*nameFlag = setuptemplate.ResolveVar(*nameFlag, setuptemplate.EnvDeviceName)
+	}
+	if *descFlag == "" {
+		*descFlag = setuptemplate.ResolveVar(*descFlag, setuptemplate.EnvDeviceDescription)
 	}
 
 	// Validate required parameters
@@ -164,8 +181,11 @@ func main() {
 		fmt.Fprintf(os.Stderr, "✅ Network context set!\n")
 	}
 
-	// Resolve setup ID if setup-name is provided
+	// Resolve setup ID and setup name (package name).
+	// The B-Deploy device API needs both setupId and setupName to properly
+	// index the association for later queries.
 	var setupID string
+	var setupName string
 	if *setupNameFlag != "" {
 		if !*jsonFlag {
 			fmt.Fprintf(os.Stderr, "🔍 Looking up setup with package name: %s\n", *setupNameFlag)
@@ -202,11 +222,20 @@ func main() {
 
 		// Found exactly one exact match
 		setupID = exactMatches[0].ID
+		setupName = exactMatches[0].PackageName
 		if !*jsonFlag {
-			fmt.Fprintf(os.Stderr, "✅ Found setup: ID=%s, Package=%s\n", setupID, exactMatches[0].PackageName)
+			fmt.Fprintf(os.Stderr, "✅ Found setup: ID=%s, Package=%s\n", setupID, setupName)
 		}
 	} else {
 		setupID = *setupIDFlag
+
+		// Look up the package name for this setup ID so we can send setupName
+		if !*dissociateFlag && setupID != "" {
+			record, err := client.BDeploy.GetSetupRecord(ctx, setupID)
+			if err == nil {
+				setupName = record.BDeploy.PackageName
+			}
+		}
 	}
 
 	// Check if device exists - try serial lookup first
@@ -312,6 +341,8 @@ func main() {
 			Name:        deviceName,
 			NetworkName: networkName,
 			Desc:        description,
+			SetupID:     setupID,
+			SetupName:   setupName,
 		}
 
 		deviceID, err = client.BDeploy.CreateDevice(ctx, createRequest)
@@ -323,49 +354,80 @@ func main() {
 		}
 	}
 
-	// Handle dissociate or associate
-	if *dissociateFlag {
+	// If we just created the device with setupID already set, skip the update
+	// unless we're dissociating. The B-Deploy API may not persist setupId
+	// from PUT updates — only from the initial POST creation.
+	var updatedDevice *gopurple.BDeployDevice
+	if !deviceExists && !*dissociateFlag && setupID != "" {
+		// Device was just created with setupID — construct the response
+		deviceName := *nameFlag
+		if deviceName == "" {
+			deviceName = *serialFlag
+		}
+		description := *descFlag
+		if description == "" {
+			description = fmt.Sprintf("Device %s", *serialFlag)
+		}
+		updatedDevice = &gopurple.BDeployDevice{
+			ID:          deviceID,
+			Serial:      *serialFlag,
+			Name:        deviceName,
+			NetworkName: networkName,
+			Desc:        description,
+			SetupID:     setupID,
+			Username:    username,
+		}
 		if !*jsonFlag {
-			fmt.Fprintf(os.Stderr, "🔓 Removing setup association from device...\n")
+			fmt.Fprintf(os.Stderr, "🔗 Device created with setup ID: %s\n", setupID)
 		}
 	} else {
-		if !*jsonFlag {
-			fmt.Fprintf(os.Stderr, "🔗 Associating device with setup ID: %s\n", setupID)
-		}
-	}
-
-	deviceName := *nameFlag
-	if deviceName == "" {
-		deviceName = *serialFlag
-	}
-
-	description := *descFlag
-	if description == "" {
-		description = fmt.Sprintf("Device %s", *serialFlag)
-	}
-
-	// Prepare update request
-	updateRequest := &gopurple.BDeployDeviceRequest{
-		Username:    username,
-		Serial:      *serialFlag,
-		Name:        deviceName,
-		NetworkName: networkName,
-		Desc:        description,
-	}
-
-	// Set setupID based on mode
-	if *dissociateFlag {
-		updateRequest.SetupID = "" // Empty string will be sent as null by the SDK
-	} else {
-		updateRequest.SetupID = setupID // This creates the association
-	}
-
-	updatedDevice, err := client.BDeploy.UpdateDevice(ctx, deviceID, updateRequest)
-	if err != nil {
+		// Existing device — update it
 		if *dissociateFlag {
-			log.Fatalf("❌ Failed to remove setup association: %v", err)
+			if !*jsonFlag {
+				fmt.Fprintf(os.Stderr, "🔓 Removing setup association from device...\n")
+			}
 		} else {
-			log.Fatalf("❌ Failed to associate device with setup: %v", err)
+			if !*jsonFlag {
+				fmt.Fprintf(os.Stderr, "🔗 Associating device with setup ID: %s\n", setupID)
+			}
+		}
+
+		deviceName := *nameFlag
+		if deviceName == "" {
+			deviceName = *serialFlag
+		}
+
+		description := *descFlag
+		if description == "" {
+			description = fmt.Sprintf("Device %s", *serialFlag)
+		}
+
+		// Prepare update request
+		updateRequest := &gopurple.BDeployDeviceRequest{
+			Username:    username,
+			Serial:      *serialFlag,
+			Name:        deviceName,
+			NetworkName: networkName,
+			Desc:        description,
+		}
+
+		// Set setupID and setupName based on mode
+		if *dissociateFlag {
+			updateRequest.SetupID = ""
+			updateRequest.SetupName = ""
+		} else {
+			updateRequest.SetupID = setupID
+			updateRequest.SetupName = setupName
+		}
+
+		var err error
+		updatedDevice, err = client.BDeploy.UpdateDevice(ctx, deviceID, updateRequest)
+		if err != nil {
+			if *dissociateFlag {
+				log.Fatalf("❌ Failed to remove setup association: %v", err)
+			} else {
+				log.Fatalf("❌ Failed to associate device with setup: %v", err)
+			}
 		}
 	}
 

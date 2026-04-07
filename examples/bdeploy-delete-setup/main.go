@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/brightdevelopers/gopurple"
+	"github.com/brightdevelopers/gopurple/examples/internal/setuptemplate"
 )
 
 func main() {
@@ -21,7 +22,7 @@ func main() {
 		verboseFlag   = flag.Bool("verbose", false, "Show detailed information")
 		timeoutFlag   = flag.Int("timeout", 30, "Request timeout in seconds")
 		setupIDFlag   = flag.String("setup-id", "", "ID of the setup record to delete")
-		setupNameFlag = flag.String("setup-name", "", "Package name of the setup record to delete")
+		setupNameFlag = flag.String("setup-name", "", "Package name of the setup record to delete (env: BS_PACKAGE_NAME)")
 		forceFlag     = flag.Bool("force", false, "Skip confirmation prompt")
 		networkFlag   *string
 	)
@@ -29,6 +30,7 @@ func main() {
 	// Set up network flags to point to the same variable
 	networkFlag = flag.String("network", "", "Network name to use (overrides BS_NETWORK)")
 	flag.StringVar(networkFlag, "n", "", "Network name to use (overrides BS_NETWORK) [alias for --network]")
+	flag.StringVar(setupNameFlag, "package-name", "", "Alias for --setup-name (env: BS_PACKAGE_NAME)")
 
 	// Custom usage output
 	flag.Usage = func() {
@@ -57,6 +59,11 @@ func main() {
 	if *helpFlag {
 		flag.Usage()
 		return
+	}
+
+	// Resolve setup name from flag or environment variable
+	if *setupNameFlag == "" {
+		*setupNameFlag = setuptemplate.ResolveVar(*setupNameFlag, setuptemplate.EnvPackageName)
 	}
 
 	// Validate required parameter - need either setup-id or setup-name
