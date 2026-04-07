@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/brightdevelopers/gopurple"
+	"github.com/brightdevelopers/gopurple/examples/internal/setuptemplate"
 )
 
 func main() {
@@ -17,7 +18,7 @@ func main() {
 		helpFlag      = flag.Bool("help", false, "Display usage information")
 		timeoutFlag   = flag.Int("timeout", 30, "Request timeout in seconds")
 		setupIDFlag   = flag.String("setup-id", "", "ID of the setup record to retrieve")
-		setupNameFlag = flag.String("setup-name", "", "Package name of the setup record to retrieve")
+		setupNameFlag = flag.String("setup-name", "", "Package name of the setup record to retrieve (env: BS_PACKAGE_NAME)")
 		jsonFlag      = flag.Bool("json", false, "Output raw JSON (default shows formatted structure)")
 		networkFlag   *string
 	)
@@ -25,6 +26,7 @@ func main() {
 	// Set up network flags to point to the same variable
 	networkFlag = flag.String("network", "", "Network name to use (overrides BS_NETWORK)")
 	flag.StringVar(networkFlag, "n", "", "Network name to use (overrides BS_NETWORK) [alias for --network]")
+	flag.StringVar(setupNameFlag, "package-name", "", "Alias for --setup-name (env: BS_PACKAGE_NAME)")
 
 	// Custom usage output
 	flag.Usage = func() {
@@ -54,9 +56,12 @@ func main() {
 		return
 	}
 
+	// Resolve setup name from flag or environment variable
+	resolvedSetupName := setuptemplate.ResolveVar(*setupNameFlag, setuptemplate.EnvPackageName)
+
 	// Validate required parameters - exactly one of setup-id or setup-name must be provided
 	setupID := *setupIDFlag
-	setupName := *setupNameFlag
+	setupName := resolvedSetupName
 
 	if setupID == "" && setupName == "" {
 		fmt.Fprintf(os.Stderr, "Error: either --setup-id or --setup-name is required\n\n")

@@ -13,6 +13,7 @@ import (
 	"text/tabwriter"
 
 	"github.com/brightdevelopers/gopurple"
+	"github.com/brightdevelopers/gopurple/examples/internal/setuptemplate"
 )
 
 func main() {
@@ -23,8 +24,10 @@ func main() {
 		debugFlag    = flag.Bool("debug", false, "Show raw API request and response details")
 		networkFlag  = flag.String("network", "", "Network name (uses BS_NETWORK env var if not provided)")
 		usernameFlag = flag.String("username", "", "Username to filter setups (optional)")
-		packageFlag  = flag.String("package", "", "Package name to filter setups (optional)")
+		packageFlag = flag.String("package-name", "", "Package name to filter setups (optional, env: BS_PACKAGE_NAME)")
 	)
+
+	flag.StringVar(packageFlag, "package", "", "Alias for --package-name")
 
 	// Custom usage output
 	flag.Usage = func() {
@@ -60,6 +63,9 @@ func main() {
 		flag.Usage()
 		return
 	}
+
+	// Resolve package name from flag or environment variable
+	resolvedPackageName := setuptemplate.ResolveVar(*packageFlag, setuptemplate.EnvPackageName)
 
 	// Create client with optional debug mode
 	var clientOpts []gopurple.Option
@@ -120,10 +126,10 @@ func main() {
 		}
 	}
 
-	if *packageFlag != "" {
-		opts = append(opts, gopurple.WithPackageName(*packageFlag))
+	if resolvedPackageName != "" {
+		opts = append(opts, gopurple.WithPackageName(resolvedPackageName))
 		if *verboseFlag && !*jsonFlag {
-			fmt.Fprintf(os.Stderr, "🔍 Filtering by package name: %s\n", *packageFlag)
+			fmt.Fprintf(os.Stderr, "🔍 Filtering by package name: %s\n", resolvedPackageName)
 		}
 	}
 
@@ -135,8 +141,8 @@ func main() {
 		if *usernameFlag != "" {
 			fmt.Fprintf(os.Stderr, "   username: %s\n", *usernameFlag)
 		}
-		if *packageFlag != "" {
-			fmt.Fprintf(os.Stderr, "   packageName: %s\n", *packageFlag)
+		if resolvedPackageName != "" {
+			fmt.Fprintf(os.Stderr, "   packageName: %s\n", resolvedPackageName)
 		}
 		fmt.Fprintf(os.Stderr, "\n")
 	}
@@ -163,7 +169,7 @@ func main() {
 	// Step 5: Display results
 	if records.TotalCount == 0 {
 		fmt.Fprintf(os.Stderr, "\n📭 No setup records found for the specified network\n")
-		if *usernameFlag != "" || *packageFlag != "" {
+		if *usernameFlag != "" || resolvedPackageName != "" {
 			fmt.Fprintf(os.Stderr, "   Try removing filters to see all setups\n")
 		}
 		return

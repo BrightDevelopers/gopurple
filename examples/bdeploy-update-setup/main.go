@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/brightdevelopers/gopurple"
+	"github.com/brightdevelopers/gopurple/examples/internal/setuptemplate"
 	"github.com/brightdevelopers/gopurple/internal/types"
 )
 
@@ -48,8 +49,9 @@ func main() {
 		jsonFlag      = flag.Bool("json", false, "Output as JSON")
 		verboseFlag   = flag.Bool("verbose", false, "Show detailed information")
 		setupIDFlag   = flag.String("setup-id", "", "Setup ID to update")
-		setupNameFlag = flag.String("setup-name", "", "Setup name to update (alternative to --setup-id)")
-		timeoutFlag   = flag.Int("timeout", 30, "Request timeout in seconds (overrides config file)")
+		setupNameFlag   = flag.String("setup-name", "", "Setup name to update (alternative to --setup-id)")
+		packageNameFlag = flag.String("package-name", "", "Package name to set on the setup (optional, env: BS_PACKAGE_NAME)")
+		timeoutFlag     = flag.Int("timeout", 30, "Request timeout in seconds (overrides config file)")
 	)
 
 	// Custom usage output
@@ -89,6 +91,9 @@ func main() {
 		return
 	}
 
+	// Resolve package name from flag or environment variable
+	resolvedPackageName := setuptemplate.ResolveVar(*packageNameFlag, setuptemplate.EnvPackageName)
+
 	// Validate that either setup-id or setup-name is provided
 	if *setupIDFlag == "" && *setupNameFlag == "" {
 		fmt.Fprintf(os.Stderr, "Error: either --setup-id or --setup-name is required\n\n")
@@ -119,6 +124,11 @@ func main() {
 	config, err := loadConfig(configFile)
 	if err != nil {
 		log.Fatalf("❌ Failed to load config: %v", err)
+	}
+
+	// Override package name from flag/env if provided
+	if resolvedPackageName != "" {
+		config.PackageName = resolvedPackageName
 	}
 
 	if *verboseFlag && !*jsonFlag {
