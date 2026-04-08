@@ -224,67 +224,81 @@ func displayPlayerInfo(info *gopurple.RDWSInfo, verbose bool) {
 	fmt.Fprintf(os.Stderr, "Family:          %s\n", info.Family)
 	fmt.Fprintf(os.Stderr, "Firmware:        %s\n", info.FWVersion)
 	fmt.Fprintf(os.Stderr, "Boot Version:    %s\n", info.BootVersion)
+	fmt.Fprintf(os.Stderr, "Is Player:       %v\n", info.IsPlayer)
 	fmt.Fprintf(os.Stderr, "Uptime:          %s (%d seconds)\n", info.UpTime, info.UpTimeSeconds)
 	fmt.Fprintf(os.Stderr, "Connection Type: %s\n", info.ConnectionType)
 	fmt.Fprintf(os.Stderr, "BSN CE:          %v\n", info.BSNCE)
 
 	// Network interfaces
-	if len(info.Ethernet) > 0 {
-		fmt.Fprintf(os.Stderr, "\n=== Ethernet Interfaces ===\n")
-		for _, iface := range info.Ethernet {
-			fmt.Fprintf(os.Stderr, "\nInterface: %s (%s)\n", iface.InterfaceName, iface.InterfaceType)
-			if len(iface.IPv4) > 0 {
-				fmt.Fprintf(os.Stderr, "  IPv4:\n")
-				for _, ip := range iface.IPv4 {
-					fmt.Fprintf(os.Stderr, "    Address: %s\n", ip.Address)
-					fmt.Fprintf(os.Stderr, "    CIDR:    %s\n", ip.CIDR)
-					fmt.Fprintf(os.Stderr, "    MAC:     %s\n", ip.MAC)
-				}
-			}
-			if verbose && len(iface.IPv6) > 0 {
-				fmt.Fprintf(os.Stderr, "  IPv6:\n")
-				for _, ip := range iface.IPv6 {
-					fmt.Fprintf(os.Stderr, "    Address: %s\n", ip.Address)
-					fmt.Fprintf(os.Stderr, "    CIDR:    %s\n", ip.CIDR)
-				}
-			}
-		}
-	}
+	displayNetworkInterfaces("Ethernet", info.Ethernet)
+	displayNetworkInterfaces("Wireless", info.Wireless)
+	displayNetworkInterfaces("Other Interfaces", info.Interfaces)
 
-	if len(info.Wireless) > 0 {
-		fmt.Fprintf(os.Stderr, "\n=== Wireless Interfaces ===\n")
-		for _, iface := range info.Wireless {
-			fmt.Fprintf(os.Stderr, "\nInterface: %s (%s)\n", iface.InterfaceName, iface.InterfaceType)
-			if len(iface.IPv4) > 0 {
-				fmt.Fprintf(os.Stderr, "  IPv4:\n")
-				for _, ip := range iface.IPv4 {
-					fmt.Fprintf(os.Stderr, "    Address: %s\n", ip.Address)
-					fmt.Fprintf(os.Stderr, "    CIDR:    %s\n", ip.CIDR)
-					fmt.Fprintf(os.Stderr, "    MAC:     %s\n", ip.MAC)
-				}
-			}
-		}
-	}
+	// Sub-result sections
+	displaySubResult("Power", info.Power)
+	displaySubResult("POE", info.POE)
+	displaySubResult("Extensions", info.Extensions)
+	displaySubResult("Blessings", info.Blessings)
+	displaySubResult("Networking", info.Networking)
+	displaySubResult("BVN Pipelines", info.BVNPipelines)
+	displaySubResult("BVN Components", info.BVNComponents)
 
-	// Hardware features (verbose only)
-	if verbose && len(info.HardwareFeatures) > 0 {
-		fmt.Fprintf(os.Stderr, "\n=== Hardware Features ===\n")
-		for feature, value := range info.HardwareFeatures {
-			if enabled, ok := value.(bool); ok && enabled {
-				fmt.Fprintf(os.Stderr, "  - %s\n", feature)
-			}
-		}
-	}
-
-	// API features (verbose only)
-	if verbose && len(info.APIFeatures) > 0 {
-		fmt.Fprintf(os.Stderr, "\n=== API Features ===\n")
-		for feature, value := range info.APIFeatures {
-			if enabled, ok := value.(bool); ok && enabled {
-				fmt.Fprintf(os.Stderr, "  - %s\n", feature)
-			}
-		}
-	}
+	// Feature maps
+	displayFeatureMap("Hardware Features", info.HardwareFeatures)
+	displayFeatureMap("API Features", info.APIFeatures)
+	displayFeatureMap("Active Features", info.ActiveFeatures)
 
 	fmt.Fprintf(os.Stderr, "\n")
+}
+
+func displayNetworkInterfaces(title string, interfaces []gopurple.RDWSNetworkInterface) {
+	if len(interfaces) == 0 {
+		return
+	}
+	fmt.Fprintf(os.Stderr, "\n=== %s ===\n", title)
+	for _, iface := range interfaces {
+		fmt.Fprintf(os.Stderr, "\nInterface: %s (%s)\n", iface.InterfaceName, iface.InterfaceType)
+		if len(iface.IPv4) > 0 {
+			fmt.Fprintf(os.Stderr, "  IPv4:\n")
+			for _, ip := range iface.IPv4 {
+				fmt.Fprintf(os.Stderr, "    Address: %s\n", ip.Address)
+				fmt.Fprintf(os.Stderr, "    CIDR:    %s\n", ip.CIDR)
+				fmt.Fprintf(os.Stderr, "    Netmask: %s\n", ip.Netmask)
+				fmt.Fprintf(os.Stderr, "    MAC:     %s\n", ip.MAC)
+			}
+		}
+		if len(iface.IPv6) > 0 {
+			fmt.Fprintf(os.Stderr, "  IPv6:\n")
+			for _, ip := range iface.IPv6 {
+				fmt.Fprintf(os.Stderr, "    Address:  %s\n", ip.Address)
+				fmt.Fprintf(os.Stderr, "    CIDR:     %s\n", ip.CIDR)
+				if ip.ScopeID != 0 {
+					fmt.Fprintf(os.Stderr, "    Scope ID: %d\n", ip.ScopeID)
+				}
+			}
+		}
+	}
+}
+
+func displaySubResult(title string, sub *gopurple.RDWSInfoSubResult) {
+	if sub == nil || sub.Result == nil {
+		return
+	}
+	fmt.Fprintf(os.Stderr, "\n=== %s ===\n", title)
+	jsonData, err := json.MarshalIndent(sub.Result, "  ", "  ")
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "  %v\n", sub.Result)
+		return
+	}
+	fmt.Fprintf(os.Stderr, "  %s\n", string(jsonData))
+}
+
+func displayFeatureMap(title string, features map[string]interface{}) {
+	if len(features) == 0 {
+		return
+	}
+	fmt.Fprintf(os.Stderr, "\n=== %s ===\n", title)
+	for feature, value := range features {
+		fmt.Fprintf(os.Stderr, "  %-30s %v\n", feature+":", value)
+	}
 }

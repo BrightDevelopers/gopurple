@@ -29,6 +29,7 @@ type TemplateVars struct {
 	Username          string
 	NetworkName       string
 	PackageName       string
+	SetupType         string
 	RegistrationToken string
 	TokenValidFrom    string
 	TokenValidTo      string
@@ -70,4 +71,31 @@ func Render(templatePath string, vars TemplateVars) (*gopurple.BDeploySetupRecor
 	}
 
 	return &record, nil
+}
+
+// RenderRaw reads the template file, executes it with the provided variables,
+// and returns the rendered JSON string without unmarshalling into a struct.
+// This preserves all fields exactly as they appear in the template.
+func RenderRaw(templatePath string, vars TemplateVars) (string, error) {
+	data, err := os.ReadFile(templatePath)
+	if err != nil {
+		return "", fmt.Errorf("failed to read template file: %w", err)
+	}
+
+	tmpl, err := template.New("setup").Parse(string(data))
+	if err != nil {
+		return "", fmt.Errorf("failed to parse template: %w", err)
+	}
+
+	var buf bytes.Buffer
+	if err := tmpl.Execute(&buf, vars); err != nil {
+		return "", fmt.Errorf("failed to execute template: %w", err)
+	}
+
+	// Validate that the result is valid JSON
+	if !json.Valid(buf.Bytes()) {
+		return "", fmt.Errorf("rendered template is not valid JSON")
+	}
+
+	return buf.String(), nil
 }

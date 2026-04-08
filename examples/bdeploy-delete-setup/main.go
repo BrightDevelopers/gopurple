@@ -24,6 +24,7 @@ func main() {
 		setupIDFlag   = flag.String("setup-id", "", "ID of the setup record to delete")
 		setupNameFlag = flag.String("setup-name", "", "Package name of the setup record to delete (env: BS_PACKAGE_NAME)")
 		forceFlag     = flag.Bool("force", false, "Skip confirmation prompt")
+		allFlag       = flag.Bool("all", false, "Delete all setup records in the network")
 		networkFlag   *string
 	)
 
@@ -31,6 +32,7 @@ func main() {
 	networkFlag = flag.String("network", "", "Network name to use (overrides BS_NETWORK)")
 	flag.StringVar(networkFlag, "n", "", "Network name to use (overrides BS_NETWORK) [alias for --network]")
 	flag.StringVar(setupNameFlag, "package-name", "", "Alias for --setup-name (env: BS_PACKAGE_NAME)")
+	flag.BoolVar(allFlag, "a", false, "Delete all setup records in the network [alias for --all]")
 
 	// Custom usage output
 	flag.Usage = func() {
@@ -50,6 +52,10 @@ func main() {
 		fmt.Fprintf(os.Stderr, "    %s --setup-name \"retail-display-v1\" --network \"My Network\"\n", os.Args[0])
 		fmt.Fprintf(os.Stderr, "  Force delete without confirmation:\n")
 		fmt.Fprintf(os.Stderr, "    %s --setup-id \"658f1dbef1d46c829f60a14f\" --force\n", os.Args[0])
+		fmt.Fprintf(os.Stderr, "  Delete all setups in a network:\n")
+		fmt.Fprintf(os.Stderr, "    %s --all --network \"My Network\"\n", os.Args[0])
+		fmt.Fprintf(os.Stderr, "  Delete all setups without confirmation:\n")
+		fmt.Fprintf(os.Stderr, "    %s -a --force --network \"My Network\"\n", os.Args[0])
 		fmt.Fprintf(os.Stderr, "  Output as JSON:\n")
 		fmt.Fprintf(os.Stderr, "    %s --setup-id \"658f1dbef1d46c829f60a14f\" --json --force\n", os.Args[0])
 	}
@@ -66,18 +72,28 @@ func main() {
 		*setupNameFlag = setuptemplate.ResolveVar(*setupNameFlag, setuptemplate.EnvPackageName)
 	}
 
-	// Validate required parameter - need either setup-id or setup-name
-	if *setupIDFlag == "" && *setupNameFlag == "" {
-		fmt.Fprintf(os.Stderr, "Error: Either --setup-id or --setup-name is required\n\n")
-		flag.Usage()
-		os.Exit(1)
-	}
+	// Validate required parameters
+	if *allFlag {
+		// --all cannot be combined with --setup-id or --setup-name
+		if *setupIDFlag != "" || *setupNameFlag != "" {
+			fmt.Fprintf(os.Stderr, "Error: --all cannot be combined with --setup-id or --setup-name\n\n")
+			flag.Usage()
+			os.Exit(1)
+		}
+	} else {
+		// Need either setup-id or setup-name
+		if *setupIDFlag == "" && *setupNameFlag == "" {
+			fmt.Fprintf(os.Stderr, "Error: Either --setup-id, --setup-name, or --all is required\n\n")
+			flag.Usage()
+			os.Exit(1)
+		}
 
-	// Cannot specify both
-	if *setupIDFlag != "" && *setupNameFlag != "" {
-		fmt.Fprintf(os.Stderr, "Error: Cannot specify both --setup-id and --setup-name\n\n")
-		flag.Usage()
-		os.Exit(1)
+		// Cannot specify both
+		if *setupIDFlag != "" && *setupNameFlag != "" {
+			fmt.Fprintf(os.Stderr, "Error: Cannot specify both --setup-id and --setup-name\n\n")
+			flag.Usage()
+			os.Exit(1)
+		}
 	}
 
 	// Create client
@@ -134,6 +150,12 @@ func main() {
 
 	if *verboseFlag && !*jsonFlag {
 		fmt.Fprintf(os.Stderr, "✅ Network context set successfully!\n")
+	}
+
+	// Handle --all mode
+	if *allFlag {
+		deleteAllSetups(ctx, client, networkName, *forceFlag, *verboseFlag, *jsonFlag)
+		return
 	}
 
 	// Resolve setup ID (either directly provided or search by name)
@@ -209,7 +231,117 @@ func main() {
 	}
 
 	// Delete the B-Deploy setup record
-	if !*jsonFlag {
+	deleteOneSetup(ctx, client, setupID, setupPackageName, networkName, *verboseFlag, *jsonFlag)
+}
+
+func deleteAllSetups(ctx context.Context, client *gopurple.Client, networkName string, force, verbose, jsonMode bool) {
+	if !jsonMode {
+		fmt.Fprintf(os.Stderr, "📋 Fetching all setup records for network: %s\n", networkName)
+	}
+
+	records, err := client.BDeploy.GetSetupRecords(ctx, gopurple.WithNetworkName(networkName))
+	if err != nil {
+		log.Fatalf("❌ Failed to get setup records: %v", err)
+	}
+
+	if len(records.Items) == 0 {
+		if jsonMode {
+			fmt.Println("[]")
+		} else {
+			fmt.Fprintf(os.Stderr, "No setup records found on network '%s'\n", networkName)
+		}
+		return
+	}
+
+	// Show what will be deleted
+	if !jsonMode {
+		fmt.Fprintf(os.Stderr, "\n⚠️  WARNING: This will permanently delete ALL %d setup record(s) on network '%s'!\n\n", len(records.Items), networkName)
+		for i, record := range records.Items {
+			fmt.Fprintf(os.Stderr, "  %d. %s (ID: %s, Type: %s)\n", i+1, record.PackageName, record.ID, record.SetupType)
+		}
+		fmt.Fprintf(os.Stderr, "\n")
+	}
+
+	// Confirm unless --force
+	if !force && !jsonMode {
+		fmt.Fprintf(os.Stderr, "Type YES to confirm deletion of all %d setup record(s): ", len(records.Items))
+		reader := bufio.NewReader(os.Stdin)
+		response, err := reader.ReadString('\n')
+		if err != nil {
+			log.Fatalf("❌ Failed to read input: %v", err)
+		}
+		if strings.TrimSpace(response) != "YES" {
+			fmt.Fprintf(os.Stderr, "Operation cancelled.\n")
+			return
+		}
+	}
+
+	// Delete each setup
+	type deleteResult struct {
+		ID          string `json:"id"`
+		PackageName string `json:"packageName"`
+		Success     bool   `json:"success"`
+		Error       string `json:"error,omitempty"`
+	}
+
+	var results []deleteResult
+	successCount := 0
+	failCount := 0
+
+	for _, record := range records.Items {
+		if !jsonMode {
+			fmt.Fprintf(os.Stderr, "🗑️  Deleting: %s (ID: %s)...", record.PackageName, record.ID)
+		}
+
+		resp, err := client.BDeploy.DeleteSetupRecord(ctx, record.ID)
+		if err != nil {
+			failCount++
+			if !jsonMode {
+				fmt.Fprintf(os.Stderr, " FAILED: %v\n", err)
+			}
+			results = append(results, deleteResult{
+				ID:          record.ID,
+				PackageName: record.PackageName,
+				Success:     false,
+				Error:       err.Error(),
+			})
+			continue
+		}
+
+		if resp.Success {
+			successCount++
+			if !jsonMode {
+				fmt.Fprintf(os.Stderr, " OK\n")
+			}
+		} else {
+			failCount++
+			if !jsonMode {
+				fmt.Fprintf(os.Stderr, " FAILED: %s\n", resp.Error)
+			}
+		}
+
+		results = append(results, deleteResult{
+			ID:          record.ID,
+			PackageName: record.PackageName,
+			Success:     resp.Success,
+			Error:       resp.Error,
+		})
+	}
+
+	if jsonMode {
+		encoder := json.NewEncoder(os.Stdout)
+		encoder.SetIndent("", "  ")
+		if err := encoder.Encode(results); err != nil {
+			log.Fatalf("Failed to encode JSON: %v", err)
+		}
+		return
+	}
+
+	fmt.Fprintf(os.Stderr, "\n✅ Deletion complete: %d succeeded, %d failed (of %d total)\n", successCount, failCount, len(records.Items))
+}
+
+func deleteOneSetup(ctx context.Context, client *gopurple.Client, setupID, setupPackageName, networkName string, verbose, jsonMode bool) {
+	if !jsonMode {
 		fmt.Fprintf(os.Stderr, "🗑️  Deleting B-Deploy setup record: %s\n", setupID)
 	}
 
@@ -240,7 +372,7 @@ func main() {
 	}
 
 	// Output as JSON if requested
-	if *jsonFlag {
+	if jsonMode {
 		encoder := json.NewEncoder(os.Stdout)
 		encoder.SetIndent("", "  ")
 		if err := encoder.Encode(response); err != nil {
@@ -252,7 +384,7 @@ func main() {
 	// Display results
 	fmt.Fprintf(os.Stderr, "✅ B-Deploy setup record deletion completed!\n")
 
-	if *verboseFlag {
+	if verbose {
 		if response.Success {
 			fmt.Fprintf(os.Stderr, "🎉 Deletion confirmed successful\n")
 		}
