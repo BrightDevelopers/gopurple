@@ -297,16 +297,8 @@
       {
         "id": "wired_eth0",
         "name": "eth0",
-        "metric": null,
         "type": "Ethernet",
-        "proto": "Static",
-        "ip": [
-          "192.168.1.9/25"
-        ],
-        "gateway": "192.168.1.1",
-        "dns": [
-          "192.168.1.21"
-        ],
+        "proto": "DHCPv4",
         "showInUi": true,
         "rateLimitDuringInitialDownloads": null,
         "rateLimitInsideContentDownloadWindow": null,

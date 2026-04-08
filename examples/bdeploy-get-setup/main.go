@@ -157,28 +157,36 @@ func main() {
 			log.Fatalf("❌ Failed to search for setup records: %v", err)
 		}
 
-		if records.TotalCount == 0 {
-			log.Fatalf("❌ No setup found with package name: %s", setupName)
+		// Filter for exact matches only (API does substring match)
+		var exactMatches []gopurple.BDeployRecord
+		for _, rec := range records.Items {
+			if rec.PackageName == setupName {
+				exactMatches = append(exactMatches, rec)
+			}
 		}
 
-		if records.TotalCount > 1 {
+		if len(exactMatches) == 0 {
+			log.Fatalf("❌ No setup found with exact package name: %s", setupName)
+		}
+
+		if len(exactMatches) > 1 {
 			if !*jsonFlag {
-				fmt.Fprintf(os.Stderr, "⚠️  Found %d setups with package name '%s':\n", records.TotalCount, setupName)
-				for i, rec := range records.Items {
-					fmt.Fprintf(os.Stderr, "  %d. ID: %s, Type: %s, Group: %s\n",
-						i+1, rec.ID, rec.SetupType, rec.BSNGroupName)
+				fmt.Fprintf(os.Stderr, "⚠️  Found %d setups with package name '%s':\n", len(exactMatches), setupName)
+				for i, rec := range exactMatches {
+					fmt.Fprintf(os.Stderr, "  %d. ID: %s, Package: %s, Type: %s, Group: %s\n",
+						i+1, rec.ID, rec.PackageName, rec.SetupType, rec.BSNGroupName)
 				}
 				fmt.Fprintf(os.Stderr, "\nDisplaying first matching setup:\n")
 			}
 		}
 
-		// Use the first matching record
+		// Use the first exact match
 		if !*jsonFlag {
-			fmt.Printf("✅ Found setup with ID: %s\n", records.Items[0].ID)
+			fmt.Printf("✅ Found setup with ID: %s\n", exactMatches[0].ID)
 		}
 
 		// Convert BDeployRecord to BDeploySetupRecord by fetching full details
-		record, err = client.BDeploy.GetSetupRecord(ctx, records.Items[0].ID)
+		record, err = client.BDeploy.GetSetupRecord(ctx, exactMatches[0].ID)
 		if err != nil {
 			log.Fatalf("❌ Failed to get full setup record details: %v", err)
 		}

@@ -1,4 +1,6 @@
-export BS_CLIENT_ID=id
-export BS_SECRET=secret
-export BS_NETWORK=network
-export BS_USERNAME=username
+export BS_CLIENT_ID=<here>
+export BS_SECRET=<here>
+export BS_NETWORK=<network>
+export BS_USERNAME=<user>
+export BS_GROUPNAME=Default
+export BS_SETUP_TYPE=bsn
