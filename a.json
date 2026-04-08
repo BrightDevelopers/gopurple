@@ -2,7 +2,8 @@
 🔐 Authenticating with BSN.cloud...
 ✅ Authentication successful!
 📡 Setting network context to: GregoryCHerlein
-📋 Fetching B-Deploy setup record: 62e9a9bbff6c194efdd1118f
+🔍 Searching for setup with package name: d5
+✅ Found setup with ID: 62e9a9bbff6c194efdd1118f
 
 ✅ B-Deploy Setup Record:
 {

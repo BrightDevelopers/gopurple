@@ -1,10 +1,3 @@
-🔧 Creating BSN.cloud client...
-🔐 Authenticating with BSN.cloud...
-✅ Authentication successful!
-📡 Setting network context to: GregoryCHerlein
-📋 Fetching B-Deploy setup record: 62e9a9bbff6c194efdd1118f
-
-✅ B-Deploy Setup Record:
 {
   "version": "3.0.0",
   "_id": "62e9a9bbff6c194efdd1118f",
