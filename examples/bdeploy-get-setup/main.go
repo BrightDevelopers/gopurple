@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"flag"
@@ -127,21 +128,8 @@ func main() {
 		log.Fatalf("❌ Failed to set network context: %v", err)
 	}
 
-	var record *gopurple.BDeploySetupRecord
-
-	// Get the B-Deploy setup record
-	if setupID != "" {
-		// Get by ID
-		if !*jsonFlag {
-			fmt.Printf("📋 Fetching B-Deploy setup record: %s\n", setupID)
-		}
-
-		var err error
-		record, err = client.BDeploy.GetSetupRecord(ctx, setupID)
-		if err != nil {
-			log.Fatalf("❌ Failed to get B-Deploy setup record: %v", err)
-		}
-	} else {
+	// Resolve the setup ID (either directly or by searching by package name)
+	if setupID == "" {
 		// Get by package name (setup name)
 		if !*jsonFlag {
 			fmt.Printf("🔍 Searching for setup with package name: %s\n", setupName)
@@ -180,28 +168,32 @@ func main() {
 			}
 		}
 
-		// Use the first exact match
+		setupID = exactMatches[0].ID
 		if !*jsonFlag {
-			fmt.Printf("✅ Found setup with ID: %s\n", exactMatches[0].ID)
+			fmt.Printf("✅ Found setup with ID: %s\n", setupID)
 		}
-
-		// Convert BDeployRecord to BDeploySetupRecord by fetching full details
-		record, err = client.BDeploy.GetSetupRecord(ctx, exactMatches[0].ID)
-		if err != nil {
-			log.Fatalf("❌ Failed to get full setup record details: %v", err)
+	} else {
+		if !*jsonFlag {
+			fmt.Printf("📋 Fetching B-Deploy setup record: %s\n", setupID)
 		}
 	}
 
-	// Display results
-	if *jsonFlag {
-		jsonOutput, err := json.MarshalIndent(record, "", "  ")
-		if err != nil {
-			log.Fatalf("❌ Failed to marshal JSON: %v", err)
-		}
-		fmt.Println(string(jsonOutput))
+	// Fetch the raw JSON to preserve all fields (including firmwareUpdatesByFamily)
+	rawJSON, err := client.BDeploy.GetSetupRecordRaw(ctx, setupID)
+	if err != nil {
+		log.Fatalf("❌ Failed to get B-Deploy setup record: %v", err)
+	}
+
+	// Pretty-print the raw JSON
+	var prettyBuf bytes.Buffer
+	if err := json.Indent(&prettyBuf, []byte(rawJSON), "", "  "); err != nil {
+		// If pretty-print fails, output as-is
+		fmt.Println(rawJSON)
 	} else {
-		fmt.Println("\n✅ B-Deploy Setup Record:")
-		printSetupRecord(record)
+		if !*jsonFlag {
+			fmt.Println("\n✅ B-Deploy Setup Record:")
+		}
+		fmt.Println(prettyBuf.String())
 	}
 }
 
@@ -254,16 +246,3 @@ func getNetworkName(requestedNetwork string, client *gopurple.Client, ctx contex
 	return ""
 }
 
-func printSetupRecord(record *gopurple.BDeploySetupRecord) {
-	// Marshal to JSON for pretty printing with indentation
-	jsonOutput, err := json.MarshalIndent(record, "", "  ")
-	if err != nil {
-		log.Printf("⚠️  Failed to format setup record: %v", err)
-		// Fallback to basic output
-		fmt.Fprintf(os.Stderr, "ID:           %s\n", record.ID)
-		fmt.Fprintf(os.Stderr, "Setup Type:   %s\n", record.SetupType)
-		fmt.Fprintf(os.Stderr, "Version:      %s\n", record.Version)
-		return
-	}
-	fmt.Println(string(jsonOutput))
-}

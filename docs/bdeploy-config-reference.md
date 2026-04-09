@@ -202,25 +202,339 @@ The Local Web Server provides local access to player status, content, and config
 
 ## Simple File Network (SFN)
 
-Configuration for serving content from a web server.
+Simple File Networking (`setupType: "sfn"`) configures a player to download
+content from a standard HTTP/HTTPS web server instead of BSN.cloud. The player
+polls the web folder URL on a schedule and downloads updated content
+automatically.
 
-### `sfnWebFolderUrl` (optional)
+SFN setups share the same template structure as BSN setups. The differences are
+the `setupType` value and the four SFN-specific fields below, which **must** be
+configured for a working SFN deployment.
+
+### SFN-Specific Fields
+
+#### `sfnWebFolderUrl` (required for SFN)
 **Type:** `string`
-**Description:** URL to web folder containing content
-**Example:** `"https://content.example.com/player1/"`
+**Default:** `""` (empty)
+**Description:** URL to the web folder containing content files. The player
+polls this URL on the `timeBetweenNetConnects` interval to check for updates.
+**Example:** `"http://content.example.com/player1/"`, `"https://cdn.company.com/signage/lobby/"`
 
-### `sfnUserName` (optional)
+#### `sfnUserName` (required if authentication enabled)
 **Type:** `string`
-**Description:** Username for HTTP basic authentication
+**Default:** `""` (empty)
+**Description:** Username for HTTP basic authentication to the web folder
+**Example:** `"wfusername"`
 
-### `sfnPassword` (optional)
+#### `sfnPassword` (required if authentication enabled)
 **Type:** `string`
-**Description:** Password for HTTP basic authentication
+**Default:** `""` (empty)
+**Description:** Password for HTTP basic authentication to the web folder
+**Security:** Stored in plain text in the setup record. Use HTTPS to protect
+credentials in transit.
+**Example:** `"PaSsWoRd#1!"`
 
-### `sfnEnableBasicAuthentication` (optional)
+#### `sfnEnableBasicAuthentication` (optional)
 **Type:** `boolean`
 **Default:** `false`
-**Description:** Enable HTTP basic authentication for SFN downloads
+**Description:** Enable HTTP basic authentication when downloading content from
+the web folder. Set to `true` and provide `sfnUserName` / `sfnPassword` if
+your web server requires authentication.
+
+### SFN Behavioral Differences
+
+When `setupType` is `"sfn"`, several other fields behave differently compared
+to BSN setups:
+
+| Field | Typical BSN Value | Typical SFN Value | Reason |
+|---|---|---|---|
+| `setupType` | `"bsn"` | `"sfn"` | Switches content source to web folder |
+| `bsnCloudEnabled` | `true` | `true` | Still needed for monitoring/diagnostics |
+| `inheritNetworkProperties` | `false` | `true` | SFN setups typically inherit network config |
+| `timeBetweenNetConnects` | `300` | `300` | Controls web folder polling interval |
+| Logging fields | `true` | `false` | SFN deployments often disable logging |
+
+### SFN Example
+
+Minimal SFN setup with authenticated web folder:
+
+```json
+{
+  "bDeploy": {
+    "username": "admin@example.com",
+    "networkName": "Production",
+    "packageName": "lobby-sfn-setup",
+    "client": "bacon"
+  },
+  "setupType": "sfn",
+  "sfnWebFolderUrl": "https://content.example.com/lobby/",
+  "sfnUserName": "player",
+  "sfnPassword": "secret",
+  "sfnEnableBasicAuthentication": true,
+  "timeBetweenNetConnects": 300,
+  "deviceName": "Lobby Display",
+  "deviceDescription": "Main entrance SFN display",
+  "bsnGroupName": "Default",
+  "timeZone": "PST",
+  "bsnCloudEnabled": true,
+  "inheritNetworkProperties": true,
+  "network": {
+    "timeServers": ["http://time.brightsignnetwork.com"],
+    "interfaces": [
+      {
+        "id": "wired_eth0",
+        "name": "eth0",
+        "type": "Ethernet",
+        "proto": "DHCPv4",
+        "ip": [],
+        "gateway": null,
+        "dns": [],
+        "contentDownloadEnabled": true,
+        "healthReportingEnabled": true
+      }
+    ]
+  }
+}
+```
+
+### SFN vs BSN Template Usage
+
+The `DefaultSetupPackageTemplateMaster.json` template can be used for SFN
+setups by passing `--setup-type sfn` to `render-setup-template`. After
+rendering, manually set the SFN-specific fields (`sfnWebFolderUrl`,
+`sfnUserName`, `sfnPassword`, `sfnEnableBasicAuthentication`) in the output
+JSON before posting via `bdeploy-add-setup-raw`, since these fields are
+deployment-specific and not templated.
+
+```bash
+# Render the template for SFN
+bin/render-setup-template \
+  --setup-type sfn \
+  --package-name "lobby-sfn" \
+  --network "Production" \
+  templates/DefaultSetupPackageTemplateMaster.json > setup.json
+
+# Inject SFN-specific fields with jq
+jq '.sfnWebFolderUrl = "https://content.example.com/lobby/" |
+    .sfnUserName = "player" |
+    .sfnPassword = "secret" |
+    .sfnEnableBasicAuthentication = true |
+    .inheritNetworkProperties = true' setup.json > setup-sfn.json
+
+# Post to BSN.cloud
+bin/bdeploy-add-setup-raw setup-sfn.json
+```
+
+See also: [B-Deploy Template Guide](bdeploy-template.md) for full template
+documentation.
+
+---
+
+## Local File Networking (LFN)
+
+Local File Networking (`setupType: "lfn"`) configures a player to serve content
+from local network storage (NAS, SMB shares, USB, or a local content server)
+rather than BSN.cloud or a web folder. The player still connects to BSN.cloud
+for monitoring, diagnostics, and remote management, but content delivery is
+handled locally.
+
+LFN and SFN setups use the exact same template structure. The only structural
+difference is the `setupType` value. Comparing the official
+`DefaultLocalFileNetworkingSetupPackageV3.json` and
+`DefaultSimpleFileNetworkingSetupPackageV3.json` reference files confirms they
+are identical except for `setupType` and the SFN web folder fields.
+
+### LFN-Specific Configuration
+
+LFN has **no unique fields** beyond `setupType`. The four SFN web folder fields
+(`sfnWebFolderUrl`, `sfnUserName`, `sfnPassword`,
+`sfnEnableBasicAuthentication`) are present in LFN setups but left empty since
+content is delivered through local mechanisms, not HTTP polling.
+
+The only field that must be set for LFN:
+
+#### `setupType` (required)
+**Value:** `"lfn"`
+**Description:** Switches the player to local file networking mode. Content is
+served from local storage or a local content server rather than BSN.cloud or a
+web folder.
+
+### LFN vs SFN vs BSN
+
+| Aspect | BSN (`bsn`) | SFN (`sfn`) | LFN (`lfn`) |
+|---|---|---|---|
+| Content source | BSN.cloud | HTTP/HTTPS web folder | Local storage / network share |
+| `sfnWebFolderUrl` | empty | **required** (web folder URL) | empty |
+| `sfnUserName` / `sfnPassword` | empty | optional (if auth needed) | empty |
+| `sfnEnableBasicAuthentication` | `false` | `true` if auth needed | `false` |
+| BSN.cloud connection | required (content + mgmt) | optional (mgmt only) | optional (mgmt only) |
+| `bsnCloudEnabled` | `true` | `true` | `true` |
+| `inheritNetworkProperties` | `false` | `true` | `true` |
+| Typical logging | enabled | disabled | disabled |
+
+### LFN Example
+
+Minimal LFN setup:
+
+```json
+{
+  "bDeploy": {
+    "username": "admin@example.com",
+    "networkName": "Production",
+    "packageName": "lobby-lfn-setup",
+    "client": "bacon"
+  },
+  "setupType": "lfn",
+  "deviceName": "Lobby Display",
+  "deviceDescription": "Main entrance LFN display",
+  "bsnGroupName": "Default",
+  "timeZone": "PST",
+  "bsnCloudEnabled": true,
+  "inheritNetworkProperties": true,
+  "remoteDwsEnabled": true,
+  "lwsEnabled": true,
+  "lwsConfig": "status",
+  "timeBetweenNetConnects": 300,
+  "network": {
+    "timeServers": ["http://time.brightsignnetwork.com"],
+    "interfaces": [
+      {
+        "id": "wired_eth0",
+        "name": "eth0",
+        "type": "Ethernet",
+        "proto": "DHCPv4",
+        "ip": [],
+        "gateway": null,
+        "dns": [],
+        "contentDownloadEnabled": true,
+        "healthReportingEnabled": true
+      }
+    ]
+  }
+}
+```
+
+### LFN Template Usage
+
+Use `render-setup-template` with `--setup-type lfn`:
+
+```bash
+bin/render-setup-template \
+  --setup-type lfn \
+  --package-name "lobby-lfn" \
+  --network "Production" \
+  templates/DefaultSetupPackageTemplateMaster.json > setup-lfn.json
+
+bin/bdeploy-add-setup-raw setup-lfn.json
+```
+
+No post-rendering `jq` injection is needed for LFN (unlike SFN) since there
+are no LFN-specific fields to populate.
+
+---
+
+## Partner Application (partnerApplication)
+
+Partner Application (`setupType: "partnerApplication"`) configures a player to
+be managed by a third-party CMS (Content Management System) rather than
+BSN.cloud or local content mechanisms. The player still registers with
+BSN.cloud for provisioning and remote diagnostics, but content delivery and
+scheduling are handled entirely by the external partner application.
+
+### partnerApplication-Specific Configuration
+
+Partner Application has **no unique fields** beyond `setupType`. It uses the
+same template structure as BSN, SFN, and LFN setups. The only required change
+is setting the setup type:
+
+#### `setupType` (required)
+**Value:** `"partnerApplication"`
+**Description:** Switches the player to partner application mode. An external
+CMS controls content delivery and presentation scheduling.
+
+### Typical partnerApplication Defaults
+
+Compared to BSN setups, partner application setups typically differ in these
+ways:
+
+| Field | Typical BSN Value | Typical partnerApplication Value | Reason |
+|---|---|---|---|
+| `setupType` | `"bsn"` | `"partnerApplication"` | External CMS manages content |
+| `lwsEnabled` | `true` | `false` | Partner CMS provides its own local interface |
+| `dwsPassword` | `"§default"` | `""` | No default DWS password |
+| `timeBetweenHeartbeats` | `900` | (omitted) | Partner CMS may manage its own heartbeat |
+| `heartbeatsRestricted` | `false` | (omitted) | Heartbeat windowing not applicable |
+| Logging fields | varies | `false` | Partner CMS typically handles its own logging |
+| `remoteSnapshotJpegQualityLevel` | `100` | `50` | Lower quality default |
+
+### partnerApplication vs Other Setup Types
+
+| Aspect | BSN | SFN | LFN | partnerApplication |
+|---|---|---|---|---|
+| Content source | BSN.cloud | HTTP web folder | Local storage | External CMS |
+| Content management | BSN.cloud UI | Manual web folder | Manual local files | Partner CMS |
+| BSN.cloud role | Content + mgmt | Monitoring only | Monitoring only | Provisioning + monitoring |
+| LWS | enabled | enabled | enabled | **disabled** |
+| Unique fields | none | `sfnWebFolderUrl`, auth | none | none |
+
+### partnerApplication Example
+
+Minimal partner application setup:
+
+```json
+{
+  "bDeploy": {
+    "username": "admin@example.com",
+    "networkName": "Production",
+    "packageName": "partner-cms-setup",
+    "client": "bacon"
+  },
+  "setupType": "partnerApplication",
+  "deviceName": "Partner Display",
+  "deviceDescription": "Managed by external CMS",
+  "bsnGroupName": "Default",
+  "timeZone": "PST",
+  "bsnCloudEnabled": true,
+  "inheritNetworkProperties": true,
+  "remoteDwsEnabled": true,
+  "dwsEnabled": false,
+  "lwsEnabled": false,
+  "timeBetweenNetConnects": 300,
+  "network": {
+    "timeServers": ["http://time.brightsignnetwork.com"],
+    "interfaces": [
+      {
+        "id": "wired_eth0",
+        "name": "eth0",
+        "type": "Ethernet",
+        "proto": "DHCPv4",
+        "ip": [],
+        "gateway": null,
+        "dns": [],
+        "contentDownloadEnabled": true,
+        "healthReportingEnabled": true
+      }
+    ]
+  }
+}
+```
+
+### partnerApplication Template Usage
+
+Use `render-setup-template` with `--setup-type partnerApplication`:
+
+```bash
+bin/render-setup-template \
+  --setup-type partnerApplication \
+  --package-name "partner-cms" \
+  --network "Production" \
+  templates/DefaultSetupPackageTemplateMaster.json > setup.json
+
+# Disable LWS (typical for partner app setups)
+jq '.lwsEnabled = false' setup.json > setup-partner.json
+
+bin/bdeploy-add-setup-raw setup-partner.json
+```
 
 ---
 

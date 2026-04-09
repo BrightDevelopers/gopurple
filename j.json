@@ -2,10 +2,10 @@
   "version": "3.0.0",
   "_id": "",
   "bDeploy": {
-    "username": "{{.Username}}",
-    "networkName": "{{.NetworkName}}",
+    "username": "gherlein@brightsign.biz",
+    "networkName": "GregoryCHerlein",
     "client": "bacon",
-    "packageName": "{{.PackageName}}"
+    "packageName": "j"
   },
   "firmwareUpdatesByFamily": {
     "Impala": {
@@ -218,12 +218,12 @@
     }
   },
   "firmwareUpdateType": "standard",
-  "setupType": "{{.SetupType}}",
+  "setupType": "bsn",
   "bsnDeviceRegistrationTokenEntity": {
-    "token": "{{.RegistrationToken}}",
+    "token": "czr34WSMXXOteodhDdJjGHJ54JlnSB3iRsJchCPOkjxEwpM2Q8HfxDJRRIWQUDXbcV9B31F9M8gHfgNnK5HBKlPREWtBaLb1HFPGOsnRSHesh1oGq2IS5vX2ubzMO91w",
     "scope": "cert",
-    "validFrom": "{{.TokenValidFrom}}",
-    "validTo": "{{.TokenValidTo}}"
+    "validFrom": "2026-04-08T20:59:26.000Z",
+    "validTo": "2028-04-07T20:59:26.000Z"
   },
   "enableSerialDebugging": false,
   "enableSystemLogDebugging": false,
@@ -237,11 +237,11 @@
   "lwsPassword": "",
   "lwsEnableUpdateNotifications": true,
   "bsnCloudEnabled": true,
-  "deviceName": "{{.DeviceName}}",
-  "deviceDescription": "{{.DeviceDescription}}",
+  "deviceName": "",
+  "deviceDescription": "",
   "unitNamingMethod": "appendUnitIDToUnitName",
   "timeZone": "PST",
-  "bsnGroupName": "{{.GroupName}}",
+  "bsnGroupName": "Default",
   "timeBetweenNetConnects": 300,
   "timeBetweenHeartbeats": 900,
   "sfnWebFolderUrl": "",
@@ -297,12 +297,8 @@
       {
         "id": "wired_eth0",
         "name": "eth0",
-        "metric": null,
         "type": "Ethernet",
         "proto": "DHCPv4",
-        "ip": [],
-        "gateway": null,
-        "dns": [],
         "showInUi": true,
         "rateLimitDuringInitialDownloads": null,
         "rateLimitInsideContentDownloadWindow": null,
@@ -329,3 +325,4 @@
     "certificateFile": null
   }
 }
+

@@ -52,7 +52,7 @@ As the Go team notes, [Go is excellent for building LLM-powered applications](ht
 
 Go compiles to native machine code, delivering [significantly better performance](https://uvik.net/blog/go-vs-python/) than interpreted Python for CPU-bound operations. For an SDK making hundreds of API calls, parsing large responses, and processing device data, this translates to faster execution and lower resource usage.
 
-A comprehensive Go SDK providing type-safe access to BrightSign Network (BSN.cloud) APIs. Includes both the main REST API and Remote Diagnostic Web Server (RDWS) functionality with 61 working example programs.
+A comprehensive Go SDK providing type-safe access to BrightSign Network (BSN.cloud) APIs. Includes both the main REST API and Remote Diagnostic Web Server (RDWS) functionality with 64 working example programs.
 
 ## What It Does
 
@@ -72,7 +72,7 @@ This SDK abstracts the complexity of BSN.cloud integration:
 - Pagination support for large datasets
 - Network context management with `BS_NETWORK` environment variable support
 - Concurrent-safe token handling
-- 61 example CLI tools demonstrating all features
+- 64 example CLI tools demonstrating all features
 - Flexible output modes (JSON, stdout, file) for automation and scripting
 
 ## Quick Start
@@ -330,7 +330,7 @@ client, err := gopurple.New(
 
 ## Examples
 
-The SDK includes **61 working example programs** demonstrating all functionality. Each example is a standalone CLI tool you can use immediately.
+The SDK includes **64 working example programs** demonstrating all functionality. Each example is a standalone CLI tool you can use immediately.
 
 See **[examples/README.md](examples/README.md)** for complete documentation of all examples with usage instructions.
 
@@ -339,7 +339,7 @@ See **[examples/README.md](examples/README.md)** for complete documentation of a
 | Category | Count | Examples |
 |----------|-------|----------|
 | **Authentication** | 2 | Token management, credential testing |
-| **B-Deploy Provisioning** | 10 | Setup records, device association, configuration |
+| **B-Deploy Provisioning** | 13 | Setup records, device association, template rendering, token generation |
 | **Device Management** | 9 | List, status, errors, operations, group management |
 | **Group Management** | 3 | Group info, updates, deletion |
 | **Subscription Management** | 3 | Device subscriptions, counts, operations |
@@ -427,9 +427,11 @@ See **[docs/all-apis.md](docs/all-apis.md)** for a comprehensive list of all BSN
 - Storage reformatting
 
 ✅ **B-Deploy Provisioning** (Complete)
-- Create, update, delete setup records
+- Create, update, delete setup records (struct-based and raw JSON)
 - Associate devices with setups
 - List and query provisioning configurations
+- Template-based setup generation with dynamic token injection
+- Raw JSON round-trip preserving all fields (firmware entries, network config)
 
 ✅ **Group Management** (Core Features)
 - Get group information
@@ -642,11 +644,15 @@ gopurple/
 │   ├── http/                       # HTTP client wrapper
 │   ├── services/                   # API service implementations
 │   └── types/                      # Data structures
-├── examples/                        # 61 example CLI programs
-│   ├── main--devices-list/
-│   ├── rdws-info/
-│   ├── rdws-logs-get/
-│   ├── bdeploy-add-setup/
+├── templates/                       # Setup template files
+│   └── DefaultSetupPackageTemplateMaster.json  # Master Go-template for B-Deploy setups
+├── setups/                          # Rendered setup templates
+│   └── setup-template.json         # Reference setup template
+├── examples/                        # 64 example CLI programs
+│   ├── render-setup-template/      # Render template + generate token -> stdout
+│   ├── generate-token-json/        # Generate registration token JSON
+│   ├── bdeploy-add-setup-raw/      # Create setup from raw JSON (preserves all fields)
+│   ├── bdeploy-add-setup/          # Create setup via Go struct
 │   │   ├── config.json             # Basic setup example
 │   │   ├── config-comprehensive.json
 │   │   └── config-wifi-example.json
@@ -654,7 +660,7 @@ gopurple/
 │   │   ├── example-config.json
 │   │   └── example-full-update.json
 │   ├── README.md                   # Complete examples documentation
-│   └── ... (70 more examples)
+│   └── ... (55+ more examples)
 ├── configs/                         # Global configuration examples
 │   ├── bsn-control.json
 │   └── lfn-control.json
@@ -710,6 +716,7 @@ This is an unofficial SDK for BSN.cloud integration.
 - **Version Management**: [docs/versioning.md](docs/versioning.md)
 - **Release Process**: [RELEASING.md](RELEASING.md)
 - **Example Programs Guide**: [examples/README.md](examples/README.md)
+- **B-Deploy Template Guide**: [docs/bdeploy-template.md](docs/bdeploy-template.md)
 - **B-Deploy Configuration Reference**: [docs/bdeploy-config-reference.md](docs/bdeploy-config-reference.md)
 - **B-Deploy Device Association**: [docs/bdeploy-association.md](docs/bdeploy-association.md)
 - **Programs Needing JSON Output**: [docs/need-json-out.md](docs/need-json-out.md)
