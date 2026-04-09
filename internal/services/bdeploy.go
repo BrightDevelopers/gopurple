@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/url"
 
@@ -17,6 +18,7 @@ type BDeployService interface {
 	SetNetworkContext(ctx context.Context, networkName string) error
 	GetSetupRecords(ctx context.Context, opts ...BDeployListOption) (*types.BDeployRecordList, error)
 	GetSetupRecord(ctx context.Context, setupID string) (*types.BDeploySetupRecord, error)
+	GetSetupRecordRaw(ctx context.Context, setupID string) (string, error)
 	AddSetupRecord(ctx context.Context, record *types.BDeploySetupRecord) (*types.BDeployCreateResponse, error)
 	AddSetupRecordRaw(ctx context.Context, setupJSON string) (*types.BDeployCreateResponse, error)
 	UpdateSetupRecord(ctx context.Context, setupID string, record *types.BDeploySetupRecord) (*types.BDeploySetupRecord, error)
@@ -183,6 +185,50 @@ func (s *bDeployService) GetSetupRecord(ctx context.Context, setupID string) (*t
 
 	// Return the first (and should be only) record
 	return &apiResponse.Result[0], nil
+}
+
+// GetSetupRecordRaw retrieves a single B-Deploy setup record by ID and returns
+// the raw JSON string from the setupJson field, preserving all fields including
+// firmwareUpdatesByFamily that are not in the BDeploySetupRecord struct.
+func (s *bDeployService) GetSetupRecordRaw(ctx context.Context, setupID string) (string, error) {
+	if setupID == "" {
+		return "", errors.NewValidationError("setupID", setupID, "setup ID cannot be empty")
+	}
+
+	if err := s.authManager.EnsureValid(ctx); err != nil {
+		return "", err
+	}
+
+	token, err := s.authManager.GetToken()
+	if err != nil {
+		return "", err
+	}
+
+	getURL := fmt.Sprintf("https://provision.bsn.cloud/rest-setup/v3/setup/?_id=%s", url.QueryEscape(setupID))
+
+	data, err := s.httpClient.GetBytesWithAuth(ctx, token, getURL)
+	if err != nil {
+		return "", errors.NewAPIError(0, "bdeploy_get_failed", "Failed to get B-Deploy setup record", err.Error())
+	}
+
+	// Parse just enough to extract the result array
+	var envelope struct {
+		Error  interface{}       `json:"error"`
+		Result []json.RawMessage `json:"result"`
+	}
+	if err := json.Unmarshal(data, &envelope); err != nil {
+		return "", errors.NewAPIError(0, "bdeploy_parse_failed", "Failed to parse B-Deploy API response", err.Error())
+	}
+
+	if envelope.Error != nil {
+		return "", errors.NewAPIError(0, "bdeploy_api_error", "B-Deploy API returned an error", fmt.Sprintf("%v", envelope.Error))
+	}
+
+	if len(envelope.Result) == 0 {
+		return "", errors.NewAPIError(404, "bdeploy_not_found", "Setup record not found", fmt.Sprintf("No setup record found with ID: %s", setupID))
+	}
+
+	return string(envelope.Result[0]), nil
 }
 
 // AddSetupRecord creates a new B-Deploy setup record.
