@@ -111,7 +111,7 @@ func (s *rdwsService) GetInfo(ctx context.Context, serial string) (*types.RDWSIn
 	}
 
 	// Build the rDWS info endpoint URL
-	infoURL := fmt.Sprintf("https://ws.bsn.cloud/rest/v1/info/?destinationType=player&destinationName=%s", serial)
+	infoURL := fmt.Sprintf("%s/info/?destinationType=player&destinationName=%s", s.config.RDWSBaseURL, serial)
 
 	// Make the API request
 	var response types.RDWSInfoResponse
@@ -146,7 +146,7 @@ func (s *rdwsService) GetTime(ctx context.Context, serial string) (*types.RDWSTi
 	}
 
 	// Build the rDWS time endpoint URL
-	timeURL := fmt.Sprintf("https://ws.bsn.cloud/rest/v1/time/?destinationType=player&destinationName=%s", serial)
+	timeURL := fmt.Sprintf("%s/time/?destinationType=player&destinationName=%s", s.config.RDWSBaseURL, serial)
 
 	// Make the API request
 	var response types.RDWSTimeResponse
@@ -185,7 +185,7 @@ func (s *rdwsService) SetTime(ctx context.Context, serial string, request *types
 	}
 
 	// Build the rDWS time endpoint URL
-	timeURL := fmt.Sprintf("https://ws.bsn.cloud/rest/v1/time/?destinationType=player&destinationName=%s", serial)
+	timeURL := fmt.Sprintf("%s/time/?destinationType=player&destinationName=%s", s.config.RDWSBaseURL, serial)
 
 	// Build request body - wrap in data envelope
 	requestBody := map[string]interface{}{
@@ -226,7 +226,7 @@ func (s *rdwsService) GetHealth(ctx context.Context, serial string) (*types.RDWS
 	}
 
 	// Build the rDWS health endpoint URL
-	healthURL := fmt.Sprintf("https://ws.bsn.cloud/rest/v1/health/?destinationType=player&destinationName=%s", serial)
+	healthURL := fmt.Sprintf("%s/health/?destinationType=player&destinationName=%s", s.config.RDWSBaseURL, serial)
 
 	// Make the API request
 	var response types.RDWSHealthResponse
@@ -264,7 +264,7 @@ func (s *rdwsService) ListFiles(ctx context.Context, serial string, path string)
 	}
 
 	// Build the rDWS files list endpoint URL
-	filesURL := fmt.Sprintf("https://ws.bsn.cloud/rest/v1/files/%s/?destinationType=player&destinationName=%s", path, serial)
+	filesURL := fmt.Sprintf("%s/files/%s/?destinationType=player&destinationName=%s", s.config.RDWSBaseURL, path, serial)
 
 	// Make the API request
 	var response types.RDWSFileListResponse
@@ -317,7 +317,7 @@ func (s *rdwsService) UploadFile(ctx context.Context, serial string, path string
 	}
 
 	// Build the rDWS files upload endpoint URL
-	filesURL := fmt.Sprintf("https://ws.bsn.cloud/rest/v1/files%s?destinationType=player&destinationName=%s", path, serial)
+	filesURL := fmt.Sprintf("%s/files%s?destinationType=player&destinationName=%s", s.config.RDWSBaseURL, path, serial)
 
 	// Make the API request
 	var response types.RDWSFileUploadResponse
@@ -355,7 +355,7 @@ func (s *rdwsService) CreateFolder(ctx context.Context, serial string, path stri
 	}
 
 	// Build the rDWS folder create endpoint URL (path should end with /)
-	folderURL := fmt.Sprintf("https://ws.bsn.cloud/rest/v1/files%s/?destinationType=player&destinationName=%s", path, serial)
+	folderURL := fmt.Sprintf("%s/files%s/?destinationType=player&destinationName=%s", s.config.RDWSBaseURL, path, serial)
 
 	// Make the API request (PUT with no body creates a folder)
 	var response types.RDWSFileOperationResponse
@@ -400,7 +400,7 @@ func (s *rdwsService) RenameFile(ctx context.Context, serial string, path string
 	request.Data.Name = newName
 
 	// Build the rDWS file rename endpoint URL
-	filesURL := fmt.Sprintf("https://ws.bsn.cloud/rest/v1/files/%s?destinationType=player&destinationName=%s", path, serial)
+	filesURL := fmt.Sprintf("%s/files/%s?destinationType=player&destinationName=%s", s.config.RDWSBaseURL, path, serial)
 
 	// Make the API request
 	var response types.RDWSFileOperationResponse
@@ -438,7 +438,7 @@ func (s *rdwsService) DeleteFile(ctx context.Context, serial string, path string
 	}
 
 	// Build the rDWS file delete endpoint URL
-	filesURL := fmt.Sprintf("https://ws.bsn.cloud/rest/v1/files/%s?destinationType=player&destinationName=%s", path, serial)
+	filesURL := fmt.Sprintf("%s/files/%s?destinationType=player&destinationName=%s", s.config.RDWSBaseURL, path, serial)
 
 	// Make the API request
 	var response types.RDWSFileOperationResponse
@@ -473,7 +473,7 @@ func (s *rdwsService) GetLocalDWS(ctx context.Context, serial string) (*types.RD
 	}
 
 	// Build the rDWS local-dws endpoint URL
-	localDWSURL := fmt.Sprintf("https://ws.bsn.cloud/rest/v1/control/local-dws/?destinationType=player&destinationName=%s", serial)
+	localDWSURL := fmt.Sprintf("%s/control/local-dws/?destinationType=player&destinationName=%s", s.config.RDWSBaseURL, serial)
 
 	// Make the API request
 	var response types.RDWSLocalDWSResponse
@@ -512,7 +512,7 @@ func (s *rdwsService) SetLocalDWS(ctx context.Context, serial string, enabled bo
 	request.Data.Enabled = enabled
 
 	// Build the rDWS local-dws endpoint URL
-	localDWSURL := fmt.Sprintf("https://ws.bsn.cloud/rest/v1/control/local-dws/?destinationType=player&destinationName=%s", serial)
+	localDWSURL := fmt.Sprintf("%s/control/local-dws/?destinationType=player&destinationName=%s", s.config.RDWSBaseURL, serial)
 
 	// Make the API request
 	var response types.RDWSLocalDWSSetResponse
@@ -547,7 +547,7 @@ func (s *rdwsService) GetDiagnostics(ctx context.Context, serial string) (*types
 	}
 
 	// Build the rDWS diagnostics endpoint URL
-	diagnosticsURL := fmt.Sprintf("https://ws.bsn.cloud/rest/v1/diagnostics/?destinationType=player&destinationName=%s", serial)
+	diagnosticsURL := fmt.Sprintf("%s/diagnostics/?destinationType=player&destinationName=%s", s.config.RDWSBaseURL, serial)
 
 	// Make the API request
 	var response types.RDWSDiagnosticsResponse
@@ -585,7 +585,7 @@ func (s *rdwsService) DNSLookup(ctx context.Context, serial string, domain strin
 	}
 
 	// Build the rDWS DNS lookup endpoint URL
-	dnsURL := fmt.Sprintf("https://ws.bsn.cloud/rest/v1/diagnostics/dns-lookup/%s/?destinationType=player&destinationName=%s", domain, serial)
+	dnsURL := fmt.Sprintf("%s/diagnostics/dns-lookup/%s/?destinationType=player&destinationName=%s", s.config.RDWSBaseURL, domain, serial)
 
 	// Make the API request
 	var response types.RDWSDNSLookupResponse
@@ -623,7 +623,7 @@ func (s *rdwsService) Ping(ctx context.Context, serial string, host string) (*ty
 	}
 
 	// Build the rDWS ping endpoint URL
-	pingURL := fmt.Sprintf("https://ws.bsn.cloud/rest/v1/diagnostics/ping/%s/?destinationType=player&destinationName=%s", host, serial)
+	pingURL := fmt.Sprintf("%s/diagnostics/ping/%s/?destinationType=player&destinationName=%s", s.config.RDWSBaseURL, host, serial)
 
 	// Make the API request
 	var response types.RDWSPingResponse
@@ -661,7 +661,7 @@ func (s *rdwsService) TraceRoute(ctx context.Context, serial string, host string
 	}
 
 	// Build the rDWS trace-route endpoint URL
-	traceURL := fmt.Sprintf("https://ws.bsn.cloud/rest/v1/diagnostics/trace-route/%s/?destinationType=player&destinationName=%s", host, serial)
+	traceURL := fmt.Sprintf("%s/diagnostics/trace-route/%s/?destinationType=player&destinationName=%s", s.config.RDWSBaseURL, host, serial)
 
 	// Make the API request
 	var response types.RDWSTraceRouteResponse
@@ -699,7 +699,7 @@ func (s *rdwsService) GetNetworkConfig(ctx context.Context, serial string, iface
 	}
 
 	// Build the rDWS network configuration endpoint URL
-	netConfigURL := fmt.Sprintf("https://ws.bsn.cloud/rest/v1/diagnostics/network-configuration/%s/?destinationType=player&destinationName=%s", iface, serial)
+	netConfigURL := fmt.Sprintf("%s/diagnostics/network-configuration/%s/?destinationType=player&destinationName=%s", s.config.RDWSBaseURL, iface, serial)
 
 	// Make the API request
 	var response types.RDWSNetworkConfigResponse
@@ -740,7 +740,7 @@ func (s *rdwsService) SetNetworkConfig(ctx context.Context, serial string, iface
 	}
 
 	// Build the rDWS network configuration endpoint URL
-	netConfigURL := fmt.Sprintf("https://ws.bsn.cloud/rest/v1/diagnostics/network-configuration/%s/?destinationType=player&destinationName=%s", iface, serial)
+	netConfigURL := fmt.Sprintf("%s/diagnostics/network-configuration/%s/?destinationType=player&destinationName=%s", s.config.RDWSBaseURL, iface, serial)
 
 	// Make the API request
 	var response types.RDWSNetworkConfigSetResponse
@@ -775,7 +775,7 @@ func (s *rdwsService) GetNetworkNeighborhood(ctx context.Context, serial string)
 	}
 
 	// Build the rDWS network neighborhood endpoint URL
-	neighborhoodURL := fmt.Sprintf("https://ws.bsn.cloud/rest/v1/diagnostics/network-neighborhood/?destinationType=player&destinationName=%s", serial)
+	neighborhoodURL := fmt.Sprintf("%s/diagnostics/network-neighborhood/?destinationType=player&destinationName=%s", s.config.RDWSBaseURL, serial)
 
 	// Make the API request
 	var response types.RDWSNetworkNeighborhoodResponse
@@ -810,7 +810,7 @@ func (s *rdwsService) GetPacketCaptureStatus(ctx context.Context, serial string)
 	}
 
 	// Build the rDWS packet capture endpoint URL
-	packetCaptureURL := fmt.Sprintf("https://ws.bsn.cloud/rest/v1/diagnostics/packet-capture/?destinationType=player&destinationName=%s", serial)
+	packetCaptureURL := fmt.Sprintf("%s/diagnostics/packet-capture/?destinationType=player&destinationName=%s", s.config.RDWSBaseURL, serial)
 
 	// Make the API request
 	var response types.RDWSPacketCaptureResponse
@@ -848,7 +848,7 @@ func (s *rdwsService) StartPacketCapture(ctx context.Context, serial string, req
 	}
 
 	// Build the rDWS packet capture endpoint URL
-	packetCaptureURL := fmt.Sprintf("https://ws.bsn.cloud/rest/v1/diagnostics/packet-capture/?destinationType=player&destinationName=%s", serial)
+	packetCaptureURL := fmt.Sprintf("%s/diagnostics/packet-capture/?destinationType=player&destinationName=%s", s.config.RDWSBaseURL, serial)
 
 	// Make the API request
 	var response types.RDWSPacketCaptureStartResponse
@@ -883,7 +883,7 @@ func (s *rdwsService) StopPacketCapture(ctx context.Context, serial string) (str
 	}
 
 	// Build the rDWS packet capture endpoint URL
-	packetCaptureURL := fmt.Sprintf("https://ws.bsn.cloud/rest/v1/diagnostics/packet-capture/?destinationType=player&destinationName=%s", serial)
+	packetCaptureURL := fmt.Sprintf("%s/diagnostics/packet-capture/?destinationType=player&destinationName=%s", s.config.RDWSBaseURL, serial)
 
 	// Make the API request
 	var response types.RDWSPacketCaptureStopResponse
@@ -918,7 +918,7 @@ func (s *rdwsService) GetTelnetStatus(ctx context.Context, serial string) (*type
 	}
 
 	// Build the rDWS telnet endpoint URL
-	telnetURL := fmt.Sprintf("https://ws.bsn.cloud/rest/v1/diagnostics/telnet/?destinationType=player&destinationName=%s", serial)
+	telnetURL := fmt.Sprintf("%s/diagnostics/telnet/?destinationType=player&destinationName=%s", s.config.RDWSBaseURL, serial)
 
 	// Make the API request
 	var response types.RDWSTelnetResponse
@@ -960,7 +960,7 @@ func (s *rdwsService) SetTelnetStatus(ctx context.Context, serial string, enable
 	}
 
 	// Build the rDWS telnet endpoint URL
-	telnetURL := fmt.Sprintf("https://ws.bsn.cloud/rest/v1/diagnostics/telnet/?destinationType=player&destinationName=%s", serial)
+	telnetURL := fmt.Sprintf("%s/diagnostics/telnet/?destinationType=player&destinationName=%s", s.config.RDWSBaseURL, serial)
 
 	// Make the API request
 	var response types.RDWSTelnetSetResponse
@@ -995,7 +995,7 @@ func (s *rdwsService) GetSSHStatus(ctx context.Context, serial string) (*types.R
 	}
 
 	// Build the rDWS SSH endpoint URL
-	sshURL := fmt.Sprintf("https://ws.bsn.cloud/rest/v1/diagnostics/ssh/?destinationType=player&destinationName=%s", serial)
+	sshURL := fmt.Sprintf("%s/diagnostics/ssh/?destinationType=player&destinationName=%s", s.config.RDWSBaseURL, serial)
 
 	// Make the API request
 	var response types.RDWSSSHResponse
@@ -1041,7 +1041,7 @@ func (s *rdwsService) SetSSHStatus(ctx context.Context, serial string, enabled b
 	}
 
 	// Build the rDWS SSH endpoint URL
-	sshURL := fmt.Sprintf("https://ws.bsn.cloud/rest/v1/diagnostics/ssh/?destinationType=player&destinationName=%s", serial)
+	sshURL := fmt.Sprintf("%s/diagnostics/ssh/?destinationType=player&destinationName=%s", s.config.RDWSBaseURL, serial)
 
 	// Make the API request
 	var response types.RDWSSSHSetResponse
@@ -1081,7 +1081,7 @@ func (s *rdwsService) ReformatStorage(ctx context.Context, serial string, device
 	}
 
 	// Build the rDWS storage reformat endpoint URL
-	storageURL := fmt.Sprintf("https://ws.bsn.cloud/rest/v1/storage/%s?destinationType=player&destinationName=%s", deviceName, serial)
+	storageURL := fmt.Sprintf("%s/storage/%s?destinationType=player&destinationName=%s", s.config.RDWSBaseURL, deviceName, serial)
 
 	// Make the API request
 	var response types.RDWSStorageReformatResponse
@@ -1124,7 +1124,7 @@ func (s *rdwsService) SendCustomData(ctx context.Context, serial string, data st
 	request.Data.Data = data
 
 	// Build the rDWS custom data endpoint URL
-	customURL := fmt.Sprintf("https://ws.bsn.cloud/rest/v1/custom/?destinationType=player&destinationName=%s", serial)
+	customURL := fmt.Sprintf("%s/custom/?destinationType=player&destinationName=%s", s.config.RDWSBaseURL, serial)
 
 	// Make the API request
 	var response types.RDWSCustomDataResponse
@@ -1165,7 +1165,8 @@ func (s *rdwsService) DownloadFirmware(ctx context.Context, serial string, firmw
 	}
 
 	// Build the rDWS firmware download endpoint URL with query parameters
-	firmwareDownloadURL := fmt.Sprintf("https://ws.bsn.cloud/rest/v1/download-firmware/?destinationType=player&destinationName=%s&url=%s",
+	firmwareDownloadURL := fmt.Sprintf("%s/download-firmware/?destinationType=player&destinationName=%s&url=%s",
+		s.config.RDWSBaseURL,
 		serial,
 		url.QueryEscape(firmwareURL))
 
@@ -1211,7 +1212,7 @@ func (s *rdwsService) GetRegistry(ctx context.Context, serial string) (*types.RD
 	}
 
 	// Build the rDWS registry endpoint URL
-	registryURL := fmt.Sprintf("https://ws.bsn.cloud/rest/v1/registry/?destinationType=player&destinationName=%s", serial)
+	registryURL := fmt.Sprintf("%s/registry/?destinationType=player&destinationName=%s", s.config.RDWSBaseURL, serial)
 
 	// Make the API request
 	var response types.RDWSRegistryResponse
@@ -1252,7 +1253,7 @@ func (s *rdwsService) GetRegistryValue(ctx context.Context, serial string, secti
 	}
 
 	// Build the rDWS registry value endpoint URL
-	registryURL := fmt.Sprintf("https://ws.bsn.cloud/rest/v1/registry/%s/%s/?destinationType=player&destinationName=%s", section, key, serial)
+	registryURL := fmt.Sprintf("%s/registry/%s/%s/?destinationType=player&destinationName=%s", s.config.RDWSBaseURL, section, key, serial)
 
 	// Make the API request
 	var response types.RDWSRegistryValueResponse
@@ -1301,7 +1302,7 @@ func (s *rdwsService) SetRegistryValue(ctx context.Context, serial string, secti
 	request.Data.Value = value
 
 	// Build the rDWS registry set endpoint URL
-	registryURL := fmt.Sprintf("https://ws.bsn.cloud/rest/v1/registry/%s/%s/?destinationType=player&destinationName=%s", section, key, serial)
+	registryURL := fmt.Sprintf("%s/registry/%s/%s/?destinationType=player&destinationName=%s", s.config.RDWSBaseURL, section, key, serial)
 
 	// Make the API request
 	var response types.RDWSRegistrySetResponse
@@ -1342,7 +1343,7 @@ func (s *rdwsService) DeleteRegistryValue(ctx context.Context, serial string, se
 	}
 
 	// Build the rDWS registry delete endpoint URL
-	registryURL := fmt.Sprintf("https://ws.bsn.cloud/rest/v1/registry/%s/%s/?destinationType=player&destinationName=%s", section, key, serial)
+	registryURL := fmt.Sprintf("%s/registry/%s/%s/?destinationType=player&destinationName=%s", s.config.RDWSBaseURL, section, key, serial)
 
 	// Make the API request
 	var response types.RDWSRegistryDeleteResponse
@@ -1377,7 +1378,7 @@ func (s *rdwsService) FlushRegistry(ctx context.Context, serial string) (bool, e
 	}
 
 	// Build the rDWS registry flush endpoint URL
-	registryURL := fmt.Sprintf("https://ws.bsn.cloud/rest/v1/registry/flush/?destinationType=player&destinationName=%s", serial)
+	registryURL := fmt.Sprintf("%s/registry/flush/?destinationType=player&destinationName=%s", s.config.RDWSBaseURL, serial)
 
 	// Make the API request
 	var response types.RDWSRegistryFlushResponse
@@ -1412,7 +1413,7 @@ func (s *rdwsService) GetRecoveryURL(ctx context.Context, serial string) (*types
 	}
 
 	// Build the rDWS recovery URL endpoint URL
-	recoveryURL := fmt.Sprintf("https://ws.bsn.cloud/rest/v1/registry/recovery_url/?destinationType=player&destinationName=%s", serial)
+	recoveryURL := fmt.Sprintf("%s/registry/recovery_url/?destinationType=player&destinationName=%s", s.config.RDWSBaseURL, serial)
 
 	// Make the API request
 	var response types.RDWSRecoveryURLResponse
@@ -1456,7 +1457,7 @@ func (s *rdwsService) SetRecoveryURL(ctx context.Context, serial string, recover
 	request.Data.URL = recoveryURL
 
 	// Build the rDWS recovery URL set endpoint URL
-	recoveryURLEndpoint := fmt.Sprintf("https://ws.bsn.cloud/rest/v1/registry/recovery_url/?destinationType=player&destinationName=%s", serial)
+	recoveryURLEndpoint := fmt.Sprintf("%s/registry/recovery_url/?destinationType=player&destinationName=%s", s.config.RDWSBaseURL, serial)
 
 	// Make the API request
 	var response types.RDWSRecoveryURLSetResponse
@@ -1491,7 +1492,7 @@ func (s *rdwsService) GetLogs(ctx context.Context, serial string) (*types.RDWSLo
 	}
 
 	// Build the rDWS logs endpoint URL
-	logsEndpoint := fmt.Sprintf("https://ws.bsn.cloud/rest/v1/logs/?destinationType=player&destinationName=%s", serial)
+	logsEndpoint := fmt.Sprintf("%s/logs/?destinationType=player&destinationName=%s", s.config.RDWSBaseURL, serial)
 
 	// Make the API request
 	var response types.RDWSLogsResponse
@@ -1546,7 +1547,7 @@ func (s *rdwsService) GetCrashDump(ctx context.Context, serial string) (*types.R
 	}
 
 	// Build the rDWS crash dump endpoint URL
-	crashDumpEndpoint := fmt.Sprintf("https://ws.bsn.cloud/rest/v1/crash-dump/?destinationType=player&destinationName=%s", serial)
+	crashDumpEndpoint := fmt.Sprintf("%s/crash-dump/?destinationType=player&destinationName=%s", s.config.RDWSBaseURL, serial)
 
 	// Make the API request
 	var response types.RDWSCrashDumpResponse
