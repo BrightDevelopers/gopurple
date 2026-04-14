@@ -357,6 +357,9 @@ var (
 	// WithOIDCURL sets the OIDC base URL and derives the token endpoint from it.
 	WithOIDCURL = config.WithOIDCURL
 
+	// WithProvisioningEndpoint sets a custom provisioning endpoint.
+	WithProvisioningEndpoint = config.WithProvisioningEndpoint
+
 	// WithDeviceSerial sets a default device serial number for single-device operations.
 	WithDeviceSerial = config.WithDeviceSerial
 
