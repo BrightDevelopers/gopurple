@@ -242,13 +242,13 @@ func WithOIDCURL(oidcURL string) Option {
 	}
 }
 
-// WithProvisioningURL sets a custom provisioning endpoint.
+// WithProvisioningEndpoint sets a custom provisioning endpoint.
 //
 // This is primarily useful for testing or when using private cloud deployments.
-func WithProvisioningURL(url string) Option {
+func WithProvisioningEndpoint(url string) Option {
 	return func(c *Config) error {
 		if url == "" {
-			return fmt.Errorf("provisioning URL cannot be empty")
+			return fmt.Errorf("provisioning endpoint cannot be empty")
 		}
 		c.ProvisioningURL = url
 		return nil
