@@ -33,7 +33,7 @@ func NewProvisioningService(cfg *config.Config, httpClient *http.HTTPClient, aut
 	}
 }
 
-const provisioningTokenURL = "https://api.bsn.cloud/2022/06/REST/Provisioning/Setups/Tokens/"
+const provisioningTokenPath = "/2022/06/REST/Provisioning/Setups/Tokens/"
 
 // GenerateDeviceToken generates a new device registration token for the current network.
 //
@@ -59,6 +59,7 @@ func (s *provisioningService) GenerateDeviceToken(ctx context.Context) (*types.B
 
 	// Make the API request - POST to generate token
 	var response types.BSNTokenEntity
+	var provisioningTokenURL = fmt.Sprintf("%s%s", s.config.BSNBaseURL, provisioningTokenPath)
 	err = s.httpClient.PostWithAuth(ctx, token, provisioningTokenURL, nil, &response)
 	if err != nil {
 		return nil, errors.NewAPIError(0, "token_generation_failed",
@@ -99,7 +100,7 @@ func (s *provisioningService) ValidateDeviceToken(ctx context.Context, tokenValu
 	}
 
 	// Build the token validation endpoint
-	validateURL := fmt.Sprintf("%s%s/", provisioningTokenURL, tokenValue)
+	validateURL := fmt.Sprintf("%s%s%s/", s.config.BSNBaseURL, provisioningTokenPath, tokenValue)
 
 	// Make the API request
 	var response types.BSNTokenEntity
