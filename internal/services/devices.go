@@ -878,7 +878,7 @@ func (s *deviceService) RebootBySerial(ctx context.Context, serial string, reboo
 
 	// Build the proper rDWS reboot endpoint according to documentation
 	// PUT /rest/v1/control/reboot/?destinationType=player&destinationName={{deviceSerial}}
-	rebootURL := fmt.Sprintf("https://ws.bsn.cloud/rest/v1/control/reboot/?destinationType=player&destinationName=%s", serial)
+	rebootURL := fmt.Sprintf("%s/control/reboot/?destinationType=player&destinationName=%s", s.config.RDWSBaseURL, serial)
 
 	// Build request body based on reboot type
 	var requestBody interface{}
@@ -1011,7 +1011,7 @@ func (s *deviceService) TakeSnapshotBySerial(ctx context.Context, serial string,
 
 	// Build the rDWS snapshot endpoint according to documentation
 	// POST /rest/v1/snapshot/?destinationType=player&destinationName={{deviceSerial}}
-	snapshotURL := fmt.Sprintf("https://ws.bsn.cloud/rest/v1/snapshot/?destinationType=player&destinationName=%s", serial)
+	snapshotURL := fmt.Sprintf("%s/snapshot/?destinationType=player&destinationName=%s", s.config.RDWSBaseURL, serial)
 
 	// Build request body
 	requestBody := map[string]interface{}{
@@ -1076,7 +1076,7 @@ func (s *deviceService) ReprovisionBySerial(ctx context.Context, serial string) 
 
 	// Build the rDWS re-provision endpoint according to documentation
 	// GET /rest/v1/re-provision/?destinationType=player&destinationName={{deviceSerial}}
-	reprovisionURL := fmt.Sprintf("https://ws.bsn.cloud/rest/v1/re-provision/?destinationType=player&destinationName=%s", serial)
+	reprovisionURL := fmt.Sprintf("%s/re-provision/?destinationType=player&destinationName=%s", s.config.RDWSBaseURL, serial)
 
 	// Make the API request - GET with no body
 	var rawResponse struct {
@@ -1136,7 +1136,7 @@ func (s *deviceService) GetDWSPasswordBySerial(ctx context.Context, serial strin
 
 	// Build the rDWS DWS password endpoint according to documentation
 	// GET /rest/v1/control/dws-password/?destinationType=player&destinationName={{deviceSerial}}
-	dwsPasswordURL := fmt.Sprintf("https://ws.bsn.cloud/rest/v1/control/dws-password/?destinationType=player&destinationName=%s", serial)
+	dwsPasswordURL := fmt.Sprintf("%s/control/dws-password/?destinationType=player&destinationName=%s", s.config.RDWSBaseURL, serial)
 
 	// Make the API request - GET with no body
 	var rawResponse struct {
@@ -1200,7 +1200,7 @@ func (s *deviceService) SetDWSPasswordBySerial(ctx context.Context, serial strin
 
 	// Build the rDWS DWS password endpoint according to documentation
 	// PUT /rest/v1/control/dws-password/?destinationType=player&destinationName={{deviceSerial}}
-	dwsPasswordURL := fmt.Sprintf("https://ws.bsn.cloud/rest/v1/control/dws-password/?destinationType=player&destinationName=%s", serial)
+	dwsPasswordURL := fmt.Sprintf("%s/control/dws-password/?destinationType=player&destinationName=%s", s.config.RDWSBaseURL, serial)
 
 	// Build request body
 	requestBody := map[string]interface{}{

@@ -19,9 +19,10 @@ type Config struct {
 	APIVersion  string `json:"api_version"`
 
 	// Endpoint URLs
-	BSNBaseURL    string `json:"bsn_base_url"`
-	RDWSBaseURL   string `json:"rdws_base_url"`
-	TokenEndpoint string `json:"token_endpoint"`
+	BSNBaseURL      string `json:"bsn_base_url"`
+	ProvisioningURL string `json:"provisioning_url"`
+	RDWSBaseURL     string `json:"rdws_base_url"`
+	TokenEndpoint   string `json:"token_endpoint"`
 
 	// HTTP client settings
 	Timeout    time.Duration `json:"timeout"`
@@ -32,19 +33,20 @@ type Config struct {
 	DeviceSerial string `json:"device_serial,omitempty"`
 
 	// Pre-loaded access token (for session reuse across CLI invocations)
-	AccessToken string `json:"-"`
+	AccessToken string    `json:"-"`
 	ExpiresAt   time.Time `json:"-"`
 }
 
 // DefaultConfig returns a Config with sensible default values.
 func DefaultConfig() *Config {
 	return &Config{
-		APIVersion:    "2022/06/REST",
-		BSNBaseURL:    "https://api.bsn.cloud",
-		RDWSBaseURL:   "https://ws.bsn.cloud/rest/v1",
-		TokenEndpoint: "https://auth.bsn.cloud/realms/bsncloud/protocol/openid-connect/token",
-		Timeout:       30 * time.Second,
-		RetryCount:    3,
+		APIVersion:      "2022/06/REST",
+		BSNBaseURL:      "https://api.bsn.cloud",
+		ProvisioningURL: "https://provision.bsn.cloud",
+		RDWSBaseURL:     "https://ws.bsn.cloud/rest/v1",
+		TokenEndpoint:   "https://auth.bsn.cloud/realms/bsncloud/protocol/openid-connect/token",
+		Timeout:         30 * time.Second,
+		RetryCount:      3,
 	}
 }
 
@@ -74,6 +76,10 @@ func (c *Config) Validate() error {
 
 	if c.BSNBaseURL == "" {
 		return errors.NewConfigError("BSNBaseURL", "field is required", "")
+	}
+
+	if c.ProvisioningURL == "" {
+		return errors.NewConfigError("ProvisioningURL", "field is required", "")
 	}
 
 	if c.RDWSBaseURL == "" {
@@ -232,6 +238,19 @@ func WithOIDCURL(oidcURL string) Option {
 		}
 		// Construct token endpoint from OIDC base URL
 		c.TokenEndpoint = oidcURL + "/protocol/openid-connect/token"
+		return nil
+	}
+}
+
+// WithProvisioningURL sets a custom provisioning endpoint.
+//
+// This is primarily useful for testing or when using private cloud deployments.
+func WithProvisioningURL(url string) Option {
+	return func(c *Config) error {
+		if url == "" {
+			return fmt.Errorf("provisioning URL cannot be empty")
+		}
+		c.ProvisioningURL = url
 		return nil
 	}
 }
