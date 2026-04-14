@@ -65,7 +65,7 @@ func (s *bDeployService) SetNetworkContext(ctx context.Context, networkName stri
 	}
 
 	// Build the BSN.cloud network context endpoint
-	contextURL := "https://api.bsn.cloud/2022/06/REST/Self/Session/Network"
+	contextURL := fmt.Sprintf("%s/2022/06/REST/Self/Session/Network", s.config.BSNBaseURL)
 
 	// Build request body
 	request := &types.NetworkContextRequest{
@@ -119,7 +119,7 @@ func (s *bDeployService) GetSetupRecords(ctx context.Context, opts ...BDeployLis
 	// The B-Deploy API may not support pagination or may have issues with it
 
 	// Build URL
-	baseURL := "https://provision.bsn.cloud/rest-setup/v3/setup"
+	baseURL := fmt.Sprintf("%s/rest-setup/v3/setup", s.config.ProvisioningURL)
 	if len(params) > 0 {
 		baseURL += "?" + params.Encode()
 	}
@@ -164,7 +164,7 @@ func (s *bDeployService) GetSetupRecord(ctx context.Context, setupID string) (*t
 
 	// Build the B-Deploy setup retrieval endpoint
 	// Using v3 API with query parameter format - returns array format with full setup records
-	getURL := fmt.Sprintf("https://provision.bsn.cloud/rest-setup/v3/setup/?_id=%s", url.QueryEscape(setupID))
+	getURL := fmt.Sprintf("%s/rest-setup/v3/setup/?_id=%s", s.config.ProvisioningURL, url.QueryEscape(setupID))
 
 	// Make the API request - B-Deploy API returns array format with full setup record structure
 	var apiResponse types.BDeployFullRecordAPIResponse
@@ -204,7 +204,7 @@ func (s *bDeployService) GetSetupRecordRaw(ctx context.Context, setupID string) 
 		return "", err
 	}
 
-	getURL := fmt.Sprintf("https://provision.bsn.cloud/rest-setup/v3/setup/?_id=%s", url.QueryEscape(setupID))
+	getURL := fmt.Sprintf("%s/rest-setup/v3/setup/?_id=%s", s.config.ProvisioningURL, url.QueryEscape(setupID))
 
 	data, err := s.httpClient.GetBytesWithAuth(ctx, token, getURL)
 	if err != nil {
@@ -249,7 +249,7 @@ func (s *bDeployService) AddSetupRecord(ctx context.Context, record *types.BDepl
 	}
 
 	// Build the B-Deploy setup creation endpoint
-	createURL := "https://provision.bsn.cloud/rest-setup/v3/setup"
+	createURL := fmt.Sprintf("%s/rest-setup/v3/setup", s.config.ProvisioningURL)
 
 	// Make the API request - B-Deploy API returns wrapper format with full record in result
 	var apiResponse types.BDeployCreateAPIResponse
@@ -291,7 +291,7 @@ func (s *bDeployService) AddSetupRecordRaw(ctx context.Context, setupJSON string
 	}
 
 	// Build the B-Deploy setup creation endpoint
-	createURL := "https://provision.bsn.cloud/rest-setup/v3/setup"
+	createURL := fmt.Sprintf("%s/rest-setup/v3/setup", s.config.ProvisioningURL)
 
 	// Post raw JSON string — resty passes strings directly without re-marshalling
 	var apiResponse types.BDeployCreateAPIResponse
@@ -337,7 +337,7 @@ func (s *bDeployService) UpdateSetupRecord(ctx context.Context, setupID string, 
 	record.ID = setupID
 
 	// Build the B-Deploy setup update endpoint
-	updateURL := "https://provision.bsn.cloud/rest-setup/v3/setup"
+	updateURL := fmt.Sprintf("%s/rest-setup/v3/setup", s.config.ProvisioningURL)
 
 	// Make the API request - B-Deploy API returns wrapper format with full record in result
 	var apiResponse types.BDeployUpdateAPIResponse
@@ -374,7 +374,7 @@ func (s *bDeployService) DeleteSetupRecord(ctx context.Context, setupID string) 
 
 	// Build the B-Deploy setup deletion endpoint
 	// Note: Using v3 API with query parameter format (v3 path parameter format doesn't work)
-	deleteURL := fmt.Sprintf("https://provision.bsn.cloud/rest-setup/v3/setup/?_id=%s", url.QueryEscape(setupID))
+	deleteURL := fmt.Sprintf("%s/rest-setup/v3/setup/?_id=%s", s.config.ProvisioningURL, url.QueryEscape(setupID))
 
 	// Make the API request
 	var response types.BDeployDeleteResponse
@@ -410,7 +410,7 @@ func (s *bDeployService) GetDeviceBySerial(ctx context.Context, serial string) (
 	if s.currentNetwork != "" {
 		params.Set("NetworkName", s.currentNetwork)
 	}
-	deviceURL := fmt.Sprintf("https://provision.bsn.cloud/rest-device/v2/device/?%s", params.Encode())
+	deviceURL := fmt.Sprintf("%s/rest-device/v2/device/?%s", s.config.ProvisioningURL, params.Encode())
 
 	// Try wrapped response format first (like GetAllDevices does)
 	var wrappedResponse types.BDeployDeviceResponse
@@ -469,7 +469,7 @@ func (s *bDeployService) GetAllDevices(ctx context.Context, opts ...BDeployDevic
 	// Build the B-Deploy device list endpoint with query parameters
 	// The Device API requires an explicit NetworkName query parameter to filter by network,
 	// in addition to the session network context.
-	deviceListURL := "https://provision.bsn.cloud/rest-device/v2/device/"
+	deviceListURL := fmt.Sprintf("%s/rest-device/v2/device/", s.config.ProvisioningURL)
 	if len(params) > 0 {
 		deviceListURL += "?" + params.Encode()
 	}
@@ -596,7 +596,7 @@ func (s *bDeployService) CreateDevice(ctx context.Context, request *types.BDeplo
 	}
 
 	// POST to /rest-device/v2/device/
-	createURL := "https://provision.bsn.cloud/rest-device/v2/device/"
+	createURL := fmt.Sprintf("%s/rest-device/v2/device/", s.config.ProvisioningURL)
 
 	var response types.BDeployDeviceCreateResponse
 	err = s.httpClient.PostWithAuth(ctx, token, createURL, request, &response)
@@ -635,7 +635,7 @@ func (s *bDeployService) UpdateDevice(ctx context.Context, deviceID string, requ
 	request.ID = deviceID
 
 	// PUT to /rest-device/v2/device?_id={deviceID}
-	updateURL := fmt.Sprintf("https://provision.bsn.cloud/rest-device/v2/device?_id=%s", url.QueryEscape(deviceID))
+	updateURL := fmt.Sprintf("%s/rest-device/v2/device?_id=%s", s.config.ProvisioningURL, url.QueryEscape(deviceID))
 
 	var response types.BDeployDeviceUpdateResponse
 	err = s.httpClient.PutWithAuth(ctx, token, updateURL, request, &response)
@@ -708,9 +708,9 @@ func (s *bDeployService) DeleteDevice(ctx context.Context, deviceID string, seri
 	// Build delete URL with either _id or serial parameter
 	var deleteURL string
 	if deviceID != "" {
-		deleteURL = fmt.Sprintf("https://provision.bsn.cloud/rest-device/v2/device?_id=%s", url.QueryEscape(deviceID))
+		deleteURL = fmt.Sprintf("%s/rest-device/v2/device?_id=%s", s.config.ProvisioningURL, url.QueryEscape(deviceID))
 	} else {
-		deleteURL = fmt.Sprintf("https://provision.bsn.cloud/rest-device/v2/device?serial=%s", url.QueryEscape(serial))
+		deleteURL = fmt.Sprintf("%s/rest-device/v2/device?serial=%s", s.config.ProvisioningURL, url.QueryEscape(serial))
 	}
 
 	// DELETE returns a simple response, we'll use a generic struct
