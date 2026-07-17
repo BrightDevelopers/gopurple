@@ -41,6 +41,13 @@ func TestNew(t *testing.T) {
 }
 
 func TestNewWithoutCredentials(t *testing.T) {
+	// Isolate from any credentials the developer's shell exports (e.g. via .envrc),
+	// which New would otherwise pick up through LoadFromEnv. t.Setenv restores the
+	// originals when the test finishes; LoadFromEnv skips empty values.
+	t.Setenv("BS_CLIENT_ID", "")
+	t.Setenv("BS_SECRET", "")
+	t.Setenv("BS_NETWORK", "")
+
 	// Test without credentials should fail validation
 	_, err := New()
 	if err == nil {
