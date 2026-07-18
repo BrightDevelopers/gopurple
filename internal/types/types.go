@@ -1278,7 +1278,7 @@ type RDWSFirmwareDownloadResponse struct {
 
 // RDWSRegistry represents the full player registry
 type RDWSRegistry struct {
-	Sections map[string]map[string]string `json:"sections"`
+	Sections map[string]map[string]string `json:"value"`
 }
 
 // RDWSRegistryResponse represents the response from getting registry
