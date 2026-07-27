@@ -1,0 +1,55 @@
+name: guard
+
+# Server-side backstop for the local pre-commit hook (.githooks/pre-commit).
+# Fails any push or PR that introduces a compiled binary, a secret/env file,
+# or an oversized blob — even if the author skipped the local hook.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  no-binaries-or-secrets:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Reject binaries, secrets, and large files
+        run: |
+          set -euo pipefail
+          MAX_BYTES=$((1024 * 1024))   # 1 MB
+          fail=0
+
+          while IFS= read -r f; do
+            [ -f "$f" ] || continue
+
+            # 1. Compiled binaries (magic bytes) --------------------------
+            magic=$(head -c 4 "$f" | od -An -tx1 | tr -d ' \n')
+            case "$magic" in
+              7f454c46)                    echo "BLOCKED (ELF):    $f"; fail=1; continue ;;
+              cffaedfe|cefaedfe|cafebabe)  echo "BLOCKED (Mach-O): $f"; fail=1; continue ;;
+              4d5a*)                       echo "BLOCKED (PE):     $f"; fail=1; continue ;;
+            esac
+
+            # 2. Secret / env files ---------------------------------------
+            case "$(basename "$f")" in
+              .env|.env.*|.envrc|envrc|*.envrc|*.pem|*.key|id_rsa|id_ed25519)
+                # allow the documented template
+                [ "$(basename "$f")" = ".envrc.example" ] && continue
+                echo "BLOCKED (secret): $f"; fail=1; continue ;;
+            esac
+
+            # 3. Size backstop --------------------------------------------
+            size=$(wc -c < "$f" | tr -d ' ')
+            if [ "$size" -gt "$MAX_BYTES" ]; then
+              echo "BLOCKED (>1MB):   $f"; fail=1; continue
+            fi
+          done < <(git ls-files)
+
+          if [ "$fail" -ne 0 ]; then
+            echo ""
+            echo "Tracked binaries/secrets/large files detected. See .githooks/pre-commit."
+            exit 1
+          fi
+          echo "OK: no binaries, secrets, or oversized files tracked."

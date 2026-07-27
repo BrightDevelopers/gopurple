@@ -44,7 +44,12 @@ install:
 		$(GOCMD) install ./examples/$$example; \
 	done
 
-dev-deps:
+install-hooks:
+	git config core.hooksPath .githooks
+	@chmod +x .githooks/* 2>/dev/null || true
+	@echo "Git hooks installed (.githooks). Binaries and secrets will be blocked at commit time."
+
+dev-deps: install-hooks
 	$(GOCMD) install golang.org/x/tools/cmd/goimports@latest
 	$(GOCMD) install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
 
@@ -64,6 +69,7 @@ help:
 	@echo "  make deps        - Download and tidy dependencies"
 	@echo "  make build-linux - Cross-compile all examples for Linux amd64"
 	@echo "  make install     - Install all examples to GOPATH/bin"
+	@echo "  make install-hooks - Install git pre-commit guard (blocks binaries/secrets)"
 	@echo "  make fmt         - Format code"
 	@echo "  make lint        - Run linter"
 	@echo "  make help           - Show this help message"
@@ -72,4 +78,4 @@ help:
 list-examples:
 	@for example in $(EXAMPLES); do echo "bin/$$example"; done
 
-.PHONY: all build test clean deps build-linux install dev-deps lint fmt help list-examples
+.PHONY: all build test clean deps build-linux install install-hooks dev-deps lint fmt help list-examples

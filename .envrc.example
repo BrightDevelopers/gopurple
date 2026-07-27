@@ -1,0 +1,16 @@
+# Copy this file to .envrc (or .env) and fill in real values.
+# .envrc / .env are gitignored — NEVER commit real credentials.
+# Load with direnv (`direnv allow`) or `source .envrc`.
+
+# BrightSign / BSN API credentials (rotate in the admin panel if leaked)
+export BS_CLIENT_ID=your-client-id-here
+export BS_SECRET=your-client-secret-here
+
+# BSN network / account identifiers (not secret, but environment-specific)
+export BS_NETWORK=your-network-name
+export BS_USERNAME=your-username
+export BS_GROUPNAME=your-group-name
+export BS_SETUP_TYPE=your-setup-type
+
+# Grafana admin password (rotate in Grafana if leaked)
+export GF_ADMIN_PASSWORD=your-grafana-admin-password

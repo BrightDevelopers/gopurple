@@ -1,0 +1,56 @@
+#!/usr/bin/env bash
+#
+# gopurple pre-commit guard.
+# Blocks the two mistakes that broke this repo before:
+#   1. compiled binaries (ELF / Mach-O / PE) committed alongside source
+#   2. env / secret files (envrc, .env*, private keys)
+# Plus a size backstop for anything large that slips past the type checks.
+#
+# Install with:  make install-hooks   (sets core.hooksPath to .githooks)
+# Bypass once (use sparingly):  git commit --no-verify
+
+set -euo pipefail
+
+MAX_BYTES=$((1024 * 1024))   # 1 MB backstop for non-binary blobs
+fail=0
+
+# Only inspect files being Added/Copied/Modified this commit.
+while IFS= read -r -d '' file; do
+	[ -f "$file" ] || continue
+
+	# --- 1. Compiled-binary check (magic bytes) ---------------------------
+	magic=$(head -c 4 "$file" 2>/dev/null | od -An -tx1 | tr -d ' \n')
+	case "$magic" in
+		7f454c46)                       # 0x7F E L F  -> Linux ELF
+			echo "BLOCKED (ELF binary):   $file" ; fail=1 ; continue ;;
+		cffaedfe|cefaedfe|cafebabe)     # Mach-O 64/32 / universal -> macOS
+			echo "BLOCKED (Mach-O binary): $file" ; fail=1 ; continue ;;
+		4d5a*)                          # 'MZ' -> Windows PE (.exe/.dll)
+			echo "BLOCKED (PE binary):    $file" ; fail=1 ; continue ;;
+	esac
+
+	# --- 2. Secret / env file check ---------------------------------------
+	base=$(basename "$file")
+	case "$base" in
+		.env|.env.*|.envrc|envrc|*.envrc|*.pem|*.key|id_rsa|id_ed25519)
+			echo "BLOCKED (secret/env):   $file" ; fail=1 ; continue ;;
+	esac
+
+	# --- 3. Size backstop -------------------------------------------------
+	size=$(wc -c < "$file" | tr -d ' ')
+	if [ "$size" -gt "$MAX_BYTES" ]; then
+		echo "BLOCKED (>1MB: ${size}b): $file" ; fail=1 ; continue
+	fi
+done < <(git diff --cached --name-only --diff-filter=ACM -z)
+
+if [ "$fail" -ne 0 ]; then
+	cat >&2 <<'EOF'
+
+Commit rejected by .githooks/pre-commit.
+Binaries and secrets must never be committed to gopurple.
+  - Build binaries with `make build` (outputs to bin/, which is gitignored).
+  - Keep credentials in an untracked env file (.env / .envrc).
+If you are certain a flagged file is safe, bypass with: git commit --no-verify
+EOF
+	exit 1
+fi

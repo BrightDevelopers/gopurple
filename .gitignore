@@ -20,10 +20,33 @@ profile.cov
 go.work
 go.work.sum
 
-# env file
+# env / secret files (match ALL variants, not just .env / .envrc)
 .env
+.env.*
 .envrc
+envrc
+*.envrc
+*.pem
+*.key
+id_rsa
+id_ed25519
 
-# Editor/IDE
+# Editor/IDE + backup files
 .idea/
 .vscode/
+*~
+*.bak
+*.swp
+
+# Manually-built example binaries. `make build` puts binaries in bin/ (ignored
+# above), but `go build ./examples/foo/` drops one named `foo` next to the
+# source. These have no extension, so list the known ones and rely on the
+# pre-commit hook (.githooks/pre-commit) to catch any new binaries.
+/bdeploy-get-setup
+examples/*/rdws-crashdump-get
+examples/*/rdws-logs-get
+examples/*/bdeploy-update-setup
+examples/*/bdeploy-delete-record
+
+# scratch / temporary working dirs
+tmp-setups/
