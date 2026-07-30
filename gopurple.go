@@ -313,6 +313,33 @@ type (
 	// RDWSCrashDump represents the collection of crash dump files from a player
 	RDWSCrashDump = types.RDWSCrashDump
 
+	// RDWSCrashDumpListEntry is one crash dump the player is holding, as reported
+	// by GetCrashDumpFiles.
+	RDWSCrashDumpListEntry = types.RDWSCrashDumpListEntry
+
+	// RDWSComponentVersion is the {major,minor,patch,build} shape the player uses
+	// for firmware, bootstrap and supervisor versions.
+	RDWSComponentVersion = types.RDWSComponentVersion
+
+	// RDWSSupervisorRef is one supervisor the bootstrap enumerated, carrying its
+	// full path and whether it is the running build.
+	RDWSSupervisorRef = types.RDWSSupervisorRef
+
+	// RDWSSystemInfo is the player's system information, including the version of
+	// the supervisor that is actually running.
+	RDWSSystemInfo = types.RDWSSystemInfo
+
+	// RDWSStoredSupervisors lists the supervisor builds downloaded to the player.
+	RDWSStoredSupervisors = types.RDWSStoredSupervisors
+
+	// RDWSDeleteSupervisorsRequest removes downloaded supervisor builds. Builds and
+	// Clear are mutually exclusive.
+	RDWSDeleteSupervisorsRequest = types.RDWSDeleteSupervisorsRequest
+
+	// RDWSUpdateSyncResult is the outcome of asking a player to check for a
+	// supervisor update now.
+	RDWSUpdateSyncResult = types.RDWSUpdateSyncResult
+
 	// RDWSRegistry represents the full player registry
 	RDWSRegistry = types.RDWSRegistry
 

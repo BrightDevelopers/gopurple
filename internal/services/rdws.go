@@ -70,6 +70,14 @@ type RDWSService interface {
 	// Logs and Diagnostics
 	GetLogs(ctx context.Context, serial string) (*types.RDWSLogs, error)
 	GetCrashDump(ctx context.Context, serial string) (*types.RDWSCrashDump, error)
+	GetCrashDumpFiles(ctx context.Context, serial string) ([]types.RDWSCrashDumpListEntry, error)
+
+	// Supervisor Update and System Inspection
+	TriggerUpdateSync(ctx context.Context, serial string) (*types.RDWSUpdateSyncResult, error)
+	GetStoredSupervisors(ctx context.Context, serial string) (*types.RDWSStoredSupervisors, error)
+	DeleteSupervisors(ctx context.Context, serial string, request *types.RDWSDeleteSupervisorsRequest) (bool, error)
+	// GetSystemInfo is EXPERIMENTAL — see its implementation for why.
+	GetSystemInfo(ctx context.Context, serial string) (*types.RDWSSystemInfo, error)
 }
 
 // rdwsService implements the RDWSService interface.
@@ -1502,27 +1510,37 @@ func (s *rdwsService) GetLogs(ctx context.Context, serial string) (*types.RDWSLo
 			fmt.Sprintf("Failed to get logs from device with serial '%s'", serial), err.Error())
 	}
 
-	// Check if result is an error string or a success object
-	var errorString string
-	if err := json.Unmarshal(response.Data.Result, &errorString); err == nil {
-		// Result is a string (error message)
-		return nil, errors.NewAPIError(0, "rdws_logs_error",
-			fmt.Sprintf("Device returned error for serial '%s'", serial), errorString)
-	}
-
-	// Try to unmarshal as success response
-	var result types.RDWSLogsResult
-	if err := json.Unmarshal(response.Data.Result, &result); err != nil {
+	logs, parseErr := parseLogsResult(response.Data.Result)
+	if parseErr != nil {
 		return nil, errors.NewAPIError(0, "rdws_logs_parse_failed",
-			fmt.Sprintf("Failed to parse logs response from device with serial '%s'", serial), err.Error())
-	}
-
-	// Convert response to return type
-	logs := &types.RDWSLogs{
-		Files: result.Logs,
+			fmt.Sprintf("Failed to parse logs response from device with serial '%s'", serial), parseErr.Error())
 	}
 
 	return logs, nil
+}
+
+// parseLogsResult interprets the data.result payload of a GET /logs response.
+//
+// The player returns its kernel log (dmesg) as a plain JSON string, so a string
+// result is the SUCCESS case. An earlier implementation treated any string as a
+// device error message, which made GetLogs fail on every successful read and
+// surface the log text as the error detail — the method could not succeed at all.
+//
+// Device-side failures do not reach here: they carry a non-2xx status and are
+// converted by the HTTP client's error handling before the body is parsed. Some
+// firmware may return a structured {"logs":[...]} list instead, which is still
+// accepted.
+func parseLogsResult(raw json.RawMessage) (*types.RDWSLogs, error) {
+	var text string
+	if err := json.Unmarshal(raw, &text); err == nil {
+		return &types.RDWSLogs{Text: text}, nil
+	}
+
+	var result types.RDWSLogsResult
+	if err := json.Unmarshal(raw, &result); err != nil {
+		return nil, err
+	}
+	return &types.RDWSLogs{Files: result.Logs}, nil
 }
 
 // GetCrashDump retrieves crash dump files from the player

@@ -2,6 +2,7 @@ package types
 
 import (
 	"encoding/json"
+	"fmt"
 	"time"
 )
 
@@ -1393,8 +1394,15 @@ type RDWSLogFile struct {
 	Content string `json:"content,omitempty"`
 }
 
-// RDWSLogs represents the collection of log files from a player
+// RDWSLogs represents the logs returned by a player.
+//
+// GET /logs returns the player's kernel log (dmesg) as a plain string, which lands
+// in Text. Files is retained for firmware that returns a structured list instead;
+// exactly one of the two is populated.
 type RDWSLogs struct {
+	// Text is the raw log output when the player returns it as a string.
+	Text string `json:"-"`
+	// Files is populated when the player returns a structured log list.
 	Files []RDWSLogFile `json:"files"`
 }
 
@@ -1500,4 +1508,167 @@ type DeviceWebPageList struct {
 	IsTruncated bool            `json:"isTruncated"`
 	NextMarker  string          `json:"nextMarker,omitempty"`
 	TotalCount  int             `json:"totalCount,omitempty"`
+}
+
+// ---------------------------------------------------------------------------
+// Supervisor update / system inspection (rDWS)
+//
+// These cover the player routes needed to drive and observe a supervisor update.
+// All are relayed through the rDWS passthrough like any other DWS route.
+// ---------------------------------------------------------------------------
+
+// RDWSComponentVersion is the {major,minor,patch,build} shape the player uses for
+// firmware, bootstrap and supervisor versions.
+type RDWSComponentVersion struct {
+	Major int `json:"major"`
+	Minor int `json:"minor"`
+	Patch int `json:"patch"`
+	Build int `json:"build,omitempty"`
+}
+
+// String renders the dotted form, omitting a zero build.
+func (v RDWSComponentVersion) String() string {
+	s := fmt.Sprintf("%d.%d.%d", v.Major, v.Minor, v.Patch)
+	if v.Build != 0 {
+		s += fmt.Sprintf(".%d", v.Build)
+	}
+	return s
+}
+
+// RDWSSupervisorRef is one supervisor the bootstrap enumerated.
+//
+// Name is the player's own reference string, which is the full path to the
+// supervisor's .js followed by its version in parentheses, e.g.
+//
+//	/var/lib/brightsign/bootstrap/supervisors/2024-01-09T20-31-11.822Z/2024-01-09T20-31-11.822Z.js (v 2.0.18.1)
+//
+// It is returned verbatim rather than parsed: the path discloses whether the build
+// was loaded from the read-write supervisor directory or from the firmware-bundled
+// one, and callers differ in what they want from that.
+type RDWSSupervisorRef struct {
+	Name string `json:"name"`
+	// Active marks the supervisor currently running.
+	Active bool `json:"active"`
+}
+
+// RDWSSystemInfo is the player's system information.
+//
+// Only the fields with stable meaning are typed; the route returns more (nodejs,
+// autorun, bsn, description) and unknown members are ignored.
+type RDWSSystemInfo struct {
+	Firmware struct {
+		Version RDWSComponentVersion `json:"version"`
+	} `json:"firmware"`
+
+	Bootstrap struct {
+		Version              RDWSComponentVersion `json:"version"`
+		AutorunDrive         string               `json:"autorun_drive"`
+		SupervisorsAvailable []RDWSSupervisorRef  `json:"supervisors_available"`
+	} `json:"bootstrap"`
+
+	Supervisor struct {
+		// Version is the RUNNING supervisor's version — the reason this route
+		// matters. No other externally-reachable endpoint reports it.
+		Version RDWSComponentVersion `json:"version"`
+		// DirRW is the read-write supervisor directory downloaded builds land in.
+		DirRW string `json:"dir_rw"`
+	} `json:"supervisor"`
+}
+
+// ActiveSupervisor returns the running supervisor's reference, if the player
+// reported one.
+func (s *RDWSSystemInfo) ActiveSupervisor() (RDWSSupervisorRef, bool) {
+	for _, ref := range s.Bootstrap.SupervisorsAvailable {
+		if ref.Active {
+			return ref, true
+		}
+	}
+	return RDWSSupervisorRef{}, false
+}
+
+// RDWSSystemInfoResponse is the envelope for GET /system.
+type RDWSSystemInfoResponse struct {
+	Route  string `json:"route"`
+	Method string `json:"method"`
+	Data   struct {
+		Result RDWSSystemInfo `json:"result"`
+	} `json:"data"`
+}
+
+// RDWSStoredSupervisors lists the build directories present in the player's
+// read-write supervisor directory.
+type RDWSStoredSupervisors struct {
+	Success bool `json:"success"`
+	// Builds are directory names, each a timestamp such as
+	// "2024-01-09T20-31-11.822Z". The firmware-bundled build is NOT included:
+	// this route reports only downloaded builds.
+	Builds []string `json:"builds"`
+}
+
+// RDWSStoredSupervisorsResponse is the envelope for GET /system/supervisors.
+type RDWSStoredSupervisorsResponse struct {
+	Route  string `json:"route"`
+	Method string `json:"method"`
+	Data   struct {
+		Result RDWSStoredSupervisors `json:"result"`
+	} `json:"data"`
+}
+
+// RDWSDeleteSupervisorsRequest removes downloaded supervisor builds.
+//
+// Builds and Clear are mutually exclusive: the player rejects a request carrying
+// both with 400. Only the read-write directory is affected, so the
+// firmware-bundled supervisor always survives.
+type RDWSDeleteSupervisorsRequest struct {
+	Data struct {
+		Builds []string `json:"builds,omitempty"`
+		Clear  bool     `json:"clear,omitempty"`
+	} `json:"data"`
+}
+
+// RDWSDeleteSupervisorsResponse is the envelope for POST /system/supervisors/delete.
+type RDWSDeleteSupervisorsResponse struct {
+	Route  string `json:"route"`
+	Method string `json:"method"`
+	Data   struct {
+		Result struct {
+			Success bool   `json:"success"`
+			Message string `json:"message,omitempty"`
+		} `json:"result"`
+	} `json:"data"`
+}
+
+// RDWSUpdateSyncResult is the outcome of asking the player to check for a
+// supervisor update now.
+type RDWSUpdateSyncResult struct {
+	Success bool `json:"success"`
+	// Message carries the player's reason when Success is false, e.g.
+	// "Service is disabled." when the update service is switched off by registry,
+	// or a shutting-down notice.
+	Message string `json:"message,omitempty"`
+}
+
+// RDWSUpdateSyncResponse is the envelope for POST /update/sync.
+type RDWSUpdateSyncResponse struct {
+	Route  string `json:"route"`
+	Method string `json:"method"`
+	Data   struct {
+		Result RDWSUpdateSyncResult `json:"result"`
+	} `json:"data"`
+}
+
+// RDWSCrashDumpListEntry is one crash dump the player is holding.
+type RDWSCrashDumpListEntry struct {
+	FileName string `json:"fileName"`
+	CTime    string `json:"ctime"`
+}
+
+// RDWSCrashDumpListResponse is the envelope for GET /logs/crash-dumps, whose
+// result is a bare array.
+type RDWSCrashDumpListResponse struct {
+	Route  string `json:"route"`
+	Method string `json:"method"`
+	Data   struct {
+		Result json.RawMessage `json:"result"`
+	} `json:"data"`
 }
