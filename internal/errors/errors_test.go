@@ -190,3 +190,103 @@ func TestIsRetryableError(t *testing.T) {
 		})
 	}
 }
+func TestNewAPIErrorFrom_InheritsStatusFromCause(t *testing.T) {
+	// A service method re-wrapping a transport failure must not lose the HTTP
+	// status: without it, callers are left matching on message text to tell a
+	// rate limit apart from a bad credential.
+	cause := NewAPIError(http.StatusTooManyRequests, "Too Many Requests", "Request failed", "slow down")
+
+	wrapped := NewAPIErrorFrom("network_context_failed", "Failed to set network context to 'lab'", cause)
+
+	if wrapped.StatusCode != http.StatusTooManyRequests {
+		t.Errorf("Expected status code 429, got %d", wrapped.StatusCode)
+	}
+	if wrapped.Code != "network_context_failed" {
+		t.Errorf("Expected code 'network_context_failed', got %q", wrapped.Code)
+	}
+	if wrapped.Details != cause.Error() {
+		t.Errorf("Expected details %q, got %q", cause.Error(), wrapped.Details)
+	}
+
+	var unwrapped *APIError
+	if !errors.As(errors.Unwrap(wrapped), &unwrapped) {
+		t.Fatal("Expected the cause to be reachable by unwrapping")
+	}
+	if unwrapped != cause {
+		t.Error("Expected to unwrap to the original cause")
+	}
+
+	if !IsRateLimited(wrapped) {
+		t.Error("Expected IsRateLimited to report true for a wrapped 429")
+	}
+	if !IsRetryableError(wrapped) {
+		t.Error("Expected IsRetryableError to report true for a wrapped 429")
+	}
+}
+
+func TestNewAPIErrorFrom_InheritsStatusThroughAuthenticationError(t *testing.T) {
+	// The HTTP client wraps 401 and 403 in an AuthenticationError, so the
+	// status is two levels down once a service re-wraps it.
+	cause := NewAuthError("invalid or expired token",
+		NewAPIError(http.StatusUnauthorized, "Unauthorized", "Request failed", ""))
+
+	wrapped := NewAPIErrorFrom("rdws_info_failed", "Failed to get info", cause)
+
+	if wrapped.StatusCode != http.StatusUnauthorized {
+		t.Errorf("Expected status code 401, got %d", wrapped.StatusCode)
+	}
+	if got := StatusCodeOf(wrapped); got != http.StatusUnauthorized {
+		t.Errorf("Expected StatusCodeOf to report 401, got %d", got)
+	}
+	if !IsUnauthorizedError(wrapped) {
+		t.Error("Expected IsUnauthorizedError to report true for a wrapped 401")
+	}
+	if !IsAuthenticationError(wrapped) {
+		t.Error("Expected IsAuthenticationError to report true for a wrapped 401")
+	}
+	if IsRateLimited(wrapped) {
+		t.Error("Expected IsRateLimited to report false for a 401")
+	}
+}
+
+func TestNewAPIErrorFrom_NoStatusAvailable(t *testing.T) {
+	cause := errors.New("connection reset by peer")
+
+	wrapped := NewAPIErrorFrom("rdws_logs_failed", "Failed to get logs", cause)
+
+	if wrapped.StatusCode != 0 {
+		t.Errorf("Expected status code 0 when the cause carries none, got %d", wrapped.StatusCode)
+	}
+	if StatusCodeOf(wrapped) != 0 {
+		t.Errorf("Expected StatusCodeOf to report 0, got %d", StatusCodeOf(wrapped))
+	}
+	if IsRateLimited(wrapped) {
+		t.Error("Expected IsRateLimited to report false when no status is available")
+	}
+	if !errors.Is(wrapped, cause) {
+		t.Error("Expected the cause to remain reachable with errors.Is")
+	}
+}
+
+func TestNewAPIErrorFrom_NilCause(t *testing.T) {
+	wrapped := NewAPIErrorFrom("some_failure", "Something went wrong", nil)
+
+	if wrapped.StatusCode != 0 {
+		t.Errorf("Expected status code 0 for a nil cause, got %d", wrapped.StatusCode)
+	}
+	if wrapped.Details != "" {
+		t.Errorf("Expected empty details for a nil cause, got %q", wrapped.Details)
+	}
+	if wrapped.Unwrap() != nil {
+		t.Error("Expected Unwrap to return nil for a nil cause")
+	}
+}
+
+func TestStatusCodeOf_DirectAPIError(t *testing.T) {
+	if got := StatusCodeOf(NewAPIError(http.StatusNotFound, "Not Found", "Request failed", "")); got != http.StatusNotFound {
+		t.Errorf("Expected 404, got %d", got)
+	}
+	if got := StatusCodeOf(nil); got != 0 {
+		t.Errorf("Expected 0 for a nil error, got %d", got)
+	}
+}

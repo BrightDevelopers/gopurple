@@ -13,6 +13,11 @@ type APIError struct {
 	Code       string `json:"error"`
 	Message    string `json:"error_description"`
 	Details    string `json:"details,omitempty"`
+
+	// Err is the underlying error this one was built from, if any. It is kept
+	// so that the HTTP status of a transport-level failure survives being
+	// re-wrapped by a service method, instead of only appearing in Details.
+	Err error `json:"-"`
 }
 
 func (e *APIError) Error() string {
@@ -20,6 +25,11 @@ func (e *APIError) Error() string {
 		return fmt.Sprintf("API error %d (%s): %s - %s", e.StatusCode, e.Code, e.Message, e.Details)
 	}
 	return fmt.Sprintf("API error %d (%s): %s", e.StatusCode, e.Code, e.Message)
+}
+
+// Unwrap returns the underlying error, so errors.As and errors.Is can reach it.
+func (e *APIError) Unwrap() error {
+	return e.Err
 }
 
 // AuthenticationError indicates authentication-related errors.
@@ -91,6 +101,53 @@ func NewAPIError(statusCode int, code, message, details string) *APIError {
 	}
 }
 
+// NewAPIErrorFrom creates an APIError that keeps cause reachable through
+// errors.As and inherits cause's HTTP status when cause carries one.
+//
+// Prefer this over NewAPIError(0, ...) when re-wrapping an error returned by
+// the HTTP client: with NewAPIError the real status is discarded and survives
+// only as text inside Details, which forces callers to match on strings to
+// tell a 429 from a 401.
+func NewAPIErrorFrom(code, message string, cause error) *APIError {
+	apiErr := &APIError{
+		Code:    code,
+		Message: message,
+		Err:     cause,
+	}
+	if cause != nil {
+		apiErr.Details = cause.Error()
+		apiErr.StatusCode = StatusCodeOf(cause)
+	}
+	return apiErr
+}
+
+// StatusCodeOf returns the HTTP status code carried by err or any error it
+// wraps, or 0 when no status is available.
+func StatusCodeOf(err error) int {
+	for err != nil {
+		if apiErr, ok := err.(*APIError); ok && apiErr.StatusCode != 0 {
+			return apiErr.StatusCode
+		}
+		unwrapper, ok := err.(interface{ Unwrap() error })
+		if !ok {
+			return 0
+		}
+		err = unwrapper.Unwrap()
+	}
+	return 0
+}
+
+// IsRateLimited reports whether err was caused by an HTTP 429 response.
+func IsRateLimited(err error) bool {
+	return StatusCodeOf(err) == http.StatusTooManyRequests
+}
+
+// IsUnauthorizedError reports whether err was caused by an HTTP 401 or 403 response.
+func IsUnauthorizedError(err error) bool {
+	status := StatusCodeOf(err)
+	return status == http.StatusUnauthorized || status == http.StatusForbidden
+}
+
 // NewAuthError creates an AuthenticationError.
 func NewAuthError(reason string, err error) *AuthenticationError {
 	return &AuthenticationError{
@@ -132,12 +189,9 @@ func IsAuthenticationError(err error) bool {
 		return true
 	}
 	
-	// Also check for API errors with authentication status codes
-	if apiErr, ok := err.(*APIError); ok {
-		return apiErr.StatusCode == http.StatusUnauthorized || apiErr.StatusCode == http.StatusForbidden
-	}
-	
-	return false
+	// Also check for API errors with authentication status codes, including
+	// ones only reachable by unwrapping.
+	return IsUnauthorizedError(err)
 }
 
 // IsNetworkError checks if an error is network-related.
@@ -154,11 +208,12 @@ func IsConfigurationError(err error) bool {
 
 // IsRetryableError checks if an error might succeed on retry.
 func IsRetryableError(err error) bool {
-	if apiErr, ok := err.(*APIError); ok {
-		// Retry on server errors and rate limiting
-		return apiErr.StatusCode >= 500 || apiErr.StatusCode == http.StatusTooManyRequests
+	// Retry on server errors and rate limiting, including statuses only
+	// reachable by unwrapping.
+	if status := StatusCodeOf(err); status >= 500 || status == http.StatusTooManyRequests {
+		return true
 	}
-	
+
 	if _, ok := err.(*NetworkError); ok {
 		// Retry network errors (connection failures, etc.)
 		return true

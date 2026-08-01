@@ -73,8 +73,8 @@ func (s *bDeployService) SetNetworkContext(ctx context.Context, networkName stri
 	var response interface{} // API returns empty body on success
 	err = s.httpClient.PutWithAuth(ctx, token, contextURL, request, &response)
 	if err != nil {
-		return errors.NewAPIError(0, "network_context_failed",
-			fmt.Sprintf("Failed to set network context to '%s'", networkName), err.Error())
+		return errors.NewAPIErrorFrom("network_context_failed",
+			fmt.Sprintf("Failed to set network context to '%s'", networkName), err)
 	}
 
 	// Store the network name for device API calls
