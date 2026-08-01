@@ -15,6 +15,7 @@ import (
 type ProvisioningService interface {
 	GenerateDeviceToken(ctx context.Context) (*types.BSNTokenEntity, error)
 	ValidateDeviceToken(ctx context.Context, token string) (*types.BSNTokenEntity, error)
+	RevokeRegistrationToken(ctx context.Context, token string) error
 }
 
 // provisioningService implements the ProvisioningService interface.
@@ -111,4 +112,40 @@ func (s *provisioningService) ValidateDeviceToken(ctx context.Context, tokenValu
 	}
 
 	return &response, nil
+}
+
+// RevokeRegistrationToken revokes a device registration token on the current network.
+//
+// Once revoked, players can no longer use the token to register with BSN.cloud.
+// Tokens with "cert" scope are shared by every device provisioned with them, so
+// revoking one breaks registration for all of them.
+//
+// Required scope: bsn.api.main.devices.setups.token.delete
+func (s *provisioningService) RevokeRegistrationToken(ctx context.Context, tokenValue string) error {
+	if tokenValue == "" {
+		return errors.NewValidationError("token", tokenValue, "token cannot be empty")
+	}
+
+	// Ensure we have authentication
+	if err := s.authManager.EnsureValid(ctx); err != nil {
+		return err
+	}
+
+	// Get access token
+	token, err := s.authManager.GetToken()
+	if err != nil {
+		return err
+	}
+
+	// Build the token revocation endpoint
+	revokeURL := fmt.Sprintf("%s%s%s/", s.config.BSNBaseURL, provisioningTokenPath, tokenValue)
+
+	// Make the API request - DELETE returns no content on success
+	err = s.httpClient.DeleteWithAuth(ctx, token, revokeURL, nil)
+	if err != nil {
+		return errors.NewAPIError(0, "token_revoke_failed",
+			"Failed to revoke device registration token", err.Error())
+	}
+
+	return nil
 }

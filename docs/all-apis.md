@@ -4,7 +4,7 @@
 - **BSN.cloud Main APIs (2022/06)**: 17 service categories, ~280 endpoints
 - **B-Deploy Provisioning APIs**: 3 service categories (v2 and v3), 14 endpoints
 - **Total**: ~294 endpoints
-- **SDK Implementation Status**: 43 endpoints DONE (excluding removed content/presentation/upload)
+- **SDK Implementation Status**: 44 endpoints DONE (excluding removed content/presentation/upload)
 
 **Legend:**
 - `[DONE]` - API endpoint implemented in SDK with example CLI
@@ -249,9 +249,9 @@
 ## Provisioning
 **Base URL:** `https://api.bsn.cloud/2022/06/REST/Provisioning`
 
-- `[DONE]` `POST /Setups/Tokens/` - Issues a token for player registration in the current network (Example: `main-token-test`)
-- `[DONE]` `GET /Setups/Tokens/{token}/` - Validates a player setup token on the current network (Example: `main-token-test`)
-- `[NOT-DONE]` `DELETE /Setups/Tokens/{token}/` - Revokes a player setup token on the current network
+- `[DONE]` `POST /Setups/Tokens/` - Issues a token for player registration in the current network (Example: `main-get-regtoken`)
+- `[DONE]` `GET /Setups/Tokens/{token}/` - Validates a player setup token on the current network (Example: `main-get-regtoken`)
+- `[DONE]` `DELETE /Setups/Tokens/{token}/` - Revokes a player setup token on the current network (Example: `main-revoke-regtoken`)
 
 ## Roles
 **Base URL:** `https://api.bsn.cloud/2022/06/REST/Roles`
@@ -537,8 +537,8 @@
 ## Implementation Statistics
 
 ### BSN.cloud Main APIs (2022/06)
-- **Implemented**: 16 endpoints
-- **Not Implemented**: ~248 endpoints
+- **Implemented**: 17 endpoints
+- **Not Implemented**: ~247 endpoints
 
 **Breakdown by Category:**
 - Autoruns/Plugins: 0/7 (0%)
@@ -551,7 +551,7 @@
 - Groups/Tagged: 0/17 (0%)
 - Playlists/Dynamic: 0/17 (0%)
 - Playlists/Tagged: 0/17 (0%)
-- **Provisioning: 2/3 (67%)** ✓
+- **Provisioning: 3/3 (100%)** ✓
 - Roles: 0/16 (0%)
 - **Self: 1/48 (2%)** ✓
 - Tags: 0/2 (0%)
@@ -570,8 +570,8 @@
 
 ### Overall Summary
 - **Total Endpoints**: ~294
-- **Implemented with Examples**: 43
-- **Not Implemented**: ~251
+- **Implemented with Examples**: 44
+- **Not Implemented**: ~250
 
 ### Example Programs Available
 Working CLI examples covering:

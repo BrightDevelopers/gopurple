@@ -339,7 +339,7 @@ See **[examples/README.md](examples/README.md)** for complete documentation of a
 | Category | Count | Examples |
 |----------|-------|----------|
 | **Authentication** | 2 | Token management, credential testing |
-| **B-Deploy Provisioning** | 13 | Setup records, device association, template rendering, token generation |
+| **B-Deploy Provisioning** | 14 | Setup records, device association, template rendering, token generation and revocation |
 | **Device Management** | 9 | List, status, errors, operations, group management |
 | **Group Management** | 3 | Group info, updates, deletion |
 | **Subscription Management** | 3 | Device subscriptions, counts, operations |
