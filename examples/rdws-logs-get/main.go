@@ -282,6 +282,19 @@ func getLogs(ctx context.Context, client *gopurple.Client, serial string, jsonMo
 		return encoder.Encode(logs)
 	}
 
+	// Players answer GET /logs/ with the serial (dmesg) log as one string.
+	// Present it as a single file so the display, save and logfile paths below
+	// need no special case.
+	if logs.Text != "" && len(logs.Files) == 0 {
+		logs = &gopurple.RDWSLogs{
+			Files: []gopurple.RDWSLogFile{{
+				Name:    "dmesg.log",
+				Size:    int64(len(logs.Text)),
+				Content: logs.Text,
+			}},
+		}
+	}
+
 	// Handle --stdout mode (output only log content)
 	if quietMode {
 		for i, logFile := range logs.Files {

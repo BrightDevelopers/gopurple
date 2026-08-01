@@ -70,7 +70,19 @@ type RDWSService interface {
 	// Logs and Diagnostics
 	GetLogs(ctx context.Context, serial string) (*types.RDWSLogs, error)
 	GetCrashDump(ctx context.Context, serial string) (*types.RDWSCrashDump, error)
+	GetCrashDumpFiles(ctx context.Context, serial string) (*types.RDWSCrashDumpFiles, error)
+
+	// Player Update Service
+	TriggerUpdateSync(ctx context.Context, serial string) (*types.RDWSUpdateSyncResult, error)
+	GetStoredSupervisors(ctx context.Context, serial string) (*types.RDWSStoredSupervisors, error)
+	DeleteSupervisors(ctx context.Context, serial string, request *types.RDWSDeleteSupervisorsRequest) (bool, error)
+
+	// System Information
+	GetSystemInfo(ctx context.Context, serial string) (*types.RDWSSystemInfo, error)
 }
+
+// Compile-time assertion that the implementation satisfies the interface.
+var _ RDWSService = (*rdwsService)(nil)
 
 // rdwsService implements the RDWSService interface.
 type rdwsService struct {
@@ -1217,11 +1229,34 @@ func (s *rdwsService) GetRegistry(ctx context.Context, serial string) (*types.RD
 	var response types.RDWSRegistryResponse
 	err = s.httpClient.GetWithAuth(ctx, token, registryURL, &response)
 	if err != nil {
-		return nil, errors.NewAPIError(0, "rdws_registry_get_failed",
-			fmt.Sprintf("Failed to get registry from device with serial '%s'", serial), err.Error())
+		return nil, errors.NewAPIErrorFrom("rdws_registry_get_failed",
+			fmt.Sprintf("Failed to get registry from device with serial '%s'", serial), err)
 	}
 
-	return &response.Data.Result, nil
+	registry, err := parseRegistryDump(response.Data.Result)
+	if err != nil {
+		return nil, errors.NewAPIErrorFrom("rdws_registry_parse_failed",
+			fmt.Sprintf("Failed to parse registry from device with serial '%s'", serial), err)
+	}
+
+	return registry, nil
+}
+
+// parseRegistryDump converts the result of a full registry read into the
+// registry type.
+//
+// The player answers GET /registry/ with {"success":true,"value":{...}}, where
+// value is keyed directly by section name (autorun, networking, ...). Reading
+// a "sections" key instead yields an empty registry on every call.
+func parseRegistryDump(raw json.RawMessage) (*types.RDWSRegistry, error) {
+	var result struct {
+		Value map[string]map[string]string `json:"value"`
+	}
+	if err := json.Unmarshal(raw, &result); err != nil {
+		return nil, err
+	}
+
+	return &types.RDWSRegistry{Sections: result.Value}, nil
 }
 
 // GetRegistryValue retrieves a specific value from the player registry.
@@ -1497,31 +1532,40 @@ func (s *rdwsService) GetLogs(ctx context.Context, serial string) (*types.RDWSLo
 	var response types.RDWSLogsResponse
 	err = s.httpClient.GetWithAuth(ctx, token, logsEndpoint, &response)
 	if err != nil {
-		return nil, errors.NewAPIError(0, "rdws_logs_failed",
-			fmt.Sprintf("Failed to get logs from device with serial '%s'", serial), err.Error())
+		return nil, errors.NewAPIErrorFrom("rdws_logs_failed",
+			fmt.Sprintf("Failed to get logs from device with serial '%s'", serial), err)
 	}
 
-	// Check if result is an error string or a success object
-	var errorString string
-	if err := json.Unmarshal(response.Data.Result, &errorString); err == nil {
-		// Result is a string (error message)
-		return nil, errors.NewAPIError(0, "rdws_logs_error",
-			fmt.Sprintf("Device returned error for serial '%s'", serial), errorString)
-	}
-
-	// Try to unmarshal as success response
-	var result types.RDWSLogsResult
-	if err := json.Unmarshal(response.Data.Result, &result); err != nil {
-		return nil, errors.NewAPIError(0, "rdws_logs_parse_failed",
-			fmt.Sprintf("Failed to parse logs response from device with serial '%s'", serial), err.Error())
-	}
-
-	// Convert response to return type
-	logs := &types.RDWSLogs{
-		Files: result.Logs,
+	logs, err := parseLogsResult(response.Data.Result)
+	if err != nil {
+		return nil, errors.NewAPIErrorFrom("rdws_logs_parse_failed",
+			fmt.Sprintf("Failed to parse logs response from device with serial '%s'", serial), err)
 	}
 
 	return logs, nil
+}
+
+// parseLogsResult converts the result of a log read into the logs type.
+//
+// The player answers GET /logs/ with the serial (dmesg) log as a plain JSON
+// string, so a string result is the success case and belongs in Text - not an
+// error message. When the player cannot read dmesg it returns the sentinel
+// string "ERROR: Unable to capture the log." in the same position, which is
+// left for the caller to recognise rather than guessed at here.
+func parseLogsResult(raw json.RawMessage) (*types.RDWSLogs, error) {
+	var logText string
+	if err := json.Unmarshal(raw, &logText); err == nil {
+		return &types.RDWSLogs{Text: logText}, nil
+	}
+
+	// Fall back to the structured shape, for players that answer with a list
+	// of log files instead.
+	var result types.RDWSLogsResult
+	if err := json.Unmarshal(raw, &result); err != nil {
+		return nil, err
+	}
+
+	return &types.RDWSLogs{Files: result.Logs}, nil
 }
 
 // GetCrashDump retrieves crash dump files from the player
@@ -1577,4 +1621,215 @@ func (s *rdwsService) GetCrashDump(ctx context.Context, serial string) (*types.R
 	}
 
 	return crashDump, nil
+}
+
+// GetCrashDumpFiles lists the crash dump archives stored on the player.
+// Unlike GetCrashDump it returns names and creation times only, without
+// transferring the archive contents.
+func (s *rdwsService) GetCrashDumpFiles(ctx context.Context, serial string) (*types.RDWSCrashDumpFiles, error) {
+	if serial == "" {
+		return nil, errors.NewValidationError("serial", serial, "device serial cannot be empty")
+	}
+
+	// Ensure we have authentication and network context
+	if err := s.authManager.EnsureValid(ctx); err != nil {
+		return nil, err
+	}
+
+	if err := s.authManager.EnsureNetworkSet(ctx); err != nil {
+		return nil, err
+	}
+
+	// Get access token
+	token, err := s.authManager.GetToken()
+	if err != nil {
+		return nil, err
+	}
+
+	// Build the rDWS crash dump files endpoint URL
+	crashDumpFilesURL := fmt.Sprintf("%s/logs/crash-dumps/?destinationType=player&destinationName=%s",
+		s.config.RDWSBaseURL, serial)
+
+	// Make the API request
+	var response types.RDWSCrashDumpFilesResponse
+	err = s.httpClient.GetWithAuth(ctx, token, crashDumpFilesURL, &response)
+	if err != nil {
+		return nil, errors.NewAPIErrorFrom("rdws_crash_dump_files_failed",
+			fmt.Sprintf("Failed to list crash dump files on device with serial '%s'", serial), err)
+	}
+
+	return &types.RDWSCrashDumpFiles{Files: response.Data.Result}, nil
+}
+
+// TriggerUpdateSync asks the player to contact the update service immediately
+// rather than waiting for its next scheduled check.
+//
+// A player whose update service is disabled answers with Success false and a
+// Message explaining why, which is returned rather than treated as an error.
+func (s *rdwsService) TriggerUpdateSync(ctx context.Context, serial string) (*types.RDWSUpdateSyncResult, error) {
+	if serial == "" {
+		return nil, errors.NewValidationError("serial", serial, "device serial cannot be empty")
+	}
+
+	// Ensure we have authentication and network context
+	if err := s.authManager.EnsureValid(ctx); err != nil {
+		return nil, err
+	}
+
+	if err := s.authManager.EnsureNetworkSet(ctx); err != nil {
+		return nil, err
+	}
+
+	// Get access token
+	token, err := s.authManager.GetToken()
+	if err != nil {
+		return nil, err
+	}
+
+	// Build the rDWS update sync endpoint URL
+	updateSyncURL := fmt.Sprintf("%s/update/sync/?destinationType=player&destinationName=%s",
+		s.config.RDWSBaseURL, serial)
+
+	// Make the API request. The route takes no request body.
+	var response types.RDWSUpdateSyncResponse
+	err = s.httpClient.PostWithAuth(ctx, token, updateSyncURL, nil, &response)
+	if err != nil {
+		return nil, errors.NewAPIErrorFrom("rdws_update_sync_failed",
+			fmt.Sprintf("Failed to trigger update sync on device with serial '%s'", serial), err)
+	}
+
+	return &response.Data.Result, nil
+}
+
+// GetStoredSupervisors lists the supervisor builds held on the player.
+// Each build is the name of a timestamp directory in the read-write supervisor
+// directory, which is what DeleteSupervisors accepts.
+func (s *rdwsService) GetStoredSupervisors(ctx context.Context, serial string) (*types.RDWSStoredSupervisors, error) {
+	if serial == "" {
+		return nil, errors.NewValidationError("serial", serial, "device serial cannot be empty")
+	}
+
+	// Ensure we have authentication and network context
+	if err := s.authManager.EnsureValid(ctx); err != nil {
+		return nil, err
+	}
+
+	if err := s.authManager.EnsureNetworkSet(ctx); err != nil {
+		return nil, err
+	}
+
+	// Get access token
+	token, err := s.authManager.GetToken()
+	if err != nil {
+		return nil, err
+	}
+
+	// Build the rDWS stored supervisors endpoint URL
+	supervisorsURL := fmt.Sprintf("%s/system/supervisors/?destinationType=player&destinationName=%s",
+		s.config.RDWSBaseURL, serial)
+
+	// Make the API request
+	var response types.RDWSStoredSupervisorsResponse
+	err = s.httpClient.GetWithAuth(ctx, token, supervisorsURL, &response)
+	if err != nil {
+		return nil, errors.NewAPIErrorFrom("rdws_stored_supervisors_failed",
+			fmt.Sprintf("Failed to get stored supervisors from device with serial '%s'", serial), err)
+	}
+
+	return &response.Data.Result, nil
+}
+
+// DeleteSupervisors removes supervisor builds stored on the player.
+//
+// Set either Builds, to remove named timestamp directories, or Clear, to remove
+// all of them. They are mutually exclusive: a player rejects a request carrying
+// both with HTTP 400, so the combination is refused here rather than sent.
+func (s *rdwsService) DeleteSupervisors(ctx context.Context, serial string, request *types.RDWSDeleteSupervisorsRequest) (bool, error) {
+	if serial == "" {
+		return false, errors.NewValidationError("serial", serial, "device serial cannot be empty")
+	}
+	if request == nil {
+		return false, errors.NewValidationError("request", request, "delete supervisors request cannot be nil")
+	}
+	if len(request.Data.Builds) > 0 && request.Data.Clear {
+		return false, errors.NewValidationError("request", request,
+			"'builds' and 'clear' cannot be specified together")
+	}
+	if len(request.Data.Builds) == 0 && !request.Data.Clear {
+		return false, errors.NewValidationError("request", request,
+			"either 'builds' or 'clear' must be specified")
+	}
+
+	// Ensure we have authentication and network context
+	if err := s.authManager.EnsureValid(ctx); err != nil {
+		return false, err
+	}
+
+	if err := s.authManager.EnsureNetworkSet(ctx); err != nil {
+		return false, err
+	}
+
+	// Get access token
+	token, err := s.authManager.GetToken()
+	if err != nil {
+		return false, err
+	}
+
+	// Build the rDWS delete supervisors endpoint URL
+	deleteURL := fmt.Sprintf("%s/system/supervisors/delete/?destinationType=player&destinationName=%s",
+		s.config.RDWSBaseURL, serial)
+
+	// Make the API request
+	var response types.RDWSDeleteSupervisorsResponse
+	err = s.httpClient.PostWithAuth(ctx, token, deleteURL, request, &response)
+	if err != nil {
+		return false, errors.NewAPIErrorFrom("rdws_delete_supervisors_failed",
+			fmt.Sprintf("Failed to delete supervisors on device with serial '%s'", serial), err)
+	}
+
+	return response.Data.Result.Success, nil
+}
+
+// GetSystemInfo returns the player's system information, including the running
+// supervisor version and which stored build is active.
+//
+// EXPERIMENTAL: /v1/system is an Internal-tier route deliberately excluded from
+// the player's published DWS swagger (#swagger.ignore). It is reachable only
+// because the rDWS passthrough originates from localhost, satisfying the Internal
+// tier's isLocalAddress() check. BrightSign makes no compatibility promise about
+// this route — callers must tolerate it disappearing. Prefer a documented
+// endpoint where one exists.
+func (s *rdwsService) GetSystemInfo(ctx context.Context, serial string) (*types.RDWSSystemInfo, error) {
+	if serial == "" {
+		return nil, errors.NewValidationError("serial", serial, "device serial cannot be empty")
+	}
+
+	// Ensure we have authentication and network context
+	if err := s.authManager.EnsureValid(ctx); err != nil {
+		return nil, err
+	}
+
+	if err := s.authManager.EnsureNetworkSet(ctx); err != nil {
+		return nil, err
+	}
+
+	// Get access token
+	token, err := s.authManager.GetToken()
+	if err != nil {
+		return nil, err
+	}
+
+	// Build the rDWS system endpoint URL
+	systemURL := fmt.Sprintf("%s/system/?destinationType=player&destinationName=%s",
+		s.config.RDWSBaseURL, serial)
+
+	// Make the API request
+	var response types.RDWSSystemInfoResponse
+	err = s.httpClient.GetWithAuth(ctx, token, systemURL, &response)
+	if err != nil {
+		return nil, errors.NewAPIErrorFrom("rdws_system_info_failed",
+			fmt.Sprintf("Failed to get system information from device with serial '%s'", serial), err)
+	}
+
+	return &response.Data.Result, nil
 }

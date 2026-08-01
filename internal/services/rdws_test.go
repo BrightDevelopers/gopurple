@@ -2,10 +2,12 @@ package services
 
 import (
 	"context"
+	"encoding/json"
 	"testing"
 
 	"github.com/brightdevelopers/gopurple/internal/auth"
 	"github.com/brightdevelopers/gopurple/internal/config"
+	"github.com/brightdevelopers/gopurple/internal/errors"
 	"github.com/brightdevelopers/gopurple/internal/http"
 	"github.com/brightdevelopers/gopurple/internal/types"
 )
@@ -1243,5 +1245,382 @@ func TestRDWSCrashDumpStructure(t *testing.T) {
 
 	if crashDump.Files[1].Name != "crash_2024-01-16.dmp" {
 		t.Errorf("Expected second crash dump name 'crash_2024-01-16.dmp', got '%s'", crashDump.Files[1].Name)
+	}
+}
+
+// ============================================================================
+// Log Parsing Tests
+//
+// Players answer GET /logs/ with the serial (dmesg) log as a plain JSON string
+// (api-logs.js: getLogSerial resolves execSync("dmesg") decoded to text). A
+// string result is therefore the success case, not a device error message.
+// ============================================================================
+
+func TestParseLogsResult_StringPayloadIsLogText(t *testing.T) {
+	const dmesg = "[    0.000000] Linux version 5.10.110\n[    1.234567] brightsign: ready\n"
+
+	raw, err := json.Marshal(dmesg)
+	if err != nil {
+		t.Fatalf("failed to build fixture: %v", err)
+	}
+
+	logs, err := parseLogsResult(raw)
+	if err != nil {
+		t.Fatalf("Expected a string result to parse as log text, got error: %v", err)
+	}
+	if logs.Text != dmesg {
+		t.Errorf("Expected log text %q, got %q", dmesg, logs.Text)
+	}
+	if len(logs.Files) != 0 {
+		t.Errorf("Expected no log files for a string result, got %d", len(logs.Files))
+	}
+}
+
+func TestParseLogsResult_ErrorSentinelIsStillLogText(t *testing.T) {
+	// The player returns this sentinel in the same position as the log text
+	// when it cannot read dmesg. It is data, not a transport failure, so it is
+	// handed back to the caller rather than turned into an error here.
+	const sentinel = "ERROR: Unable to capture the log."
+
+	raw, err := json.Marshal(sentinel)
+	if err != nil {
+		t.Fatalf("failed to build fixture: %v", err)
+	}
+
+	logs, err := parseLogsResult(raw)
+	if err != nil {
+		t.Fatalf("Expected the sentinel string to parse as log text, got error: %v", err)
+	}
+	if logs.Text != sentinel {
+		t.Errorf("Expected log text %q, got %q", sentinel, logs.Text)
+	}
+}
+
+func TestParseLogsResult_StructuredPayload(t *testing.T) {
+	raw := json.RawMessage(`{"logs":[{"name":"system.log","size":12,"content":"hello world\n"}]}`)
+
+	logs, err := parseLogsResult(raw)
+	if err != nil {
+		t.Fatalf("Expected a structured result to parse, got error: %v", err)
+	}
+	if logs.Text != "" {
+		t.Errorf("Expected no log text for a structured result, got %q", logs.Text)
+	}
+	if len(logs.Files) != 1 {
+		t.Fatalf("Expected 1 log file, got %d", len(logs.Files))
+	}
+	if logs.Files[0].Name != "system.log" {
+		t.Errorf("Expected log file name 'system.log', got %q", logs.Files[0].Name)
+	}
+	if logs.Files[0].Size != 12 {
+		t.Errorf("Expected log file size 12, got %d", logs.Files[0].Size)
+	}
+}
+
+func TestParseLogsResult_UnrecognisedPayload(t *testing.T) {
+	raw := json.RawMessage(`[1,2,3]`)
+
+	_, err := parseLogsResult(raw)
+	if err == nil {
+		t.Fatal("Expected an error for a payload that is neither a string nor a log object")
+	}
+	if _, ok := err.(*json.UnmarshalTypeError); !ok {
+		t.Errorf("Expected a *json.UnmarshalTypeError, got %T: %v", err, err)
+	}
+}
+
+// ============================================================================
+// Registry Dump Parsing Tests
+//
+// Players answer GET /registry/ with {"success":true,"value":{...}}, where
+// value is keyed directly by section name (api-registry.js: getCompleteDump).
+// ============================================================================
+
+func TestParseRegistryDump_SectionsComeFromValue(t *testing.T) {
+	raw := json.RawMessage(`{
+		"success": true,
+		"value": {
+			"networking": {"sut": "bsn", "un": "lab-player-1", "registered_with_bsn": "1"},
+			"autorun": {"createdby": "3.2.1.5"}
+		}
+	}`)
+
+	registry, err := parseRegistryDump(raw)
+	if err != nil {
+		t.Fatalf("Expected the registry dump to parse, got error: %v", err)
+	}
+	if len(registry.Sections) != 2 {
+		t.Fatalf("Expected 2 registry sections, got %d: %v", len(registry.Sections), registry.Sections)
+	}
+	if got := registry.Sections["networking"]["sut"]; got != "bsn" {
+		t.Errorf("Expected networking/sut 'bsn', got %q", got)
+	}
+	if got := registry.Sections["networking"]["un"]; got != "lab-player-1" {
+		t.Errorf("Expected networking/un 'lab-player-1', got %q", got)
+	}
+	if got := registry.Sections["autorun"]["createdby"]; got != "3.2.1.5" {
+		t.Errorf("Expected autorun/createdby '3.2.1.5', got %q", got)
+	}
+}
+
+func TestParseRegistryDump_EmptyValue(t *testing.T) {
+	raw := json.RawMessage(`{"success": true, "value": {}}`)
+
+	registry, err := parseRegistryDump(raw)
+	if err != nil {
+		t.Fatalf("Expected an empty registry dump to parse, got error: %v", err)
+	}
+	if len(registry.Sections) != 0 {
+		t.Errorf("Expected no registry sections, got %d", len(registry.Sections))
+	}
+}
+
+func TestParseRegistryDump_UnrecognisedPayload(t *testing.T) {
+	raw := json.RawMessage(`"not an object"`)
+
+	_, err := parseRegistryDump(raw)
+	if err == nil {
+		t.Fatal("Expected an error when the registry result is not an object")
+	}
+	if _, ok := err.(*json.UnmarshalTypeError); !ok {
+		t.Errorf("Expected a *json.UnmarshalTypeError, got %T: %v", err, err)
+	}
+}
+
+// ============================================================================
+// Player Update Service Tests
+// ============================================================================
+
+func TestRDWSService_TriggerUpdateSync(t *testing.T) {
+	service := createTestRDWSService()
+	ctx := context.Background()
+
+	// Test with empty serial
+	_, err := service.TriggerUpdateSync(ctx, "")
+	assertSerialValidationError(t, err, "triggering update sync")
+
+	// Test without authentication should fail
+	_, err = service.TriggerUpdateSync(ctx, "ABC123DEF456")
+	if err == nil {
+		t.Error("Expected error when triggering update sync without authentication")
+	}
+}
+
+func TestRDWSService_GetStoredSupervisors(t *testing.T) {
+	service := createTestRDWSService()
+	ctx := context.Background()
+
+	// Test with empty serial
+	_, err := service.GetStoredSupervisors(ctx, "")
+	assertSerialValidationError(t, err, "getting stored supervisors")
+
+	// Test without authentication should fail
+	_, err = service.GetStoredSupervisors(ctx, "ABC123DEF456")
+	if err == nil {
+		t.Error("Expected error when getting stored supervisors without authentication")
+	}
+}
+
+func TestRDWSService_DeleteSupervisors(t *testing.T) {
+	service := createTestRDWSService()
+	ctx := context.Background()
+
+	buildsRequest := &types.RDWSDeleteSupervisorsRequest{}
+	buildsRequest.Data.Builds = []string{"2024-01-08T19-23-16.593Z"}
+
+	// Test with empty serial
+	_, err := service.DeleteSupervisors(ctx, "", buildsRequest)
+	assertSerialValidationError(t, err, "deleting supervisors")
+
+	// Test with nil request
+	_, err = service.DeleteSupervisors(ctx, "ABC123DEF456", nil)
+	assertValidationError(t, err, "request", "delete supervisors request cannot be nil")
+
+	// Builds and clear together are rejected by the player with a 400, so they
+	// are rejected here before the request is sent.
+	both := &types.RDWSDeleteSupervisorsRequest{}
+	both.Data.Builds = []string{"2024-01-08T19-23-16.593Z"}
+	both.Data.Clear = true
+	_, err = service.DeleteSupervisors(ctx, "ABC123DEF456", both)
+	assertValidationError(t, err, "request", "'builds' and 'clear' cannot be specified together")
+
+	// Neither builds nor clear is also rejected by the player with a 400.
+	neither := &types.RDWSDeleteSupervisorsRequest{}
+	_, err = service.DeleteSupervisors(ctx, "ABC123DEF456", neither)
+	assertValidationError(t, err, "request", "either 'builds' or 'clear' must be specified")
+
+	// Test without authentication should fail
+	_, err = service.DeleteSupervisors(ctx, "ABC123DEF456", buildsRequest)
+	if err == nil {
+		t.Error("Expected error when deleting supervisors without authentication")
+	}
+}
+
+func TestRDWSService_GetCrashDumpFiles(t *testing.T) {
+	service := createTestRDWSService()
+	ctx := context.Background()
+
+	// Test with empty serial
+	_, err := service.GetCrashDumpFiles(ctx, "")
+	assertSerialValidationError(t, err, "getting crash dump files")
+
+	// Test without authentication should fail
+	_, err = service.GetCrashDumpFiles(ctx, "ABC123DEF456")
+	if err == nil {
+		t.Error("Expected error when getting crash dump files without authentication")
+	}
+}
+
+func TestRDWSService_GetSystemInfo(t *testing.T) {
+	service := createTestRDWSService()
+	ctx := context.Background()
+
+	// Test with empty serial
+	_, err := service.GetSystemInfo(ctx, "")
+	assertSerialValidationError(t, err, "getting system information")
+
+	// Test without authentication should fail
+	_, err = service.GetSystemInfo(ctx, "ABC123DEF456")
+	if err == nil {
+		t.Error("Expected error when getting system information without authentication")
+	}
+}
+
+// ============================================================================
+// Response Shape Tests
+//
+// These lock the wire shapes the player actually sends, taken from the
+// supervisor's route definitions and API handlers.
+// ============================================================================
+
+func TestRDWSStoredSupervisorsResponse_Decode(t *testing.T) {
+	body := []byte(`{"data":{"result":{"success":true,"builds":["2024-01-08T19-23-16.593Z","2024-02-11T02-05-00.000Z"]}}}`)
+
+	var response types.RDWSStoredSupervisorsResponse
+	if err := json.Unmarshal(body, &response); err != nil {
+		t.Fatalf("Failed to decode stored supervisors response: %v", err)
+	}
+	if !response.Data.Result.Success {
+		t.Error("Expected success true")
+	}
+	if len(response.Data.Result.Builds) != 2 {
+		t.Fatalf("Expected 2 builds, got %d", len(response.Data.Result.Builds))
+	}
+	if response.Data.Result.Builds[0] != "2024-01-08T19-23-16.593Z" {
+		t.Errorf("Expected first build '2024-01-08T19-23-16.593Z', got %q", response.Data.Result.Builds[0])
+	}
+}
+
+func TestRDWSUpdateSyncResponse_DecodeDisabledService(t *testing.T) {
+	body := []byte(`{"data":{"result":{"success":false,"message":"Service is disabled."}}}`)
+
+	var response types.RDWSUpdateSyncResponse
+	if err := json.Unmarshal(body, &response); err != nil {
+		t.Fatalf("Failed to decode update sync response: %v", err)
+	}
+	if response.Data.Result.Success {
+		t.Error("Expected success false when the update service is disabled")
+	}
+	if response.Data.Result.Message != "Service is disabled." {
+		t.Errorf("Expected message 'Service is disabled.', got %q", response.Data.Result.Message)
+	}
+}
+
+func TestRDWSCrashDumpFilesResponse_DecodeList(t *testing.T) {
+	// The player resolves an array, which v1Call places directly at data.result.
+	body := []byte(`{"data":{"result":[{"fileName":"crash-dump","ctime":"2022-11-15T12:26:38.000Z"}]}}`)
+
+	var response types.RDWSCrashDumpFilesResponse
+	if err := json.Unmarshal(body, &response); err != nil {
+		t.Fatalf("Failed to decode crash dump files response: %v", err)
+	}
+	if len(response.Data.Result) != 1 {
+		t.Fatalf("Expected 1 crash dump file, got %d", len(response.Data.Result))
+	}
+	if response.Data.Result[0].FileName != "crash-dump" {
+		t.Errorf("Expected file name 'crash-dump', got %q", response.Data.Result[0].FileName)
+	}
+	if response.Data.Result[0].CTime != "2022-11-15T12:26:38.000Z" {
+		t.Errorf("Expected ctime '2022-11-15T12:26:38.000Z', got %q", response.Data.Result[0].CTime)
+	}
+}
+
+func TestRDWSSystemInfoResponse_DecodeActiveSupervisor(t *testing.T) {
+	// Supervisor version components arrive as JSON numbers, firmware version
+	// components as JSON strings - the player builds them differently.
+	body := []byte(`{"data":{"result":{
+		"firmware":{"version":{"major":"9","minor":"1","patch":"118","build":"3","description":"9.1.118.3"}},
+		"bootstrap":{"version":{"major":1,"minor":0,"patch":0},"autorun_drive":"SD",
+			"supervisors_available":[
+				{"name":"2024-01-08T19-23-16.593Z","active":false},
+				{"name":"2024-02-11T02-05-00.000Z","active":true}
+			]},
+		"supervisor":{"version":{"major":3,"minor":2,"patch":1,"build":5},"dir_rw":"/storage/sd/supervisors"}
+	}}}`)
+
+	var response types.RDWSSystemInfoResponse
+	if err := json.Unmarshal(body, &response); err != nil {
+		t.Fatalf("Failed to decode system info response: %v", err)
+	}
+
+	result := response.Data.Result
+	if result.Supervisor.Version.Major != 3 || result.Supervisor.Version.Minor != 2 ||
+		result.Supervisor.Version.Patch != 1 || result.Supervisor.Version.Build != 5 {
+		t.Errorf("Expected supervisor version 3.2.1.5, got %+v", result.Supervisor.Version)
+	}
+	if result.Firmware.Version.Description != "9.1.118.3" {
+		t.Errorf("Expected firmware description '9.1.118.3', got %q", result.Firmware.Version.Description)
+	}
+	if result.Firmware.Version.Major != "9" {
+		t.Errorf("Expected firmware major '9', got %q", result.Firmware.Version.Major)
+	}
+	if len(result.Bootstrap.SupervisorsAvailable) != 2 {
+		t.Fatalf("Expected 2 available supervisors, got %d", len(result.Bootstrap.SupervisorsAvailable))
+	}
+
+	var active []string
+	for _, supervisor := range result.Bootstrap.SupervisorsAvailable {
+		if supervisor.Active {
+			active = append(active, supervisor.Name)
+		}
+	}
+	if len(active) != 1 {
+		t.Fatalf("Expected exactly 1 active supervisor, got %d: %v", len(active), active)
+	}
+	if active[0] != "2024-02-11T02-05-00.000Z" {
+		t.Errorf("Expected active supervisor '2024-02-11T02-05-00.000Z', got %q", active[0])
+	}
+}
+
+// ============================================================================
+// Assertion helpers
+// ============================================================================
+
+// assertSerialValidationError asserts err is the validation error raised for an
+// empty device serial, rather than merely being non-nil.
+func assertSerialValidationError(t *testing.T, err error, operation string) {
+	t.Helper()
+	assertValidationError(t, err, "serial", "device serial cannot be empty")
+	if t.Failed() {
+		t.Logf("while %s", operation)
+	}
+}
+
+// assertValidationError asserts err is a *errors.ValidationError naming the
+// given field and reason.
+func assertValidationError(t *testing.T, err error, field, reason string) {
+	t.Helper()
+	if err == nil {
+		t.Fatalf("Expected a validation error for field %q, got nil", field)
+	}
+	validationErr, ok := err.(*errors.ValidationError)
+	if !ok {
+		t.Fatalf("Expected a *errors.ValidationError, got %T: %v", err, err)
+	}
+	if validationErr.Field != field {
+		t.Errorf("Expected validation error on field %q, got %q", field, validationErr.Field)
+	}
+	if validationErr.Reason != reason {
+		t.Errorf("Expected validation reason %q, got %q", reason, validationErr.Reason)
 	}
 }

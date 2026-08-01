@@ -313,6 +313,42 @@ type (
 	// RDWSCrashDump represents the collection of crash dump files from a player
 	RDWSCrashDump = types.RDWSCrashDump
 
+	// RDWSCrashDumpFileInfo represents a single crash dump archive stored on a player
+	RDWSCrashDumpFileInfo = types.RDWSCrashDumpFileInfo
+
+	// RDWSCrashDumpFiles represents the crash dump archives available on a player
+	RDWSCrashDumpFiles = types.RDWSCrashDumpFiles
+
+	// RDWSUpdateSyncResult represents the player's reply to an update sync trigger
+	RDWSUpdateSyncResult = types.RDWSUpdateSyncResult
+
+	// RDWSStoredSupervisors represents the supervisor builds stored on a player
+	RDWSStoredSupervisors = types.RDWSStoredSupervisors
+
+	// RDWSDeleteSupervisorsRequest represents a request to delete stored supervisor builds
+	RDWSDeleteSupervisorsRequest = types.RDWSDeleteSupervisorsRequest
+
+	// RDWSSupervisorVersion represents the version of the supervisor a player is running
+	RDWSSupervisorVersion = types.RDWSSupervisorVersion
+
+	// RDWSFirmwareVersion represents the BrightSign OS version of a player
+	RDWSFirmwareVersion = types.RDWSFirmwareVersion
+
+	// RDWSAvailableSupervisor represents one supervisor build the bootstrap can launch
+	RDWSAvailableSupervisor = types.RDWSAvailableSupervisor
+
+	// RDWSSystemSupervisor represents the supervisor section of the system information
+	RDWSSystemSupervisor = types.RDWSSystemSupervisor
+
+	// RDWSSystemBootstrap represents the bootstrap section of the system information
+	RDWSSystemBootstrap = types.RDWSSystemBootstrap
+
+	// RDWSSystemFirmware represents the firmware section of the system information
+	RDWSSystemFirmware = types.RDWSSystemFirmware
+
+	// RDWSSystemInfo represents the player's system information
+	RDWSSystemInfo = types.RDWSSystemInfo
+
 	// RDWSRegistry represents the full player registry
 	RDWSRegistry = types.RDWSRegistry
 
@@ -429,6 +465,15 @@ var (
 
 	// IsRetryableError checks if an error might succeed on retry.
 	IsRetryableError = errors.IsRetryableError
+
+	// IsRateLimited checks if an error was caused by an HTTP 429 response.
+	IsRateLimited = errors.IsRateLimited
+
+	// IsUnauthorizedError checks if an error was caused by an HTTP 401 or 403 response.
+	IsUnauthorizedError = errors.IsUnauthorizedError
+
+	// StatusCodeOf returns the HTTP status code carried by an error, or 0 if none.
+	StatusCodeOf = errors.StatusCodeOf
 )
 
 // Client is the main SDK client that provides access to all BrightSign services.

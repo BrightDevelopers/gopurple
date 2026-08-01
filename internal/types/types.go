@@ -1280,12 +1280,16 @@ type RDWSRegistry struct {
 	Sections map[string]map[string]string `json:"sections"`
 }
 
-// RDWSRegistryResponse represents the response from getting registry
+// RDWSRegistryResponse represents the response from getting registry.
+//
+// The result is kept raw because the player returns its registry sections
+// under data.result.value (keyed by section name), not under a "sections"
+// key. See parseRegistryDump in the services package.
 type RDWSRegistryResponse struct {
 	Route  string `json:"route"`
 	Method string `json:"method"`
 	Data   struct {
-		Result RDWSRegistry `json:"result"`
+		Result json.RawMessage `json:"result"`
 	} `json:"data"`
 }
 
@@ -1392,9 +1396,14 @@ type RDWSLogFile struct {
 	Content string `json:"content,omitempty"`
 }
 
-// RDWSLogs represents the collection of log files from a player
+// RDWSLogs represents the logs read back from a player.
+//
+// The player's GET /logs/ endpoint answers with the serial (dmesg) log as a
+// single string, which lands in Text. Files is populated only when a player
+// answers with a structured list of log files instead.
 type RDWSLogs struct {
-	Files []RDWSLogFile `json:"files"`
+	Text  string        `json:"text,omitempty"`
+	Files []RDWSLogFile `json:"files,omitempty"`
 }
 
 // RDWSLogsResponse represents the response from getting logs
@@ -1436,6 +1445,145 @@ type RDWSCrashDumpResponse struct {
 // RDWSCrashDumpResult represents the successful result from getting crash dumps
 type RDWSCrashDumpResult struct {
 	Dumps []RDWSCrashDumpFile `json:"dumps"`
+}
+
+// RDWSCrashDumpFileInfo represents a single crash dump archive stored on a player.
+type RDWSCrashDumpFileInfo struct {
+	FileName string `json:"fileName"`
+	CTime    string `json:"ctime"`
+}
+
+// RDWSCrashDumpFiles represents the crash dump archives available on a player.
+type RDWSCrashDumpFiles struct {
+	Files []RDWSCrashDumpFileInfo `json:"files"`
+}
+
+// RDWSCrashDumpFilesResponse represents the response from listing crash dump files.
+// The player returns the list directly as data.result.
+type RDWSCrashDumpFilesResponse struct {
+	Route  string `json:"route"`
+	Method string `json:"method"`
+	Data   struct {
+		Result []RDWSCrashDumpFileInfo `json:"result"`
+	} `json:"data"`
+}
+
+// RDWSUpdateSyncResult represents the player's reply to an update sync trigger.
+// The player update service declines with Success false and an explanatory
+// Message, for example "Service is disabled."
+type RDWSUpdateSyncResult struct {
+	Success bool   `json:"success"`
+	Message string `json:"message,omitempty"`
+}
+
+// RDWSUpdateSyncResponse represents the response from triggering an update sync
+type RDWSUpdateSyncResponse struct {
+	Route  string `json:"route"`
+	Method string `json:"method"`
+	Data   struct {
+		Result RDWSUpdateSyncResult `json:"result"`
+	} `json:"data"`
+}
+
+// RDWSStoredSupervisors represents the supervisor builds stored on a player.
+// Each build is the name of a timestamp directory, e.g. "2024-01-08T19-23-16.593Z".
+type RDWSStoredSupervisors struct {
+	Success bool     `json:"success"`
+	Builds  []string `json:"builds"`
+}
+
+// RDWSStoredSupervisorsResponse represents the response from listing stored supervisors
+type RDWSStoredSupervisorsResponse struct {
+	Route  string `json:"route"`
+	Method string `json:"method"`
+	Data   struct {
+		Result RDWSStoredSupervisors `json:"result"`
+	} `json:"data"`
+}
+
+// RDWSDeleteSupervisorsRequest represents a request to delete stored supervisor
+// builds. Builds names specific timestamp directories; Clear removes them all.
+// The two are mutually exclusive - a player rejects a body carrying both with
+// HTTP 400 ("'clear' and 'builds' cannot be specified together").
+type RDWSDeleteSupervisorsRequest struct {
+	Data struct {
+		Builds []string `json:"builds,omitempty"`
+		Clear  bool     `json:"clear,omitempty"`
+	} `json:"data"`
+}
+
+// RDWSDeleteSupervisorsResponse represents the response from deleting stored supervisors
+type RDWSDeleteSupervisorsResponse struct {
+	Route  string `json:"route"`
+	Method string `json:"method"`
+	Data   struct {
+		Result struct {
+			Success bool   `json:"success"`
+			Message string `json:"message,omitempty"`
+		} `json:"result"`
+	} `json:"data"`
+}
+
+// RDWSSupervisorVersion represents the version of the supervisor a player is running.
+// The player reports these components as JSON numbers.
+type RDWSSupervisorVersion struct {
+	Major int `json:"major"`
+	Minor int `json:"minor"`
+	Patch int `json:"patch"`
+	Build int `json:"build"`
+}
+
+// RDWSFirmwareVersion represents the BrightSign OS version of a player.
+// The player derives the components by splitting its version string with a
+// regular expression, so they arrive as JSON strings rather than numbers.
+type RDWSFirmwareVersion struct {
+	Major       string `json:"major"`
+	Minor       string `json:"minor"`
+	Patch       string `json:"patch"`
+	Build       string `json:"build,omitempty"`
+	Notes       string `json:"notes,omitempty"`
+	Description string `json:"description,omitempty"`
+}
+
+// RDWSAvailableSupervisor represents one supervisor build the bootstrap can
+// launch. Active marks the build the player is currently running - it is the
+// only reliable source for which stored supervisor actually took effect.
+type RDWSAvailableSupervisor struct {
+	Name   string `json:"name"`
+	Active bool   `json:"active"`
+}
+
+// RDWSSystemSupervisor represents the supervisor section of the system information.
+type RDWSSystemSupervisor struct {
+	Version RDWSSupervisorVersion `json:"version"`
+	DirRW   string                `json:"dir_rw,omitempty"`
+}
+
+// RDWSSystemBootstrap represents the bootstrap section of the system information.
+type RDWSSystemBootstrap struct {
+	AutorunDrive         string                    `json:"autorun_drive,omitempty"`
+	SupervisorsAvailable []RDWSAvailableSupervisor `json:"supervisors_available"`
+}
+
+// RDWSSystemFirmware represents the firmware section of the system information.
+type RDWSSystemFirmware struct {
+	Version RDWSFirmwareVersion `json:"version"`
+}
+
+// RDWSSystemInfo represents the player's system information.
+type RDWSSystemInfo struct {
+	Supervisor RDWSSystemSupervisor `json:"supervisor"`
+	Bootstrap  RDWSSystemBootstrap  `json:"bootstrap"`
+	Firmware   RDWSSystemFirmware   `json:"firmware"`
+}
+
+// RDWSSystemInfoResponse represents the response from getting system information
+type RDWSSystemInfoResponse struct {
+	Route  string `json:"route"`
+	Method string `json:"method"`
+	Data   struct {
+		Result RDWSSystemInfo `json:"result"`
+	} `json:"data"`
 }
 
 // Subscription represents a device subscription in BSN.cloud
