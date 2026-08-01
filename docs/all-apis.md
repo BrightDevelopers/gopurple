@@ -459,6 +459,17 @@
 
 - `[DONE]` `GET /logs/` - Retrieves log files from the player (example: [rdws-logs-get](../examples/rdws-logs-get))
 - `[DONE]` `GET /crash-dump/` - Retrieves crash dump files (example: [rdws-crashdump-get](../examples/rdws-crashdump-get))
+- `[DONE]` `GET /logs/crash-dumps/` - Lists crash dump archives without transferring their contents (`RDWS.GetCrashDumpFiles`, no example yet)
+
+## Player Update Service Endpoints
+
+- `[DONE]` `POST /update/sync/` - Asks the player to contact the update service now (`RDWS.TriggerUpdateSync`, no example yet)
+- `[DONE]` `GET /system/supervisors/` - Lists the supervisor builds stored on the player (`RDWS.GetStoredSupervisors`, no example yet)
+- `[DONE]` `POST /system/supervisors/delete/` - Deletes named supervisor builds, or clears them all (`RDWS.DeleteSupervisors`, no example yet)
+
+## System Endpoints
+
+- `[DONE]` `GET /system/` - Returns system information, including which stored supervisor is active (`RDWS.GetSystemInfo`, no example yet). **Experimental:** an Internal-tier route excluded from the player's published swagger; reachable only because the rDWS passthrough originates from localhost, and carries no compatibility promise.
 
 ## Storage & Provisioning Endpoints
 
