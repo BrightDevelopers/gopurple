@@ -2,7 +2,6 @@ package services
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 
 	"github.com/brightdevelopers/gopurple/internal/errors"
@@ -47,24 +46,44 @@ func (s *rdwsService) TriggerUpdateSync(ctx context.Context, serial string) (*ty
 // The firmware-bundled supervisor is not listed: this reports downloaded builds
 // only. A caller comparing against what the update service offers should treat an
 // absent build as "not yet downloaded".
+//
+// Implemented via ListFiles at "sys/supervisors" rather than a dedicated
+// GET /system/supervisors/ call: that route was never implemented on
+// BSN.cloud's rDWS backend (RdwsDeviceController) - MEASURED (2026-08-07)
+// as a 404 on every network tried, not gated by subscription tier or
+// player. "sys/supervisors" is the real on-device location the working
+// GET /v1/files/{path} route already exposes, confirmed directly against a
+// live player (UTD37F000049): it returns the same timestamp-named build
+// directories (e.g. "2026-06-19T16-28-05.816Z") this type's own doc comment
+// describes.
 func (s *rdwsService) GetStoredSupervisors(ctx context.Context, serial string) (*types.RDWSStoredSupervisors, error) {
 	if serial == "" {
 		return nil, errors.NewValidationError("serial", serial, "device serial cannot be empty")
 	}
 
-	token, err := s.readyToken(ctx)
+	listing, err := s.ListFiles(ctx, serial, "sys/supervisors")
 	if err != nil {
-		return nil, err
-	}
-
-	url := fmt.Sprintf("%s/system/supervisors/?destinationType=player&destinationName=%s", s.config.RDWSBaseURL, serial)
-
-	var response types.RDWSStoredSupervisorsResponse
-	if err := s.httpClient.GetWithAuth(ctx, token, url, &response); err != nil {
 		return nil, errors.NewAPIError(0, "rdws_stored_supervisors_failed",
 			fmt.Sprintf("Failed to list stored supervisors on device with serial '%s'", serial), err.Error())
 	}
-	return &response.Data.Result, nil
+
+	return storedSupervisorsFromFileList(listing.Data.Result), nil
+}
+
+// storedSupervisorsFromFileList extracts build directory names from a file
+// listing. A path ListFiles could not find on the device renders as HTTP 200
+// with an empty result (see ListFiles's own handling) rather than a Go error -
+// treated the same as "no builds stored" here, since to a caller comparing
+// against what the update service offers, the two are indistinguishable and
+// equally meaningful: nothing has been downloaded yet.
+func storedSupervisorsFromFileList(result types.RDWSFileListResult) *types.RDWSStoredSupervisors {
+	builds := make([]string, 0, len(result.Files))
+	for _, f := range result.Files {
+		if f.Type == "dir" {
+			builds = append(builds, f.Name)
+		}
+	}
+	return &types.RDWSStoredSupervisors{Success: true, Builds: builds}
 }
 
 // DeleteSupervisors removes downloaded supervisor builds from the player.
@@ -145,45 +164,45 @@ func (s *rdwsService) GetSystemInfo(ctx context.Context, serial string) (*types.
 // Distinct from GetCrashDump, which downloads a dump archive from /crash-dump.
 // This is the cheap enumeration used to answer "did anything crash since I last
 // looked".
+//
+// Implemented via ListFiles at "sd/brightsign-dumps" rather than a dedicated
+// GET /logs/crash-dumps/ call: that route was never implemented on
+// BSN.cloud's rDWS backend (RdwsDeviceController) - MEASURED (2026-08-07)
+// as a 404 on every network tried. "sd/brightsign-dumps" is where crash
+// dumps actually land at the root of the player's SD card; confirmed
+// directly against a live player (UTD37F000049) holding a real dump file.
 func (s *rdwsService) GetCrashDumpFiles(ctx context.Context, serial string) ([]types.RDWSCrashDumpListEntry, error) {
 	if serial == "" {
 		return nil, errors.NewValidationError("serial", serial, "device serial cannot be empty")
 	}
 
-	token, err := s.readyToken(ctx)
+	listing, err := s.ListFiles(ctx, serial, "sd/brightsign-dumps")
 	if err != nil {
-		return nil, err
-	}
-
-	url := fmt.Sprintf("%s/logs/crash-dumps/?destinationType=player&destinationName=%s", s.config.RDWSBaseURL, serial)
-
-	var response types.RDWSCrashDumpListResponse
-	if err := s.httpClient.GetWithAuth(ctx, token, url, &response); err != nil {
 		return nil, errors.NewAPIError(0, "rdws_crash_dump_list_failed",
 			fmt.Sprintf("Failed to list crash dumps on device with serial '%s'", serial), err.Error())
 	}
-	return parseCrashDumpList(response.Data.Result)
+
+	return crashDumpEntriesFromFileList(listing.Data.Result), nil
 }
 
-// parseCrashDumpList interprets the data.result payload of GET /logs/crash-dumps.
-//
-// The route returns an array. A JSON string is the player reporting an error, and
-// an absent result means no dumps.
-func parseCrashDumpList(raw json.RawMessage) ([]types.RDWSCrashDumpListEntry, error) {
-	if len(raw) == 0 {
-		return nil, nil
+// crashDumpEntriesFromFileList extracts crash dump file entries from a file
+// listing. A path ListFiles could not find (e.g. no brightsign-dumps folder
+// yet, because nothing has ever crashed) renders as HTTP 200 with an empty
+// result, same as storedSupervisorsFromFileList above - treated as "no crash
+// dumps", which is the correct reading.
+func crashDumpEntriesFromFileList(result types.RDWSFileListResult) []types.RDWSCrashDumpListEntry {
+	entries := make([]types.RDWSCrashDumpListEntry, 0, len(result.Files))
+	for _, f := range result.Files {
+		if f.Type != "file" {
+			continue
+		}
+		var ctime string
+		if f.Stat != nil {
+			ctime = f.Stat.Ctime
+		}
+		entries = append(entries, types.RDWSCrashDumpListEntry{FileName: f.Name, CTime: ctime})
 	}
-	var entries []types.RDWSCrashDumpListEntry
-	if err := json.Unmarshal(raw, &entries); err == nil {
-		return entries, nil
-	}
-	var deviceErr string
-	if err := json.Unmarshal(raw, &deviceErr); err == nil {
-		return nil, errors.NewAPIError(0, "rdws_crash_dump_list_error",
-			"Device reported an error listing crash dumps", deviceErr)
-	}
-	return nil, errors.NewAPIError(0, "rdws_crash_dump_list_parse_failed",
-		"Could not parse the crash dump list", string(raw))
+	return entries
 }
 
 // readyToken ensures authentication and network context, then returns a token.

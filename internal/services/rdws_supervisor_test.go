@@ -204,26 +204,70 @@ func TestUpdateSyncCarriesTheRefusalReason(t *testing.T) {
 	}
 }
 
-func TestParseCrashDumpList(t *testing.T) {
-	entries, err := parseCrashDumpList(json.RawMessage(`[{"fileName":"dump-1","ctime":"2026-07-30T00:00:00Z"}]`))
-	if err != nil {
-		t.Fatalf("array payload: %v", err)
+// TestStoredSupervisorsFromFileListFiltersToDirectories pins the extraction
+// logic GetStoredSupervisors now relies on: only "dir"-typed entries count as
+// builds, matching a real listing of "sys/supervisors" captured against
+// UTD37F000049 (see this file's GetStoredSupervisors doc comment).
+func TestStoredSupervisorsFromFileListFiltersToDirectories(t *testing.T) {
+	result := types.RDWSFileListResult{
+		Files: []types.RDWSFileInfo{
+			{Name: "2026-06-19T16-28-05.816Z", Type: "dir"},
+			{Name: "stray-file.txt", Type: "file"},
+		},
 	}
-	if len(entries) != 1 || entries[0].FileName != "dump-1" {
-		t.Errorf("unexpected entries: %+v", entries)
+	got := storedSupervisorsFromFileList(result)
+	if !got.Success {
+		t.Error("Success should always be true - ListFiles already surfaced any transport error")
 	}
+	if len(got.Builds) != 1 || got.Builds[0] != "2026-06-19T16-28-05.816Z" {
+		t.Errorf("Builds: got %+v, want exactly the one directory entry", got.Builds)
+	}
+}
 
-	if entries, err := parseCrashDumpList(json.RawMessage(`[]`)); err != nil || len(entries) != 0 {
-		t.Errorf("empty array should yield no entries and no error: %v / %+v", err, entries)
+func TestStoredSupervisorsFromFileListEmptyWhenNoFiles(t *testing.T) {
+	got := storedSupervisorsFromFileList(types.RDWSFileListResult{})
+	if !got.Success {
+		t.Error("an empty/not-found listing is still Success: true - it means no builds, not a failure")
 	}
-	if entries, err := parseCrashDumpList(nil); err != nil || entries != nil {
-		t.Errorf("absent result should yield no entries and no error: %v / %+v", err, entries)
+	if got.Builds == nil || len(got.Builds) != 0 {
+		t.Errorf("Builds: got %+v, want a non-nil empty slice", got.Builds)
 	}
-	if _, err := parseCrashDumpList(json.RawMessage(`"cannot read crash dumps"`)); err == nil {
-		t.Error("a string payload is the device reporting an error and must surface as one")
+}
+
+// TestCrashDumpEntriesFromFileListFiltersToFiles pins the extraction logic
+// GetCrashDumpFiles now relies on, matching a real listing of
+// "sd/brightsign-dumps" captured against UTD37F000049 (see this file's
+// GetCrashDumpFiles doc comment).
+func TestCrashDumpEntriesFromFileListFiltersToFiles(t *testing.T) {
+	result := types.RDWSFileListResult{
+		Files: []types.RDWSFileInfo{
+			{Name: "000000.dump", Type: "file", Stat: &types.RDWSFileStat{Ctime: "2026-08-01T18:07:07.980Z"}},
+			{Name: "stray-dir", Type: "dir"},
+		},
 	}
-	if _, err := parseCrashDumpList(json.RawMessage(`{"unexpected":true}`)); err == nil {
-		t.Error("an unparseable payload must surface as an error")
+	entries := crashDumpEntriesFromFileList(result)
+	if len(entries) != 1 {
+		t.Fatalf("entries: got %d, want 1 (directories must be excluded)", len(entries))
+	}
+	if entries[0].FileName != "000000.dump" || entries[0].CTime != "2026-08-01T18:07:07.980Z" {
+		t.Errorf("entry: got %+v", entries[0])
+	}
+}
+
+func TestCrashDumpEntriesFromFileListHandlesNilStat(t *testing.T) {
+	result := types.RDWSFileListResult{
+		Files: []types.RDWSFileInfo{{Name: "no-stat.dump", Type: "file"}},
+	}
+	entries := crashDumpEntriesFromFileList(result)
+	if len(entries) != 1 || entries[0].CTime != "" {
+		t.Errorf("entries: got %+v, want one entry with an empty CTime", entries)
+	}
+}
+
+func TestCrashDumpEntriesFromFileListEmptyWhenNoFiles(t *testing.T) {
+	entries := crashDumpEntriesFromFileList(types.RDWSFileListResult{})
+	if entries == nil || len(entries) != 0 {
+		t.Errorf("entries: got %+v, want a non-nil empty slice", entries)
 	}
 }
 
