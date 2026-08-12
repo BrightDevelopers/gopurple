@@ -1,8 +1,0 @@
-{
-  "expires_in": 330,
-  "refresh_expires_in": 0,
-  "token_type": "Bearer",
-  "not-before-policy": 0,
-  "scope": "bsn.api.self.roles bsn.api.main.webapplications bsn.api.self.profile bsn.api.main.webpages bsn.api.main.devices bsn.api.main.operations bsn.api.self.token bsn.api.main.autoruns.plugins bsn.api.main.devicewebpages bsn.api.main.actions.players.reboot bsn.api.main.groups.regular bsn.api.self.users bsn.api.main.roles profile bsn.api.main.users bsn.api.main.subscriptions bsn.api.main.feeds.text wss.api.admin.limited.rdws bsn.api.main.actions.retrieve bsn.api.upload bsn.api.main.playlists.tagged bsn.api.main.actions.cancel bsn.api.main.groups.tagged bsn.api.main.tags bsn.api.main.actions.players.changefirmware bsn.api.self.info bsn.api.main.content bsn.api.self.networks bsn.api.main.playlists.dynamic bsn.api.main.feeds.media bsn.api.main.presentations bsn.api.self.applications",
-  "access_token": "<redacted>"
-}
