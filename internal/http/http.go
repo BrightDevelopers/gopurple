@@ -29,11 +29,21 @@ func NewHTTPClient(cfg *config.Config) *HTTPClient {
 			return time.Duration(resp.Request.Attempt) * time.Second, nil
 		}).
 		AddRetryCondition(func(resp *resty.Response, err error) bool {
-			// Retry on network errors
+			// A non-nil err with no HTTP status is a transport-level failure
+			// (connection refused, timeout, TLS) — worth retrying.
+			//
+			// A non-nil err WITH a status means the response arrived and then
+			// failed to DECODE into the caller's result type. That is
+			// deterministic: retrying re-fetches an identically-unparseable body,
+			// so RetryCount rounds of backoff buy nothing and turn a sub-second
+			// call into several seconds of dead waiting. This was MEASURED on
+			// GET /v1/system, where firmware that reports a version component as a
+			// JSON string (e.g. "9") against a numeric field failed the decode and
+			// drove a ~0.3s call to ~7s of retries. Do not retry a decode failure.
 			if err != nil {
-				return true
+				return resp == nil || resp.StatusCode() == 0
 			}
-			// Retry on server errors and rate limiting
+			// Retry on server errors and rate limiting.
 			return resp.StatusCode() >= 500 || resp.StatusCode() == http.StatusTooManyRequests
 		}).
 		SetHeaders(map[string]string{

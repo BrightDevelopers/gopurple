@@ -3,6 +3,8 @@ package types
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
+	"strings"
 	"time"
 )
 
@@ -1524,6 +1526,69 @@ type RDWSComponentVersion struct {
 	Minor int `json:"minor"`
 	Patch int `json:"patch"`
 	Build int `json:"build,omitempty"`
+}
+
+// UnmarshalJSON accepts each version component as either a JSON number (9) or a
+// JSON string ("9"). Some player firmware reports the components of the /v1/system
+// firmware version as quoted strings; the plain int fields above reject those,
+// which fails the whole decode. Because a decode failure used to be retried by
+// the HTTP client (see internal/http), that single string-valued field turned a
+// sub-second GET /v1/system into ~7s of pointless retries and pushed callers over
+// their latency budgets. Parsing string-or-number here makes the decode succeed
+// so the value is actually usable and no retry is provoked. The public fields
+// stay int, so callers and String() are unchanged.
+func (v *RDWSComponentVersion) UnmarshalJSON(data []byte) error {
+	var raw struct {
+		Major flexInt `json:"major"`
+		Minor flexInt `json:"minor"`
+		Patch flexInt `json:"patch"`
+		Build flexInt `json:"build"`
+	}
+	if err := json.Unmarshal(data, &raw); err != nil {
+		return err
+	}
+	v.Major = int(raw.Major)
+	v.Minor = int(raw.Minor)
+	v.Patch = int(raw.Patch)
+	v.Build = int(raw.Build)
+	return nil
+}
+
+// flexInt is an int that unmarshals from either a JSON number or a JSON string
+// holding an integer. It exists for version components (see RDWSComponentVersion)
+// but is written generally so any string-or-number integer field can reuse it.
+type flexInt int
+
+func (n *flexInt) UnmarshalJSON(data []byte) error {
+	if len(data) == 0 || string(data) == "null" {
+		*n = 0
+		return nil
+	}
+	// A quoted value: unwrap the string, then parse the integer inside it.
+	if data[0] == '"' {
+		var s string
+		if err := json.Unmarshal(data, &s); err != nil {
+			return err
+		}
+		s = strings.TrimSpace(s)
+		if s == "" {
+			*n = 0
+			return nil
+		}
+		i, err := strconv.Atoi(s)
+		if err != nil {
+			return fmt.Errorf("value %q is not an integer: %w", s, err)
+		}
+		*n = flexInt(i)
+		return nil
+	}
+	// A bare JSON number.
+	var i int
+	if err := json.Unmarshal(data, &i); err != nil {
+		return err
+	}
+	*n = flexInt(i)
+	return nil
 }
 
 // String renders the dotted form, omitting a zero build.
