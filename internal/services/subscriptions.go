@@ -6,11 +6,11 @@ import (
 	"net/url"
 	"strconv"
 
-	"github.com/brightdevelopers/gopurple/internal/auth"
-	"github.com/brightdevelopers/gopurple/internal/config"
-	"github.com/brightdevelopers/gopurple/internal/errors"
-	"github.com/brightdevelopers/gopurple/internal/http"
-	"github.com/brightdevelopers/gopurple/internal/types"
+	"github.com/brightdevelopers/gopurple/v2/internal/auth"
+	"github.com/brightdevelopers/gopurple/v2/internal/config"
+	"github.com/brightdevelopers/gopurple/v2/internal/errors"
+	"github.com/brightdevelopers/gopurple/v2/internal/http"
+	"github.com/brightdevelopers/gopurple/v2/internal/types"
 )
 
 // SubscriptionService provides subscription management operations.

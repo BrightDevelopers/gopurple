@@ -8,12 +8,12 @@ import (
 
 func TestAPIError(t *testing.T) {
 	err := NewAPIError(400, "invalid_request", "Invalid request format", "Missing required field")
-	
+
 	expected := "API error 400 (invalid_request): Invalid request format - Missing required field"
 	if err.Error() != expected {
 		t.Errorf("Expected error message '%s', got '%s'", expected, err.Error())
 	}
-	
+
 	// Test without details
 	err = NewAPIError(404, "not_found", "Resource not found", "")
 	expected = "API error 404 (not_found): Resource not found"
@@ -26,17 +26,17 @@ func TestAuthenticationError(t *testing.T) {
 	// Test with wrapped error
 	innerErr := errors.New("connection failed")
 	err := NewAuthError("token expired", innerErr)
-	
+
 	expected := "authentication failed: token expired: connection failed"
 	if err.Error() != expected {
 		t.Errorf("Expected error message '%s', got '%s'", expected, err.Error())
 	}
-	
+
 	// Test unwrapping
 	if unwrapped := err.Unwrap(); unwrapped != innerErr {
 		t.Errorf("Expected unwrapped error to be %v, got %v", innerErr, unwrapped)
 	}
-	
+
 	// Test without wrapped error
 	err = NewAuthError("invalid credentials", nil)
 	expected = "authentication failed: invalid credentials"
@@ -48,12 +48,12 @@ func TestAuthenticationError(t *testing.T) {
 func TestNetworkError(t *testing.T) {
 	innerErr := errors.New("connection timeout")
 	err := NewNetworkError("GET /devices", innerErr)
-	
+
 	expected := "network error during GET /devices: connection timeout"
 	if err.Error() != expected {
 		t.Errorf("Expected error message '%s', got '%s'", expected, err.Error())
 	}
-	
+
 	// Test unwrapping
 	if unwrapped := err.Unwrap(); unwrapped != innerErr {
 		t.Errorf("Expected unwrapped error to be %v, got %v", innerErr, unwrapped)
@@ -62,12 +62,12 @@ func TestNetworkError(t *testing.T) {
 
 func TestConfigurationError(t *testing.T) {
 	err := NewConfigError("ClientID", "field is required", "set BS_CLIENT_ID environment variable")
-	
+
 	expected := "configuration error: ClientID - field is required (suggestion: set BS_CLIENT_ID environment variable)"
 	if err.Error() != expected {
 		t.Errorf("Expected error message '%s', got '%s'", expected, err.Error())
 	}
-	
+
 	// Test without suggestion
 	err = NewConfigError("Timeout", "must be positive", "")
 	expected = "configuration error: Timeout - must be positive"
@@ -78,7 +78,7 @@ func TestConfigurationError(t *testing.T) {
 
 func TestValidationError(t *testing.T) {
 	err := NewValidationError("networkName", "", "cannot be empty")
-	
+
 	expected := "validation error: networkName= - cannot be empty"
 	if err.Error() != expected {
 		t.Errorf("Expected error message '%s', got '%s'", expected, err.Error())
@@ -122,7 +122,7 @@ func TestIsAuthenticationError(t *testing.T) {
 			expected: false,
 		},
 	}
-	
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			result := IsAuthenticationError(tt.err)
@@ -180,7 +180,7 @@ func TestIsRetryableError(t *testing.T) {
 			expected: false,
 		},
 	}
-	
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			result := IsRetryableError(tt.err)

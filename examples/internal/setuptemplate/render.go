@@ -7,7 +7,7 @@ import (
 	"os"
 	"text/template"
 
-	"github.com/brightdevelopers/gopurple"
+	"github.com/brightdevelopers/gopurple/v2"
 )
 
 const (

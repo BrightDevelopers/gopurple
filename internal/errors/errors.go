@@ -131,12 +131,12 @@ func IsAuthenticationError(err error) bool {
 	if ok {
 		return true
 	}
-	
+
 	// Also check for API errors with authentication status codes
 	if apiErr, ok := err.(*APIError); ok {
 		return apiErr.StatusCode == http.StatusUnauthorized || apiErr.StatusCode == http.StatusForbidden
 	}
-	
+
 	return false
 }
 
@@ -158,11 +158,11 @@ func IsRetryableError(err error) bool {
 		// Retry on server errors and rate limiting
 		return apiErr.StatusCode >= 500 || apiErr.StatusCode == http.StatusTooManyRequests
 	}
-	
+
 	if _, ok := err.(*NetworkError); ok {
 		// Retry network errors (connection failures, etc.)
 		return true
 	}
-	
+
 	return false
 }

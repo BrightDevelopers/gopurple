@@ -6,10 +6,21 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/brightdevelopers/gopurple/internal/config"
-	"github.com/brightdevelopers/gopurple/internal/errors"
+	"github.com/brightdevelopers/gopurple/v2/internal/config"
+	"github.com/brightdevelopers/gopurple/v2/internal/errors"
 	"github.com/go-resty/resty/v2"
 )
+
+// isIdempotent reports whether an HTTP method is safe to retry. POST and PATCH
+// are not: retrying them can duplicate a non-idempotent side effect.
+func isIdempotent(method string) bool {
+	switch method {
+	case http.MethodGet, http.MethodHead, http.MethodPut, http.MethodDelete, http.MethodOptions, http.MethodTrace:
+		return true
+	default:
+		return false
+	}
+}
 
 // HTTPClient wraps the resty client with BSN.cloud-specific functionality.
 type HTTPClient struct {
@@ -29,6 +40,14 @@ func NewHTTPClient(cfg *config.Config) *HTTPClient {
 			return time.Duration(resp.Request.Attempt) * time.Second, nil
 		}).
 		AddRetryCondition(func(resp *resty.Response, err error) bool {
+			// Only idempotent methods may be retried. Retrying a POST or PATCH
+			// can duplicate a non-idempotent side effect — a timed-out reboot or
+			// create could run twice — so those are never retried, not even on a
+			// transport error, because the request may have reached the server.
+			if resp == nil || resp.Request == nil || !isIdempotent(resp.Request.Method) {
+				return false
+			}
+
 			// A non-nil err with no HTTP status is a transport-level failure
 			// (connection refused, timeout, TLS) — worth retrying.
 			//
@@ -41,7 +60,7 @@ func NewHTTPClient(cfg *config.Config) *HTTPClient {
 			// JSON string (e.g. "9") against a numeric field failed the decode and
 			// drove a ~0.3s call to ~7s of retries. Do not retry a decode failure.
 			if err != nil {
-				return resp == nil || resp.StatusCode() == 0
+				return resp.StatusCode() == 0
 			}
 			// Retry on server errors and rate limiting.
 			return resp.StatusCode() >= 500 || resp.StatusCode() == http.StatusTooManyRequests

@@ -25,12 +25,28 @@ build:
 test:
 	$(GOTEST) -v ./...
 
+run-tests:
+	$(GOTEST) ./...
+
+fmt-check:
+	@unformatted=$$(gofmt -l . | grep -v '^examples/'); \
+	if [ -n "$$unformatted" ]; then echo "gofmt needed:"; echo "$$unformatted"; exit 1; fi
+
+vet:
+	$(GOCMD) vet ./...
+
+check: fmt-check vet run-tests
+
 clean:
 	rm -rf $(BUILDDIR)
 	find . -name '*~' -delete
 
 deps:
 	$(GOMOD) download
+	$(GOMOD) tidy
+
+upgrade-deps:
+	$(GOCMD) get github.com/go-resty/resty/v2@v2.17.2 golang.org/x/net@v0.44.0 golang.org/x/term@v0.36.0 golang.org/x/sys@v0.38.0
 	$(GOMOD) tidy
 
 build-linux:
@@ -64,7 +80,9 @@ help:
 	@echo "Available targets:"
 	@echo "  make all         - Run tests and build all examples"
 	@echo "  make build       - Build all example programs into bin/"
-	@echo "  make test        - Run all tests"
+	@echo "  make test        - Run all tests (verbose)"
+	@echo "  make run-tests   - Run the full test suite"
+	@echo "  make check       - gofmt gate + go vet + full test suite"
 	@echo "  make clean       - Clean build artifacts"
 	@echo "  make deps        - Download and tidy dependencies"
 	@echo "  make build-linux - Cross-compile all examples for Linux amd64"
@@ -78,4 +96,4 @@ help:
 list-examples:
 	@for example in $(EXAMPLES); do echo "bin/$$example"; done
 
-.PHONY: all build test clean deps build-linux install install-hooks dev-deps lint fmt help list-examples
+.PHONY: all build test run-tests fmt-check vet check clean deps build-linux install install-hooks dev-deps lint fmt help list-examples

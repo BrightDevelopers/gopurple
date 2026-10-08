@@ -12,7 +12,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/brightdevelopers/gopurple"
+	"github.com/brightdevelopers/gopurple/v2"
 )
 
 func main() {
@@ -66,7 +66,7 @@ func main() {
 	}
 
 	// Create client with options
-	var opts []gopurple.Option
+	opts := []gopurple.Option{gopurple.WithEnv()}
 
 	// Add timeout if specified
 	if *timeoutFlag != 30 {

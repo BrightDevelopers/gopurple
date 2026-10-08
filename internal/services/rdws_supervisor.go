@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/brightdevelopers/gopurple/internal/errors"
-	"github.com/brightdevelopers/gopurple/internal/types"
+	"github.com/brightdevelopers/gopurple/v2/internal/errors"
+	"github.com/brightdevelopers/gopurple/v2/internal/types"
 )
 
 // This file covers the player routes needed to drive and observe a supervisor
@@ -30,7 +30,7 @@ func (s *rdwsService) TriggerUpdateSync(ctx context.Context, serial string) (*ty
 		return nil, err
 	}
 
-	url := fmt.Sprintf("%s/update/sync/?destinationType=player&destinationName=%s", s.config.RDWSBaseURL, serial)
+	url := fmt.Sprintf("%s/update/sync/?destinationType=player&destinationName=%s", s.config.RDWSBaseURL, escQuery(serial))
 
 	var response types.RDWSUpdateSyncResponse
 	if err := s.httpClient.PostWithAuth(ctx, token, url, struct{}{}, &response); err != nil {
@@ -117,7 +117,7 @@ func (s *rdwsService) DeleteSupervisors(ctx context.Context, serial string, requ
 		return false, err
 	}
 
-	url := fmt.Sprintf("%s/system/supervisors/delete/?destinationType=player&destinationName=%s", s.config.RDWSBaseURL, serial)
+	url := fmt.Sprintf("%s/system/supervisors/delete/?destinationType=player&destinationName=%s", s.config.RDWSBaseURL, escQuery(serial))
 
 	var response types.RDWSDeleteSupervisorsResponse
 	if err := s.httpClient.PostWithAuth(ctx, token, url, request, &response); err != nil {
@@ -149,7 +149,7 @@ func (s *rdwsService) GetSystemInfo(ctx context.Context, serial string) (*types.
 		return nil, err
 	}
 
-	url := fmt.Sprintf("%s/system/?destinationType=player&destinationName=%s", s.config.RDWSBaseURL, serial)
+	url := fmt.Sprintf("%s/system/?destinationType=player&destinationName=%s", s.config.RDWSBaseURL, escQuery(serial))
 
 	var response types.RDWSSystemInfoResponse
 	if err := s.httpClient.GetWithAuth(ctx, token, url, &response); err != nil {

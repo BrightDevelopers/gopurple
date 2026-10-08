@@ -4,9 +4,9 @@ import (
 	"context"
 	"testing"
 
-	"github.com/brightdevelopers/gopurple/internal/auth"
-	"github.com/brightdevelopers/gopurple/internal/config"
-	"github.com/brightdevelopers/gopurple/internal/http"
+	"github.com/brightdevelopers/gopurple/v2/internal/auth"
+	"github.com/brightdevelopers/gopurple/v2/internal/config"
+	"github.com/brightdevelopers/gopurple/v2/internal/http"
 )
 
 // TestProvisioningServiceInterface verifies that our implementation satisfies the interface

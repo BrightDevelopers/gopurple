@@ -21,26 +21,26 @@ type TokenResponse struct {
 type Network struct {
 	ID               int                  `json:"id"`
 	Name             string               `json:"name"`
-	CreationDate     time.Time           `json:"creationDate"`
-	LastModifiedDate time.Time           `json:"lastModifiedDate"`
+	CreationDate     time.Time            `json:"creationDate"`
+	LastModifiedDate time.Time            `json:"lastModifiedDate"`
 	Subscription     *NetworkSubscription `json:"subscription"`
 	Settings         *NetworkSettings     `json:"settings"`
-	IsLockedOut      bool                `json:"isLockedOut"`
-	LockoutDate      *time.Time          `json:"lockoutDate,omitempty"`
+	IsLockedOut      bool                 `json:"isLockedOut"`
+	LockoutDate      *time.Time           `json:"lockoutDate,omitempty"`
 }
 
 // NetworkSubscription represents subscription details for a network.
 type NetworkSubscription struct {
-	Level     string     `json:"level"`     // "Content" or "Control"
+	Level     string     `json:"level"` // "Content" or "Control"
 	StartDate time.Time  `json:"startDate"`
 	EndDate   *time.Time `json:"endDate,omitempty"`
 }
 
 // NetworkSettings represents network configuration settings.
 type NetworkSettings struct {
-	UserAccessTokenLifetime                   string `json:"userAccessTokenLifetime"`
-	DeviceAccessTokenLifetime                 string `json:"deviceAccessTokenLifetime"`
-	AutomaticTaggedPlaylistApprovalEnabled    bool   `json:"automaticTaggedPlaylistApprovalEnabled"`
+	UserAccessTokenLifetime                string `json:"userAccessTokenLifetime"`
+	DeviceAccessTokenLifetime              string `json:"deviceAccessTokenLifetime"`
+	AutomaticTaggedPlaylistApprovalEnabled bool   `json:"automaticTaggedPlaylistApprovalEnabled"`
 }
 
 // NetworkRequest represents a request to set the active network.
@@ -51,25 +51,25 @@ type NetworkRequest struct {
 
 // Device represents a BrightSign device in the network.
 type Device struct {
-	ID                int              `json:"id"`
-	Serial            string           `json:"serial"`
-	Model             string           `json:"model"`
-	Family            string           `json:"family"`
-	RegistrationDate  time.Time        `json:"registrationDate"`
-	LastModifiedDate  time.Time        `json:"lastModifiedDate"`
-	Settings          *DeviceSettings  `json:"settings,omitempty"`
-	Status            *DeviceStatusEmbed `json:"status,omitempty"`
+	ID               int                `json:"id"`
+	Serial           string             `json:"serial"`
+	Model            string             `json:"model"`
+	Family           string             `json:"family"`
+	RegistrationDate time.Time          `json:"registrationDate"`
+	LastModifiedDate time.Time          `json:"lastModifiedDate"`
+	Settings         *DeviceSettings    `json:"settings,omitempty"`
+	Status           *DeviceStatusEmbed `json:"status,omitempty"`
 }
 
 // DeviceSettings represents device configuration settings.
 type DeviceSettings struct {
-	Name                   string  `json:"name"`
-	Description            string  `json:"description"`
-	ConcatNameAndSerial    bool    `json:"concatNameAndSerial"`
-	SetupType              string  `json:"setupType"`
-	LastModifiedDate       time.Time `json:"lastModifiedDate"`
-	Group                  *Group  `json:"group,omitempty"`
-	Timezone               string  `json:"timezone"`
+	Name                string    `json:"name"`
+	Description         string    `json:"description"`
+	ConcatNameAndSerial bool      `json:"concatNameAndSerial"`
+	SetupType           string    `json:"setupType"`
+	LastModifiedDate    time.Time `json:"lastModifiedDate"`
+	Group               *Group    `json:"group,omitempty"`
+	Timezone            string    `json:"timezone"`
 }
 
 // Group represents a device group.
@@ -140,16 +140,16 @@ type Region struct {
 
 // DeviceStatusEmbed represents the status embedded in a device object.
 type DeviceStatusEmbed struct {
-	Group            *Group          `json:"group,omitempty"`
-	Timezone         string          `json:"timezone"`
-	Synchronization  *SyncSettings   `json:"synchronization,omitempty"`
-	Script           *ScriptInfo     `json:"script,omitempty"`
-	Firmware         *FirmwareInfo   `json:"firmware,omitempty"`
-	Storage          []StorageInfo   `json:"storage,omitempty"`
-	Network          *NetworkInfo    `json:"network,omitempty"`
-	Uptime           string          `json:"uptime"`
-	Health           string          `json:"health"`
-	LastModifiedDate time.Time       `json:"lastModifiedDate"`
+	Group            *Group        `json:"group,omitempty"`
+	Timezone         string        `json:"timezone"`
+	Synchronization  *SyncSettings `json:"synchronization,omitempty"`
+	Script           *ScriptInfo   `json:"script,omitempty"`
+	Firmware         *FirmwareInfo `json:"firmware,omitempty"`
+	Storage          []StorageInfo `json:"storage,omitempty"`
+	Network          *NetworkInfo  `json:"network,omitempty"`
+	Uptime           string        `json:"uptime"`
+	Health           string        `json:"health"`
+	LastModifiedDate time.Time     `json:"lastModifiedDate"`
 }
 
 // SyncSettings represents synchronization settings
@@ -213,41 +213,41 @@ type DeviceStatus struct {
 	IsOnline        bool      `json:"isOnline"`
 	LastSeen        time.Time `json:"lastSeen"`
 	Status          string    `json:"status"`
-	Uptime          int       `json:"uptime"`          // Uptime in seconds
-	UptimeDisplay   string    `json:"uptimeDisplay"`   // Human readable uptime
-	HealthStatus    string    `json:"healthStatus"`    // "Healthy", "Warning", "Error"
+	Uptime          int       `json:"uptime"`        // Uptime in seconds
+	UptimeDisplay   string    `json:"uptimeDisplay"` // Human readable uptime
+	HealthStatus    string    `json:"healthStatus"`  // "Healthy", "Warning", "Error"
 	LastHealthCheck time.Time `json:"lastHealthCheck"`
 	IPAddress       string    `json:"ipAddress,omitempty"`
-	ConnectionType  string    `json:"connectionType"`  // "ethernet", "wifi"
+	ConnectionType  string    `json:"connectionType"`           // "ethernet", "wifi"
 	SignalStrength  int       `json:"signalStrength,omitempty"` // For wifi connections
 }
 
 // DeviceError represents an error log entry from a device.
 // The actual API structure may vary - this attempts to be flexible.
 type DeviceError struct {
-	ID               int       `json:"id,omitempty"`
-	DeviceID         string    `json:"deviceId,omitempty"`
-	Serial           string    `json:"serial,omitempty"`
-	ErrorCode        string    `json:"errorCode,omitempty"`
-	ErrorType        string    `json:"errorType,omitempty"`        // "system", "content", "network", etc.
-	Severity         string    `json:"severity,omitempty"`         // "info", "warning", "error", "critical"  
-	Level            string    `json:"level,omitempty"`            // Alternative severity field
-	Message          string    `json:"message,omitempty"`
-	Description      string    `json:"description,omitempty"`      // Alternative message field
-	Details          string    `json:"details,omitempty"`
-	Timestamp        time.Time `json:"timestamp,omitempty"`
-	CreationDate     time.Time `json:"creationDate,omitempty"`     // Alternative timestamp field
-	LastModifiedDate time.Time `json:"lastModifiedDate,omitempty"` // Alternative timestamp field
-	Source           string    `json:"source,omitempty"`           // Component that generated the error
-	Component        string    `json:"component,omitempty"`        // Alternative source field
-	Resolved         bool      `json:"resolved,omitempty"`
+	ID               int        `json:"id,omitempty"`
+	DeviceID         string     `json:"deviceId,omitempty"`
+	Serial           string     `json:"serial,omitempty"`
+	ErrorCode        string     `json:"errorCode,omitempty"`
+	ErrorType        string     `json:"errorType,omitempty"` // "system", "content", "network", etc.
+	Severity         string     `json:"severity,omitempty"`  // "info", "warning", "error", "critical"
+	Level            string     `json:"level,omitempty"`     // Alternative severity field
+	Message          string     `json:"message,omitempty"`
+	Description      string     `json:"description,omitempty"` // Alternative message field
+	Details          string     `json:"details,omitempty"`
+	Timestamp        time.Time  `json:"timestamp,omitempty"`
+	CreationDate     time.Time  `json:"creationDate,omitempty"`     // Alternative timestamp field
+	LastModifiedDate time.Time  `json:"lastModifiedDate,omitempty"` // Alternative timestamp field
+	Source           string     `json:"source,omitempty"`           // Component that generated the error
+	Component        string     `json:"component,omitempty"`        // Alternative source field
+	Resolved         bool       `json:"resolved,omitempty"`
 	ResolvedAt       *time.Time `json:"resolvedAt,omitempty"`
-	Status           string    `json:"status,omitempty"`           // Alternative resolved field
-	
+	Status           string     `json:"status,omitempty"` // Alternative resolved field
+
 	// Generic fields for unknown API structure
-	Type             string    `json:"type,omitempty"`
-	Code             string    `json:"code,omitempty"`
-	Name             string    `json:"name,omitempty"`
+	Type string `json:"type,omitempty"`
+	Code string `json:"code,omitempty"`
+	Name string `json:"name,omitempty"`
 }
 
 // DeviceErrorList represents a paginated list of device errors.
@@ -274,13 +274,13 @@ const (
 
 // RebootResponse represents the response from a device reboot request.
 type RebootResponse struct {
-	DeviceID     string    `json:"deviceId,omitempty"`
-	Serial       string    `json:"serial,omitempty"`
-	OperationID  string    `json:"operationId,omitempty"`
-	Status       string    `json:"status"`           // "success", "failed", "pending"
-	Message      string    `json:"message,omitempty"`
-	Timestamp    time.Time `json:"timestamp,omitempty"`
-	RebootTime   time.Time `json:"rebootTime,omitempty"`
+	DeviceID    string    `json:"deviceId,omitempty"`
+	Serial      string    `json:"serial,omitempty"`
+	OperationID string    `json:"operationId,omitempty"`
+	Status      string    `json:"status"` // "success", "failed", "pending"
+	Message     string    `json:"message,omitempty"`
+	Timestamp   time.Time `json:"timestamp,omitempty"`
+	RebootTime  time.Time `json:"rebootTime,omitempty"`
 }
 
 // SnapshotRequest represents a request to take a device screenshot.
@@ -296,20 +296,20 @@ type SnapshotRequest struct {
 
 // SnapshotResponse represents the response from a device snapshot request.
 type SnapshotResponse struct {
-	RemoteSnapshotThumbnail string    `json:"remoteSnapshotThumbnail,omitempty"` // Base64 thumbnail
-	Filename                string    `json:"filename,omitempty"`                // Full-resolution file path
-	Timestamp               string    `json:"timestamp,omitempty"`               // When snapshot was taken
-	DeviceName              string    `json:"devicename,omitempty"`              // Device that took snapshot
-	Width                   int       `json:"width,omitempty"`                   // Image width in pixels
-	Height                  int       `json:"height,omitempty"`                  // Image height in pixels
-	Data                    string    `json:"data,omitempty"`                    // Base64 image data if requested
-	Format                  string    `json:"format,omitempty"`                  // Image format used
-	Size                    int64     `json:"size,omitempty"`                    // File size in bytes
+	RemoteSnapshotThumbnail string `json:"remoteSnapshotThumbnail,omitempty"` // Base64 thumbnail
+	Filename                string `json:"filename,omitempty"`                // Full-resolution file path
+	Timestamp               string `json:"timestamp,omitempty"`               // When snapshot was taken
+	DeviceName              string `json:"devicename,omitempty"`              // Device that took snapshot
+	Width                   int    `json:"width,omitempty"`                   // Image width in pixels
+	Height                  int    `json:"height,omitempty"`                  // Image height in pixels
+	Data                    string `json:"data,omitempty"`                    // Base64 image data if requested
+	Format                  string `json:"format,omitempty"`                  // Image format used
+	Size                    int64  `json:"size,omitempty"`                    // File size in bytes
 }
 
 // ReprovisionResponse represents the response from a device re-provision request.
 type ReprovisionResponse struct {
-	Success bool   `json:"success"`         // Whether the re-provision succeeded
+	Success bool   `json:"success"`           // Whether the re-provision succeeded
 	Message string `json:"message,omitempty"` // Optional message from the device
 }
 
@@ -339,15 +339,15 @@ type DWSPasswordSetResponse struct {
 
 // BDeployRecord represents a B-Deploy setup record.
 type BDeployRecord struct {
-	ID           string `json:"_id"`         // Unique identifier for the setup record
-	PackageName  string `json:"packageName"` // Name of the setup package
-	SetupType    string `json:"setupType"`   // Type of setup (e.g., "web", "usb", etc.)
-	Username     string `json:"username,omitempty"`    // User who created the setup
-	NetworkName  string `json:"networkName,omitempty"` // Network name
+	ID           string `json:"_id"`                    // Unique identifier for the setup record
+	PackageName  string `json:"packageName"`            // Name of the setup package
+	SetupType    string `json:"setupType"`              // Type of setup (e.g., "web", "usb", etc.)
+	Username     string `json:"username,omitempty"`     // User who created the setup
+	NetworkName  string `json:"networkName,omitempty"`  // Network name
 	BSNGroupName string `json:"bsnGroupName,omitempty"` // BSN group name
-	CreatedDate  string `json:"createdDate,omitempty"` // When the setup was created
-	UpdatedDate  string `json:"updatedDate,omitempty"` // When the setup was last updated
-	IsActive     bool   `json:"isActive,omitempty"`    // Whether the setup is active
+	CreatedDate  string `json:"createdDate,omitempty"`  // When the setup was created
+	UpdatedDate  string `json:"updatedDate,omitempty"`  // When the setup was last updated
+	IsActive     bool   `json:"isActive,omitempty"`     // Whether the setup is active
 }
 
 // BDeployRecordList represents a list of B-Deploy setup records.
@@ -370,15 +370,15 @@ type BDeploySingleRecordResponse struct {
 
 // BDeployFullRecordAPIResponse represents the API response for full B-Deploy setup records.
 type BDeployFullRecordAPIResponse struct {
-	Error  interface{}           `json:"error"`  // Error field (null on success)
-	Result []BDeploySetupRecord  `json:"result"` // Array of full setup records
+	Error  interface{}          `json:"error"`  // Error field (null on success)
+	Result []BDeploySetupRecord `json:"result"` // Array of full setup records
 }
 
 // BDeployInfo represents the B-Deploy section of a setup record.
 type BDeployInfo struct {
-	Username    string `json:"username"`    // BSN.cloud username
-	NetworkName string `json:"networkName"` // BSN.cloud network name
-	PackageName string `json:"packageName"` // Setup package name
+	Username    string `json:"username"`         // BSN.cloud username
+	NetworkName string `json:"networkName"`      // BSN.cloud network name
+	PackageName string `json:"packageName"`      // Setup package name
 	Client      string `json:"client,omitempty"` // Client identifier
 }
 
@@ -392,18 +392,18 @@ type BSNTokenEntity struct {
 
 // NetworkInterface represents a network interface configuration.
 type NetworkInterface struct {
-	ID                         string `json:"id"`                         // Interface ID
-	Name                       string `json:"name"`                       // Interface name
-	Type                       string `json:"type"`                       // Interface type
-	Proto                      string `json:"proto"`                      // Protocol (e.g., "DHCPv4")
-	ContentDownloadEnabled     bool   `json:"contentDownloadEnabled"`     // Enable content downloads
-	HealthReportingEnabled     bool   `json:"healthReportingEnabled"`     // Enable health reporting
+	ID                     string `json:"id"`                     // Interface ID
+	Name                   string `json:"name"`                   // Interface name
+	Type                   string `json:"type"`                   // Interface type
+	Proto                  string `json:"proto"`                  // Protocol (e.g., "DHCPv4")
+	ContentDownloadEnabled bool   `json:"contentDownloadEnabled"` // Enable content downloads
+	HealthReportingEnabled bool   `json:"healthReportingEnabled"` // Enable health reporting
 }
 
 // NetworkConfig represents network configuration.
 type NetworkConfig struct {
-	TimeServers []string           `json:"timeServers"` // Time server URLs
-	Interfaces  []NetworkInterface `json:"interfaces"`  // Network interfaces
+	TimeServers []string           `json:"timeServers"`           // Time server URLs
+	Interfaces  []NetworkInterface `json:"interfaces"`            // Network interfaces
 	Proxy       string             `json:"proxy,omitempty"`       // Proxy server
 	ProxyBypass string             `json:"proxyBypass,omitempty"` // Proxy bypass list
 }
@@ -430,9 +430,9 @@ type BDeploySetupRecord struct {
 	Network                          *NetworkConfig  `json:"network,omitempty"`                          // Network configuration
 
 	// Firmware & Debugging
-	FirmwareUpdateType        string `json:"firmwareUpdateType,omitempty"`        // Firmware update type (standard, latest, etc.)
-	EnableSerialDebugging     bool   `json:"enableSerialDebugging,omitempty"`     // Enable serial port debugging output
-	EnableSystemLogDebugging  bool   `json:"enableSystemLogDebugging,omitempty"`  // Enable system log debugging
+	FirmwareUpdateType       string `json:"firmwareUpdateType,omitempty"`       // Firmware update type (standard, latest, etc.)
+	EnableSerialDebugging    bool   `json:"enableSerialDebugging,omitempty"`    // Enable serial port debugging output
+	EnableSystemLogDebugging bool   `json:"enableSystemLogDebugging,omitempty"` // Enable system log debugging
 
 	// DWS (Diagnostic Web Server)
 	DWSEnabled       bool   `json:"dwsEnabled,omitempty"`       // Enable local DWS
@@ -440,45 +440,45 @@ type BDeploySetupRecord struct {
 	RemoteDWSEnabled bool   `json:"remoteDwsEnabled,omitempty"` // Enable remote DWS via BSN.cloud
 
 	// LWS (Local Web Server)
-	LWSEnabled                    bool   `json:"lwsEnabled,omitempty"`                    // Enable LWS
-	LWSConfig                     string `json:"lwsConfig,omitempty"`                     // LWS configuration mode (status, content, etc.)
-	LWSUserName                   string `json:"lwsUserName,omitempty"`                   // LWS username
-	LWSPassword                   string `json:"lwsPassword,omitempty"`                   // LWS password
-	LWSEnableUpdateNotifications  bool   `json:"lwsEnableUpdateNotifications,omitempty"`  // Enable LWS update notifications
+	LWSEnabled                   bool   `json:"lwsEnabled,omitempty"`                   // Enable LWS
+	LWSConfig                    string `json:"lwsConfig,omitempty"`                    // LWS configuration mode (status, content, etc.)
+	LWSUserName                  string `json:"lwsUserName,omitempty"`                  // LWS username
+	LWSPassword                  string `json:"lwsPassword,omitempty"`                  // LWS password
+	LWSEnableUpdateNotifications bool   `json:"lwsEnableUpdateNotifications,omitempty"` // Enable LWS update notifications
 
 	// Device information
-	DeviceName         string `json:"deviceName,omitempty"`         // Device name
-	DeviceDescription  string `json:"deviceDescription,omitempty"`  // Device description
-	UnitNamingMethod   string `json:"unitNamingMethod,omitempty"`   // Unit naming method (appendUnitIDToUnitName, etc.)
+	DeviceName        string `json:"deviceName,omitempty"`        // Device name
+	DeviceDescription string `json:"deviceDescription,omitempty"` // Device description
+	UnitNamingMethod  string `json:"unitNamingMethod,omitempty"`  // Unit naming method (appendUnitIDToUnitName, etc.)
 
 	// BSN connection settings
 	TimeBetweenNetConnects int `json:"timeBetweenNetConnects,omitempty"` // Time between network connects (seconds)
 	TimeBetweenHeartbeats  int `json:"timeBetweenHeartbeats,omitempty"`  // Time between heartbeats (seconds)
 
 	// SFN (Simple File Networking)
-	SFNWebFolderURL               string `json:"sfnWebFolderUrl,omitempty"`               // SFN web folder URL
-	SFNUserName                   string `json:"sfnUserName,omitempty"`                   // SFN username
-	SFNPassword                   string `json:"sfnPassword,omitempty"`                   // SFN password
-	SFNEnableBasicAuthentication  bool   `json:"sfnEnableBasicAuthentication,omitempty"`  // Enable SFN basic auth
+	SFNWebFolderURL              string `json:"sfnWebFolderUrl,omitempty"`              // SFN web folder URL
+	SFNUserName                  string `json:"sfnUserName,omitempty"`                  // SFN username
+	SFNPassword                  string `json:"sfnPassword,omitempty"`                  // SFN password
+	SFNEnableBasicAuthentication bool   `json:"sfnEnableBasicAuthentication,omitempty"` // Enable SFN basic auth
 
 	// Logging
-	PlaybackLoggingEnabled         bool   `json:"playbackLoggingEnabled,omitempty"`         // Enable playback logging
-	EventLoggingEnabled            bool   `json:"eventLoggingEnabled,omitempty"`            // Enable event logging
-	DiagnosticLoggingEnabled       bool   `json:"diagnosticLoggingEnabled,omitempty"`       // Enable diagnostic logging
-	StateLoggingEnabled            bool   `json:"stateLoggingEnabled,omitempty"`            // Enable state logging
-	VariableLoggingEnabled         bool   `json:"variableLoggingEnabled,omitempty"`         // Enable variable logging
-	UploadLogFilesAtBoot           bool   `json:"uploadLogFilesAtBoot,omitempty"`           // Upload log files at boot
-	UploadLogFilesAtSpecificTime   bool   `json:"uploadLogFilesAtSpecificTime,omitempty"`   // Upload logs at specific time
-	UploadLogFilesTime             int    `json:"uploadLogFilesTime,omitempty"`             // Time to upload logs (hour 0-23)
-	LogHandlerURL                  string `json:"logHandlerUrl,omitempty"`                  // Custom log handler URL
+	PlaybackLoggingEnabled       bool   `json:"playbackLoggingEnabled,omitempty"`       // Enable playback logging
+	EventLoggingEnabled          bool   `json:"eventLoggingEnabled,omitempty"`          // Enable event logging
+	DiagnosticLoggingEnabled     bool   `json:"diagnosticLoggingEnabled,omitempty"`     // Enable diagnostic logging
+	StateLoggingEnabled          bool   `json:"stateLoggingEnabled,omitempty"`          // Enable state logging
+	VariableLoggingEnabled       bool   `json:"variableLoggingEnabled,omitempty"`       // Enable variable logging
+	UploadLogFilesAtBoot         bool   `json:"uploadLogFilesAtBoot,omitempty"`         // Upload log files at boot
+	UploadLogFilesAtSpecificTime bool   `json:"uploadLogFilesAtSpecificTime,omitempty"` // Upload logs at specific time
+	UploadLogFilesTime           int    `json:"uploadLogFilesTime,omitempty"`           // Time to upload logs (hour 0-23)
+	LogHandlerURL                string `json:"logHandlerUrl,omitempty"`                // Custom log handler URL
 
 	// Remote snapshot (screenshots)
-	EnableRemoteSnapshot              bool   `json:"enableRemoteSnapshot,omitempty"`              // Enable remote screenshots
-	RemoteSnapshotInterval            int    `json:"remoteSnapshotInterval,omitempty"`            // Screenshot interval (minutes)
-	RemoteSnapshotMaxImages           int    `json:"remoteSnapshotMaxImages,omitempty"`           // Max screenshots to keep
-	RemoteSnapshotJPEGQualityLevel    int    `json:"remoteSnapshotJpegQualityLevel,omitempty"`    // JPEG quality (1-100)
-	RemoteSnapshotScreenOrientation   string `json:"remoteSnapshotScreenOrientation,omitempty"`   // Screen orientation (Landscape/Portrait)
-	RemoteSnapshotHandlerURL          string `json:"remoteSnapshotHandlerUrl,omitempty"`          // Custom snapshot handler URL
+	EnableRemoteSnapshot            bool   `json:"enableRemoteSnapshot,omitempty"`            // Enable remote screenshots
+	RemoteSnapshotInterval          int    `json:"remoteSnapshotInterval,omitempty"`          // Screenshot interval (minutes)
+	RemoteSnapshotMaxImages         int    `json:"remoteSnapshotMaxImages,omitempty"`         // Max screenshots to keep
+	RemoteSnapshotJPEGQualityLevel  int    `json:"remoteSnapshotJpegQualityLevel,omitempty"`  // JPEG quality (1-100)
+	RemoteSnapshotScreenOrientation string `json:"remoteSnapshotScreenOrientation,omitempty"` // Screen orientation (Landscape/Portrait)
+	RemoteSnapshotHandlerURL        string `json:"remoteSnapshotHandlerUrl,omitempty"`        // Custom snapshot handler URL
 
 	// Device screenshots (different from remote snapshot)
 	DeviceScreenShotsEnabled     bool   `json:"deviceScreenShotsEnabled,omitempty"`     // Enable device screenshots
@@ -496,15 +496,15 @@ type BDeploySetupRecord struct {
 	TimeServer string `json:"timeServer,omitempty"` // NTP time server URL
 
 	// Display settings
-	IdleScreenColor      *IdleScreenColor `json:"idleScreenColor,omitempty"`      // Idle screen color (RGBA)
-	UseCustomSplashScreen bool            `json:"useCustomSplashScreen,omitempty"` // Use custom splash screen
+	IdleScreenColor       *IdleScreenColor `json:"idleScreenColor,omitempty"`       // Idle screen color (RGBA)
+	UseCustomSplashScreen bool             `json:"useCustomSplashScreen,omitempty"` // Use custom splash screen
 
 	// Network data types - Wired
-	ContentDataTypeEnabledWired     bool `json:"contentDataTypeEnabledWired,omitempty"`     // Enable content downloads on wired
-	TextFeedsDataTypeEnabledWired   bool `json:"textFeedsDataTypeEnabledWired,omitempty"`   // Enable text feeds on wired
-	HealthDataTypeEnabledWired      bool `json:"healthDataTypeEnabledWired,omitempty"`      // Enable health reporting on wired
-	MediaFeedsDataTypeEnabledWired  bool `json:"mediaFeedsDataTypeEnabledWired,omitempty"`  // Enable media feeds on wired
-	LogUploadsXfersEnabledWired     bool `json:"logUploadsXfersEnabledWired,omitempty"`     // Enable log uploads on wired
+	ContentDataTypeEnabledWired    bool `json:"contentDataTypeEnabledWired,omitempty"`    // Enable content downloads on wired
+	TextFeedsDataTypeEnabledWired  bool `json:"textFeedsDataTypeEnabledWired,omitempty"`  // Enable text feeds on wired
+	HealthDataTypeEnabledWired     bool `json:"healthDataTypeEnabledWired,omitempty"`     // Enable health reporting on wired
+	MediaFeedsDataTypeEnabledWired bool `json:"mediaFeedsDataTypeEnabledWired,omitempty"` // Enable media feeds on wired
+	LogUploadsXfersEnabledWired    bool `json:"logUploadsXfersEnabledWired,omitempty"`    // Enable log uploads on wired
 
 	// Network data types - Wireless
 	ContentDataTypeEnabledWireless    bool `json:"contentDataTypeEnabledWireless,omitempty"`    // Enable content downloads on wireless
@@ -514,12 +514,12 @@ type BDeploySetupRecord struct {
 	LogUploadsXfersEnabledWireless    bool `json:"logUploadsXfersEnabledWireless,omitempty"`    // Enable log uploads on wireless
 
 	// Rate limiting - Wired (primary interface)
-	RateLimitModeOutsideWindow      string `json:"rateLimitModeOutsideWindow,omitempty"`      // Rate limit mode outside window (default, unlimited, limited)
-	RateLimitRateOutsideWindow      int    `json:"rateLimitRateOutsideWindow,omitempty"`      // Rate limit outside window (kbps)
-	RateLimitModeInWindow           string `json:"rateLimitModeInWindow,omitempty"`           // Rate limit mode in window
-	RateLimitRateInWindow           int    `json:"rateLimitRateInWindow,omitempty"`           // Rate limit in window (kbps)
-	RateLimitModeInitialDownloads   string `json:"rateLimitModeInitialDownloads,omitempty"`   // Rate limit mode for initial downloads
-	RateLimitRateInitialDownloads   int    `json:"rateLimitRateInitialDownloads,omitempty"`   // Rate limit for initial downloads (kbps)
+	RateLimitModeOutsideWindow    string `json:"rateLimitModeOutsideWindow,omitempty"`    // Rate limit mode outside window (default, unlimited, limited)
+	RateLimitRateOutsideWindow    int    `json:"rateLimitRateOutsideWindow,omitempty"`    // Rate limit outside window (kbps)
+	RateLimitModeInWindow         string `json:"rateLimitModeInWindow,omitempty"`         // Rate limit mode in window
+	RateLimitRateInWindow         int    `json:"rateLimitRateInWindow,omitempty"`         // Rate limit in window (kbps)
+	RateLimitModeInitialDownloads string `json:"rateLimitModeInitialDownloads,omitempty"` // Rate limit mode for initial downloads
+	RateLimitRateInitialDownloads int    `json:"rateLimitRateInitialDownloads,omitempty"` // Rate limit for initial downloads (kbps)
 
 	// Rate limiting - Wireless (secondary interface)
 	RateLimitModeOutsideWindow2    string `json:"rateLimitModeOutsideWindow_2,omitempty"`    // Rate limit mode outside window for interface 2
@@ -558,9 +558,9 @@ type BDeploySetupRecord struct {
 	ContentDownloadRangeEnd    int  `json:"contentDownloadRangeEnd,omitempty"`    // Content download end time (minutes from midnight)
 
 	// Heartbeat windows
-	HeartbeatsRestricted  bool `json:"heartbeatsRestricted,omitempty"`  // Restrict heartbeats to time window
-	HeartbeatsRangeStart  int  `json:"heartbeatsRangeStart,omitempty"`  // Heartbeat start time (minutes from midnight)
-	HeartbeatsRangeEnd    int  `json:"heartbeatsRangeEnd,omitempty"`    // Heartbeat end time (minutes from midnight)
+	HeartbeatsRestricted bool `json:"heartbeatsRestricted,omitempty"` // Restrict heartbeats to time window
+	HeartbeatsRangeStart int  `json:"heartbeatsRangeStart,omitempty"` // Heartbeat start time (minutes from midnight)
+	HeartbeatsRangeEnd   int  `json:"heartbeatsRangeEnd,omitempty"`   // Heartbeat end time (minutes from midnight)
 
 	// Static IP configuration - Interface 1 (wired)
 	UseDHCP         bool   `json:"useDHCP,omitempty"`         // Use DHCP for interface 1
@@ -586,9 +586,9 @@ type BDeploySetupRecord struct {
 
 // BDeployCreateResponse represents the response from creating a B-Deploy record.
 type BDeployCreateResponse struct {
-	ID      string `json:"_id,omitempty"`      // Created record ID
-	Success bool   `json:"success,omitempty"`  // Whether creation succeeded
-	Error   string `json:"error,omitempty"`    // Error message if failed
+	ID      string `json:"_id,omitempty"`     // Created record ID
+	Success bool   `json:"success,omitempty"` // Whether creation succeeded
+	Error   string `json:"error,omitempty"`   // Error message if failed
 }
 
 // BDeployCreateAPIResponse represents the API wrapper response for creating a B-Deploy record.
@@ -599,15 +599,15 @@ type BDeployCreateAPIResponse struct {
 
 // BDeployUpdateAPIResponse represents the API wrapper response for updating a B-Deploy record.
 type BDeployUpdateAPIResponse struct {
-	Error  interface{}          `json:"error"`  // Error field (null on success)
-	Result *BDeploySetupRecord  `json:"result"` // Updated setup record
+	Error  interface{}         `json:"error"`  // Error field (null on success)
+	Result *BDeploySetupRecord `json:"result"` // Updated setup record
 }
 
 // BDeployDeleteResponse represents the response from deleting a B-Deploy record.
 type BDeployDeleteResponse struct {
-	Success bool   `json:"success,omitempty"`  // Whether deletion succeeded
-	Message string `json:"message,omitempty"`  // Response message
-	Error   string `json:"error,omitempty"`    // Error message if failed
+	Success bool   `json:"success,omitempty"` // Whether deletion succeeded
+	Message string `json:"message,omitempty"` // Response message
+	Error   string `json:"error,omitempty"`   // Error message if failed
 }
 
 // BDeployDevice represents a device in the B-Deploy device response.
@@ -620,9 +620,9 @@ type BDeployDevice struct {
 	Name        string    `json:"name"`
 	Model       string    `json:"model"`
 	Desc        string    `json:"desc"`
-	SetupName   string    `json:"setupName"`   // Used by individual device lookup
-	SetupID     string    `json:"setupId"`     // Used by device list 
-	URL         string    `json:"url"`         // Used by device list
+	SetupName   string    `json:"setupName"` // Used by individual device lookup
+	SetupID     string    `json:"setupId"`   // Used by device list
+	URL         string    `json:"url"`       // Used by device list
 	CreatedAt   time.Time `json:"createdAt"`
 	UpdatedAt   time.Time `json:"updatedAt"`
 	Version     int       `json:"__v"`
@@ -662,17 +662,17 @@ type NetworkContextRequest struct {
 
 // BDeployDeviceRequest represents a request to create or update a B-Deploy device.
 type BDeployDeviceRequest struct {
-	ID          string `json:"_id,omitempty"`        // Device ID (for updates)
-	Username    string `json:"username"`              // BSN.cloud username
-	Serial      string `json:"serial"`                // Device serial number
-	Name        string `json:"name"`                  // Device name
-	NetworkName string `json:"NetworkName"`           // Network name
-	Model       string `json:"model,omitempty"`       // Device model
-	Desc        string `json:"desc,omitempty"`        // Device description
-	SetupID     string `json:"setupId,omitempty"`     // Setup ID to associate with
-	SetupName   string `json:"setupName,omitempty"`   // Setup package name (required for association to be indexed)
-	URL         string `json:"url,omitempty"`         // Direct presentation URL (alternative to setupId)
-	UserData    string `json:"userdata,omitempty"`    // Additional header information
+	ID          string `json:"_id,omitempty"`       // Device ID (for updates)
+	Username    string `json:"username"`            // BSN.cloud username
+	Serial      string `json:"serial"`              // Device serial number
+	Name        string `json:"name"`                // Device name
+	NetworkName string `json:"NetworkName"`         // Network name
+	Model       string `json:"model,omitempty"`     // Device model
+	Desc        string `json:"desc,omitempty"`      // Device description
+	SetupID     string `json:"setupId,omitempty"`   // Setup ID to associate with
+	SetupName   string `json:"setupName,omitempty"` // Setup package name (required for association to be indexed)
+	URL         string `json:"url,omitempty"`       // Direct presentation URL (alternative to setupId)
+	UserData    string `json:"userdata,omitempty"`  // Additional header information
 }
 
 // BDeployDeviceCreateResponse represents the response from creating a device.
@@ -683,35 +683,35 @@ type BDeployDeviceCreateResponse struct {
 
 // BDeployDeviceUpdateResponse represents the response from updating a device.
 type BDeployDeviceUpdateResponse struct {
-	Error  interface{}     `json:"error"`
-	Result *BDeployDevice  `json:"result"`
+	Error  interface{}    `json:"error"`
+	Result *BDeployDevice `json:"result"`
 }
 
 // RDWSInfo represents player information from the /info/ endpoint
 type RDWSInfo struct {
-	Serial           string                   `json:"serial"`
-	Model            string                   `json:"model"`
-	FWVersion        string                   `json:"FWVersion"`
-	BootVersion      string                   `json:"bootVersion"`
-	Family           string                   `json:"family"`
-	IsPlayer         bool                     `json:"isPlayer"`
-	UpTime           string                   `json:"upTime"`
-	UpTimeSeconds    int                      `json:"upTimeSeconds"`
-	ConnectionType   string                   `json:"connectionType"`
-	Ethernet         []RDWSNetworkInterface   `json:"ethernet,omitempty"`
-	Wireless         []RDWSNetworkInterface   `json:"wireless,omitempty"`
-	Interfaces       []RDWSNetworkInterface   `json:"interfaces,omitempty"`
-	Power            *RDWSInfoSubResult       `json:"power,omitempty"`
-	POE              *RDWSInfoSubResult       `json:"poe,omitempty"`
-	Extensions       *RDWSInfoSubResult       `json:"extensions,omitempty"`
-	Blessings        *RDWSInfoSubResult       `json:"blessings,omitempty"`
-	Networking       *RDWSInfoSubResult       `json:"networking,omitempty"`
-	BVNPipelines     *RDWSInfoSubResult       `json:"bvnPipelines,omitempty"`
-	BVNComponents    *RDWSInfoSubResult       `json:"bvnComponents,omitempty"`
-	HardwareFeatures map[string]interface{}   `json:"hardware_features,omitempty"`
-	APIFeatures      map[string]interface{}   `json:"api_features,omitempty"`
-	ActiveFeatures   map[string]interface{}   `json:"active_features,omitempty"`
-	BSNCE            bool                     `json:"bsnce"`
+	Serial           string                 `json:"serial"`
+	Model            string                 `json:"model"`
+	FWVersion        string                 `json:"FWVersion"`
+	BootVersion      string                 `json:"bootVersion"`
+	Family           string                 `json:"family"`
+	IsPlayer         bool                   `json:"isPlayer"`
+	UpTime           string                 `json:"upTime"`
+	UpTimeSeconds    int                    `json:"upTimeSeconds"`
+	ConnectionType   string                 `json:"connectionType"`
+	Ethernet         []RDWSNetworkInterface `json:"ethernet,omitempty"`
+	Wireless         []RDWSNetworkInterface `json:"wireless,omitempty"`
+	Interfaces       []RDWSNetworkInterface `json:"interfaces,omitempty"`
+	Power            *RDWSInfoSubResult     `json:"power,omitempty"`
+	POE              *RDWSInfoSubResult     `json:"poe,omitempty"`
+	Extensions       *RDWSInfoSubResult     `json:"extensions,omitempty"`
+	Blessings        *RDWSInfoSubResult     `json:"blessings,omitempty"`
+	Networking       *RDWSInfoSubResult     `json:"networking,omitempty"`
+	BVNPipelines     *RDWSInfoSubResult     `json:"bvnPipelines,omitempty"`
+	BVNComponents    *RDWSInfoSubResult     `json:"bvnComponents,omitempty"`
+	HardwareFeatures map[string]interface{} `json:"hardware_features,omitempty"`
+	APIFeatures      map[string]interface{} `json:"api_features,omitempty"`
+	ActiveFeatures   map[string]interface{} `json:"active_features,omitempty"`
+	BSNCE            bool                   `json:"bsnce"`
 }
 
 // RDWSNetworkInterface represents a network interface from the player
@@ -824,13 +824,13 @@ type RDWSFileStat struct {
 
 // RDWSFileInfo represents a file or directory entry
 type RDWSFileInfo struct {
-	Name       string        `json:"name"`
-	Type       string        `json:"type"` // "file" or "dir"
-	Path       string        `json:"path"`
-	Stat       *RDWSFileStat `json:"stat,omitempty"`
-	Mime       string        `json:"mime,omitempty"`
-	FileSize   int64         `json:"fileSize,omitempty"`
-	Streamable bool          `json:"streamable,omitempty"`
+	Name       string         `json:"name"`
+	Type       string         `json:"type"` // "file" or "dir"
+	Path       string         `json:"path"`
+	Stat       *RDWSFileStat  `json:"stat,omitempty"`
+	Mime       string         `json:"mime,omitempty"`
+	FileSize   int64          `json:"fileSize,omitempty"`
+	Streamable bool           `json:"streamable,omitempty"`
 	Children   []RDWSFileInfo `json:"children,omitempty"`
 }
 
@@ -957,11 +957,11 @@ type RDWSLocalDWSSetResponse struct {
 
 // RDWSDiagnosticsInfo represents network diagnostics information
 type RDWSDiagnosticsInfo struct {
-	Gateway            string   `json:"gateway,omitempty"`
-	DNS                []string `json:"dns,omitempty"`
-	ConnectedToRouter  bool     `json:"connectedToRouter,omitempty"`
-	ConnectedToInternet bool    `json:"connectedToInternet,omitempty"`
-	ExternalIPAddress  string   `json:"externalIpAddress,omitempty"`
+	Gateway             string   `json:"gateway,omitempty"`
+	DNS                 []string `json:"dns,omitempty"`
+	ConnectedToRouter   bool     `json:"connectedToRouter,omitempty"`
+	ConnectedToInternet bool     `json:"connectedToInternet,omitempty"`
+	ExternalIPAddress   string   `json:"externalIpAddress,omitempty"`
 }
 
 // RDWSDiagnosticsResponse represents the response from GET /diagnostics/
@@ -1039,14 +1039,14 @@ type RDWSTraceRouteResponse struct {
 
 // RDWSNetworkConfig represents network interface configuration
 type RDWSNetworkConfig struct {
-	Interface   string   `json:"interface"`
-	Type        string   `json:"type"` // dhcp, static
-	IPAddress   string   `json:"ipAddress,omitempty"`
-	Netmask     string   `json:"netmask,omitempty"`
-	Gateway     string   `json:"gateway,omitempty"`
-	DNS         []string `json:"dns,omitempty"`
-	MACAddress  string   `json:"macAddress,omitempty"`
-	LinkStatus  string   `json:"linkStatus,omitempty"`
+	Interface  string   `json:"interface"`
+	Type       string   `json:"type"` // dhcp, static
+	IPAddress  string   `json:"ipAddress,omitempty"`
+	Netmask    string   `json:"netmask,omitempty"`
+	Gateway    string   `json:"gateway,omitempty"`
+	DNS        []string `json:"dns,omitempty"`
+	MACAddress string   `json:"macAddress,omitempty"`
+	LinkStatus string   `json:"linkStatus,omitempty"`
 }
 
 // RDWSNetworkConfigResponse represents the response from GET /diagnostics/network-configuration/
@@ -1125,7 +1125,7 @@ type RDWSPacketCaptureResponse struct {
 // RDWSPacketCaptureStartRequest represents the request to start packet capture
 type RDWSPacketCaptureStartRequest struct {
 	Data struct {
-		Interface string `json:"interface"`         // Network interface (e.g., "eth0")
+		Interface string `json:"interface"`          // Network interface (e.g., "eth0")
 		Duration  int    `json:"duration,omitempty"` // Duration in seconds
 		Filter    string `json:"filter,omitempty"`   // tcpdump filter expression
 	} `json:"data"`
@@ -1262,8 +1262,8 @@ type RDWSCustomDataResponse struct {
 // RDWSFirmwareDownloadRequest represents a request to download firmware
 type RDWSFirmwareDownloadRequest struct {
 	Data struct {
-		URL            string `json:"url"`
-		AutoReboot     *bool  `json:"autoReboot,omitempty"`     // Optional: Auto-reboot after download (default: true)
+		URL        string `json:"url"`
+		AutoReboot *bool  `json:"autoReboot,omitempty"` // Optional: Auto-reboot after download (default: true)
 	} `json:"data"`
 }
 
@@ -1454,8 +1454,8 @@ type Subscription struct {
 	ID               int        `json:"id"`
 	DeviceSerial     string     `json:"deviceSerial,omitempty"`
 	DeviceID         int        `json:"deviceId,omitempty"`
-	Type             string     `json:"type"`             // e.g., "Content", "Control", "Premium"
-	Status           string     `json:"status"`           // e.g., "active", "expired", "pending"
+	Type             string     `json:"type"`   // e.g., "Content", "Control", "Premium"
+	Status           string     `json:"status"` // e.g., "active", "expired", "pending"
 	StartDate        time.Time  `json:"startDate"`
 	EndDate          *time.Time `json:"endDate,omitempty"`
 	CreationDate     time.Time  `json:"creationDate"`

@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/brightdevelopers/gopurple/internal/types"
+	"github.com/brightdevelopers/gopurple/v2/internal/types"
 )
 
 // Interface conformance: the new methods must be reachable through RDWSService,

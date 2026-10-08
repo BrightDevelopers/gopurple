@@ -32,13 +32,14 @@ package gopurple
 
 import (
 	"context"
+	"time"
 
-	"github.com/brightdevelopers/gopurple/internal/auth"
-	"github.com/brightdevelopers/gopurple/internal/config"
-	"github.com/brightdevelopers/gopurple/internal/errors"
-	"github.com/brightdevelopers/gopurple/internal/http"
-	"github.com/brightdevelopers/gopurple/internal/services"
-	"github.com/brightdevelopers/gopurple/internal/types"
+	"github.com/brightdevelopers/gopurple/v2/internal/auth"
+	"github.com/brightdevelopers/gopurple/v2/internal/config"
+	"github.com/brightdevelopers/gopurple/v2/internal/errors"
+	"github.com/brightdevelopers/gopurple/v2/internal/http"
+	"github.com/brightdevelopers/gopurple/v2/internal/services"
+	"github.com/brightdevelopers/gopurple/v2/internal/types"
 )
 
 // Re-export public types from internal packages
@@ -394,7 +395,23 @@ var (
 	// This allows CLI tools to cache the bearer token between invocations,
 	// skipping the OAuth round-trip when the token is still valid.
 	WithAccessToken = config.WithAccessToken
+
+	// WithEnv loads credentials and the network from BS_CLIENT_ID/BS_SECRET/
+	// BS_NETWORK. New does not read the environment unless this is passed.
+	WithEnv = config.WithEnv
+
+	// WithTokenSource supplies a caller-owned TokenSource so the caller owns
+	// token acquisition and caching instead of the SDK.
+	WithTokenSource = config.WithTokenSource
 )
+
+// TokenSource supplies bearer tokens on demand. Implement it to own token
+// acquisition and caching; pass the implementation with WithTokenSource.
+type TokenSource = config.TokenSource
+
+// AccessToken is a bearer token with its absolute expiry, returned by a
+// TokenSource.
+type AccessToken = config.AccessToken
 
 // Re-export device list options
 type ListOption = services.ListOption
@@ -495,17 +512,15 @@ type Client struct {
 //	    gopurple.WithTimeout(60*time.Second),
 //	)
 //
-// By default, the client will load credentials from environment variables:
-//   - BS_CLIENT_ID: BSN.cloud API client ID
-//   - BS_SECRET: BSN.cloud API client secret
-//   - BS_NETWORK: BSN.cloud network name (optional)
+// New does not read the environment implicitly. To load credentials and the
+// network from BS_CLIENT_ID/BS_SECRET/BS_NETWORK, pass WithEnv():
+//
+//	client, err := gopurple.New(gopurple.WithEnv())
 func New(opts ...Option) (*Client, error) {
 	cfg := config.DefaultConfig()
 
-	// Load configuration from environment variables
-	cfg.LoadFromEnv()
-
-	// Apply any provided options (these override environment variables)
+	// New does not read the environment on its own. Pass WithEnv() to load
+	// BS_CLIENT_ID/BS_SECRET/BS_NETWORK, or supply values explicitly.
 	for _, opt := range opts {
 		if err := opt(cfg); err != nil {
 			return nil, err
@@ -587,6 +602,13 @@ func (c *Client) IsNetworkSet() bool {
 // Returns an error if not authenticated.
 func (c *Client) GetAccessToken() (string, error) {
 	return c.authManager.GetToken()
+}
+
+// TokenExpiresAt returns the absolute expiry time of the current access token.
+// The zero time means no token is held. This lets callers cache the token
+// across invocations without having to decode the JWT themselves.
+func (c *Client) TokenExpiresAt() time.Time {
+	return c.authManager.ExpiresAt()
 }
 
 // Config returns a copy of the client configuration.

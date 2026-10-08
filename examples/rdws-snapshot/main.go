@@ -14,8 +14,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/brightdevelopers/gopurple"
-	"github.com/brightdevelopers/gopurple/internal/types"
+	"github.com/brightdevelopers/gopurple/v2"
+	"github.com/brightdevelopers/gopurple/v2/internal/types"
 )
 
 func main() {
@@ -104,7 +104,7 @@ func main() {
 	}
 
 	// Create client
-	var opts []gopurple.Option
+	opts := []gopurple.Option{gopurple.WithEnv()}
 	if *timeoutFlag > 0 {
 		opts = append(opts, gopurple.WithTimeout(time.Duration(*timeoutFlag)*time.Second))
 	}

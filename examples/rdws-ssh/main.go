@@ -12,7 +12,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/brightdevelopers/gopurple"
+	"github.com/brightdevelopers/gopurple/v2"
 )
 
 func main() {
@@ -94,7 +94,7 @@ func main() {
 		networkName = os.Getenv("BS_NETWORK")
 	}
 
-	var opts []gopurple.Option
+	opts := []gopurple.Option{gopurple.WithEnv()}
 	if *timeoutFlag > 0 {
 		opts = append(opts, gopurple.WithTimeout(time.Duration(*timeoutFlag)*time.Second))
 	}

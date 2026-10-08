@@ -12,8 +12,8 @@ import (
 	"strings"
 	"text/tabwriter"
 
-	"github.com/brightdevelopers/gopurple"
-	"github.com/brightdevelopers/gopurple/examples/internal/setuptemplate"
+	"github.com/brightdevelopers/gopurple/v2"
+	"github.com/brightdevelopers/gopurple/v2/examples/internal/setuptemplate"
 )
 
 func main() {
@@ -68,7 +68,7 @@ func main() {
 	resolvedPackageName := setuptemplate.ResolveVar(*packageFlag, setuptemplate.EnvPackageName)
 
 	// Create client with optional debug mode
-	var clientOpts []gopurple.Option
+	clientOpts := []gopurple.Option{gopurple.WithEnv()}
 	if *debugFlag {
 		clientOpts = append(clientOpts, gopurple.WithDebug(true))
 	}

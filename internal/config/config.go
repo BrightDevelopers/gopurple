@@ -1,12 +1,30 @@
 package config
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"time"
 
-	"github.com/brightdevelopers/gopurple/internal/errors"
+	"github.com/brightdevelopers/gopurple/v2/internal/errors"
 )
+
+// AccessToken is a bearer token together with its absolute expiry time.
+type AccessToken struct {
+	Value     string
+	ExpiresAt time.Time
+}
+
+// TokenSource supplies bearer tokens on demand. Callers implement it to own
+// token acquisition and caching (for example, to share one cached token across
+// processes), instead of letting the SDK run the client-credentials grant.
+//
+// Token must return a currently-valid token or an error. The SDK calls it
+// whenever it needs a token and treats a token within its refresh margin of
+// expiry as needing a fresh call.
+type TokenSource interface {
+	Token(ctx context.Context) (AccessToken, error)
+}
 
 // Config holds all configuration for the BSN.cloud SDK client.
 type Config struct {
@@ -35,6 +53,10 @@ type Config struct {
 	// Pre-loaded access token (for session reuse across CLI invocations)
 	AccessToken string    `json:"-"`
 	ExpiresAt   time.Time `json:"-"`
+
+	// Optional caller-supplied token source. When set, the SDK obtains tokens
+	// from it instead of running the client-credentials grant itself.
+	TokenSource TokenSource `json:"-"`
 }
 
 // DefaultConfig returns a Config with sensible default values.
@@ -47,6 +69,34 @@ func DefaultConfig() *Config {
 		TokenEndpoint:   "https://auth.bsn.cloud/realms/bsncloud/protocol/openid-connect/token",
 		Timeout:         30 * time.Second,
 		RetryCount:      3,
+	}
+}
+
+// WithEnv loads credentials and the network name from the environment:
+// BS_CLIENT_ID, BS_SECRET, and BS_NETWORK. It is opt-in: New does not read the
+// environment unless this option is passed.
+//
+// Options are applied in order and the last write wins, so place WithEnv before
+// explicit options to use the environment as a base that those options override,
+// or after them to let the environment take precedence.
+func WithEnv() Option {
+	return func(c *Config) error {
+		c.LoadFromEnv()
+		return nil
+	}
+}
+
+// WithTokenSource supplies a caller-owned TokenSource. When set, the SDK obtains
+// bearer tokens from it instead of running the client-credentials grant, which
+// lets the caller own token caching and sharing. ClientID/ClientSecret are then
+// not required.
+func WithTokenSource(ts TokenSource) Option {
+	return func(c *Config) error {
+		if ts == nil {
+			return fmt.Errorf("token source cannot be nil")
+		}
+		c.TokenSource = ts
+		return nil
 	}
 }
 
@@ -66,12 +116,16 @@ func (c *Config) LoadFromEnv() {
 
 // Validate checks that the configuration contains all required fields and valid values.
 func (c *Config) Validate() error {
-	if c.ClientID == "" {
-		return errors.NewConfigError("ClientID", "field is required", "set BS_CLIENT_ID environment variable")
-	}
+	// Credentials are required only when the SDK acquires tokens itself. A
+	// caller-supplied TokenSource owns acquisition, so it needs neither.
+	if c.TokenSource == nil {
+		if c.ClientID == "" {
+			return errors.NewConfigError("ClientID", "field is required", "pass WithCredentials or WithEnv (BS_CLIENT_ID)")
+		}
 
-	if c.ClientSecret == "" {
-		return errors.NewConfigError("ClientSecret", "field is required", "set BS_SECRET environment variable")
+		if c.ClientSecret == "" {
+			return errors.NewConfigError("ClientSecret", "field is required", "pass WithCredentials or WithEnv (BS_SECRET)")
+		}
 	}
 
 	if c.BSNBaseURL == "" {

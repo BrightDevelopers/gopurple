@@ -10,9 +10,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/brightdevelopers/gopurple"
-	"github.com/brightdevelopers/gopurple/examples/internal/setuptemplate"
-	"github.com/brightdevelopers/gopurple/internal/types"
+	"github.com/brightdevelopers/gopurple/v2"
+	"github.com/brightdevelopers/gopurple/v2/examples/internal/setuptemplate"
+	"github.com/brightdevelopers/gopurple/v2/internal/types"
 )
 
 // Config represents the JSON configuration file structure
@@ -155,7 +155,7 @@ func main() {
 	}
 
 	// Create client
-	var opts []gopurple.Option
+	opts := []gopurple.Option{gopurple.WithEnv()}
 	if timeout > 0 {
 		opts = append(opts, gopurple.WithTimeout(time.Duration(timeout)*time.Second))
 	}

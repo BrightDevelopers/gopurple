@@ -3,12 +3,13 @@ package services
 import (
 	"context"
 	"fmt"
+	"net/url"
 
-	"github.com/brightdevelopers/gopurple/internal/auth"
-	"github.com/brightdevelopers/gopurple/internal/config"
-	"github.com/brightdevelopers/gopurple/internal/errors"
-	"github.com/brightdevelopers/gopurple/internal/http"
-	"github.com/brightdevelopers/gopurple/internal/types"
+	"github.com/brightdevelopers/gopurple/v2/internal/auth"
+	"github.com/brightdevelopers/gopurple/v2/internal/config"
+	"github.com/brightdevelopers/gopurple/v2/internal/errors"
+	"github.com/brightdevelopers/gopurple/v2/internal/http"
+	"github.com/brightdevelopers/gopurple/v2/internal/types"
 )
 
 // ProvisioningService provides player provisioning operations including token generation.
@@ -101,7 +102,7 @@ func (s *provisioningService) ValidateDeviceToken(ctx context.Context, tokenValu
 	}
 
 	// Build the token validation endpoint
-	validateURL := fmt.Sprintf("%s%s%s/", s.config.BSNBaseURL, provisioningTokenPath, tokenValue)
+	validateURL := fmt.Sprintf("%s%s%s/", s.config.BSNBaseURL, provisioningTokenPath, url.PathEscape(tokenValue))
 
 	// Make the API request
 	var response types.BSNTokenEntity
@@ -138,7 +139,7 @@ func (s *provisioningService) RevokeRegistrationToken(ctx context.Context, token
 	}
 
 	// Build the token revocation endpoint
-	revokeURL := fmt.Sprintf("%s%s%s/", s.config.BSNBaseURL, provisioningTokenPath, tokenValue)
+	revokeURL := fmt.Sprintf("%s%s%s/", s.config.BSNBaseURL, provisioningTokenPath, url.PathEscape(tokenValue))
 
 	// Make the API request - DELETE returns no content on success
 	err = s.httpClient.DeleteWithAuth(ctx, token, revokeURL, nil)

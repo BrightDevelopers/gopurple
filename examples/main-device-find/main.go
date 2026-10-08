@@ -9,7 +9,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/brightdevelopers/gopurple"
+	"github.com/brightdevelopers/gopurple/v2"
 )
 
 // SearchResult represents the result of searching for a device
@@ -68,7 +68,7 @@ func main() {
 	}
 
 	// Create client
-	var opts []gopurple.Option
+	opts := []gopurple.Option{gopurple.WithEnv()}
 	if *timeoutFlag > 0 {
 		opts = append(opts, gopurple.WithTimeout(time.Duration(*timeoutFlag)*time.Second))
 	}

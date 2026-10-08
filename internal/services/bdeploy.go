@@ -6,11 +6,11 @@ import (
 	"fmt"
 	"net/url"
 
-	"github.com/brightdevelopers/gopurple/internal/auth"
-	"github.com/brightdevelopers/gopurple/internal/config"
-	"github.com/brightdevelopers/gopurple/internal/errors"
-	"github.com/brightdevelopers/gopurple/internal/http"
-	"github.com/brightdevelopers/gopurple/internal/types"
+	"github.com/brightdevelopers/gopurple/v2/internal/auth"
+	"github.com/brightdevelopers/gopurple/v2/internal/config"
+	"github.com/brightdevelopers/gopurple/v2/internal/errors"
+	"github.com/brightdevelopers/gopurple/v2/internal/http"
+	"github.com/brightdevelopers/gopurple/v2/internal/types"
 )
 
 // BDeployService provides B-Deploy setup record operations.
@@ -32,10 +32,9 @@ type BDeployService interface {
 
 // bDeployService implements the BDeployService interface.
 type bDeployService struct {
-	config         *config.Config
-	httpClient     *http.HTTPClient
-	authManager    *auth.AuthManager
-	currentNetwork string // Track the current network context for device API calls
+	config      *config.Config
+	httpClient  *http.HTTPClient
+	authManager *auth.AuthManager
 }
 
 // NewBDeployService creates a new B-Deploy service.
@@ -47,43 +46,16 @@ func NewBDeployService(cfg *config.Config, httpClient *http.HTTPClient, authMana
 	}
 }
 
-// SetNetworkContext sets the network context for B-Deploy operations.
+// SetNetworkContext selects the network for B-Deploy operations.
+//
+// It delegates to the shared auth manager so the client holds a single network
+// context: the same network drives the main API session and the NetworkName
+// filter on the B-Deploy device endpoints, and it survives a token refresh.
 func (s *bDeployService) SetNetworkContext(ctx context.Context, networkName string) error {
 	if networkName == "" {
 		return errors.NewValidationError("networkName", networkName, "network name cannot be empty")
 	}
-
-	// Ensure we have authentication
-	if err := s.authManager.EnsureValid(ctx); err != nil {
-		return err
-	}
-
-	// Get access token
-	token, err := s.authManager.GetToken()
-	if err != nil {
-		return err
-	}
-
-	// Build the BSN.cloud network context endpoint
-	contextURL := fmt.Sprintf("%s/2022/06/REST/Self/Session/Network", s.config.BSNBaseURL)
-
-	// Build request body
-	request := &types.NetworkContextRequest{
-		Name: networkName,
-	}
-
-	// Make the API request - PUT to set network context
-	var response interface{} // API returns empty body on success
-	err = s.httpClient.PutWithAuth(ctx, token, contextURL, request, &response)
-	if err != nil {
-		return errors.NewAPIError(0, "network_context_failed",
-			fmt.Sprintf("Failed to set network context to '%s'", networkName), err.Error())
-	}
-
-	// Store the network name for device API calls
-	s.currentNetwork = networkName
-
-	return nil
+	return s.authManager.SetNetwork(ctx, networkName)
 }
 
 // GetSetupRecords retrieves B-Deploy setup records with optional filtering.
@@ -407,8 +379,8 @@ func (s *bDeployService) GetDeviceBySerial(ctx context.Context, serial string) (
 	// Include NetworkName if we have a current network set (required for full device record with setupId)
 	params := url.Values{}
 	params.Set("serial", serial)
-	if s.currentNetwork != "" {
-		params.Set("NetworkName", s.currentNetwork)
+	if networkName := s.authManager.DesiredNetworkName(); networkName != "" {
+		params.Set("NetworkName", networkName)
 	}
 	deviceURL := fmt.Sprintf("%s/rest-device/v2/device/?%s", s.config.ProvisioningURL, params.Encode())
 
@@ -457,8 +429,8 @@ func (s *bDeployService) GetAllDevices(ctx context.Context, opts ...BDeployDevic
 	params := url.Values{}
 
 	// Add NetworkName query parameter if we have a current network set
-	if s.currentNetwork != "" {
-		params.Set("NetworkName", s.currentNetwork)
+	if networkName := s.authManager.DesiredNetworkName(); networkName != "" {
+		params.Set("NetworkName", networkName)
 	}
 
 	// Add setupName filter if specified (using query[setupName] format)

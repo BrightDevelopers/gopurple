@@ -9,7 +9,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/brightdevelopers/gopurple"
+	"github.com/brightdevelopers/gopurple/v2"
 )
 
 func main() {
@@ -48,7 +48,7 @@ func main() {
 	if !*jsonFlag {
 		fmt.Fprintf(os.Stderr, "🔧 Creating BSN.cloud client...\n")
 	}
-	client, err := gopurple.New()
+	client, err := gopurple.New(gopurple.WithEnv())
 	if err != nil {
 		log.Fatalf("❌ Failed to create client: %v", err)
 	}

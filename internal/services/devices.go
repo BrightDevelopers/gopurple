@@ -7,11 +7,11 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/brightdevelopers/gopurple/internal/auth"
-	"github.com/brightdevelopers/gopurple/internal/config"
-	"github.com/brightdevelopers/gopurple/internal/errors"
-	"github.com/brightdevelopers/gopurple/internal/http"
-	"github.com/brightdevelopers/gopurple/internal/types"
+	"github.com/brightdevelopers/gopurple/v2/internal/auth"
+	"github.com/brightdevelopers/gopurple/v2/internal/config"
+	"github.com/brightdevelopers/gopurple/v2/internal/errors"
+	"github.com/brightdevelopers/gopurple/v2/internal/http"
+	"github.com/brightdevelopers/gopurple/v2/internal/types"
 )
 
 // DeviceService provides device management operations.
@@ -133,9 +133,9 @@ func (s *deviceService) Get(ctx context.Context, serial string) (*types.Device, 
 		return nil, err
 	}
 
-	// Build URL - using direct serial endpoint format
+	// Build URL - using direct serial endpoint format (serial is a path segment)
 	deviceURL := fmt.Sprintf("%s/%s/Devices/%s",
-		s.config.BSNBaseURL, s.config.APIVersion, serial)
+		s.config.BSNBaseURL, s.config.APIVersion, url.PathEscape(serial))
 
 	// Get access token
 	token, err := s.authManager.GetToken()
