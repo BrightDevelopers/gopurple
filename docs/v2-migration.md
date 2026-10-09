@@ -62,9 +62,24 @@ Behavioral changes (no API change):
 - Non-idempotent requests (POST/PATCH) are no longer retried.
 - rDWS/device URLs percent-encode interpolated values (no-op for well-formed input).
 
-## Needs live verification (noted, not blocking)
+## Live verification (GregoryCHerlein network, 2026-10-09)
+
+Smoke-tested end-to-end against the GregoryCHerlein network (18 networks visible, 5 devices)
+with the `gopurple2` credentials. All green:
+
+- Auth + token (`main-auth-info`), devices list (`main--devices-list`), cross-network find
+  (`main-device-find`, 18 networks searched) — network correctly scoped to id 32776.
+- B-Deploy path (`bdeploy-list-setups` 27 setups, `bdeploy-list-devices`) — all records scoped
+  to GregoryCHerlein, confirming the unified network state (defect #2) live.
+- Live rDWS against online player F4E5D2000838 (firmware 9.1.82): `rdws-info`,
+  `rdws-files-list --path sd` (real `/sd` listing), `rdws-registry-get networking/hostname`
+  (well-formed response). This confirms the per-segment `escPath`/`escSegment` encoding does
+  not break well-formed paths on a live player.
+
+### Still needs deliberate live verification
 
 - Firmware download: the `url=` query value is now `url.QueryEscape`d (was raw). Confirm the
-  server accepts a fully percent-encoded firmware URL.
-- rDWS registry section/key and file paths are now `PathEscape`d per segment; confirm against a
-  live player for any key that legitimately contains reserved characters.
+  server accepts a fully percent-encoded firmware URL (not tested — would trigger a real
+  firmware download).
+- Registry/file paths containing reserved characters: confirmed no-op for well-formed input;
+  a key or path legitimately containing reserved characters still wants one deliberate test.

@@ -30,6 +30,8 @@ envrc
 *.key
 id_rsa
 id_ed25519
+# access token written by main-auth-info (source ./.token)
+.token
 
 # Editor/IDE + backup files
 .idea/
