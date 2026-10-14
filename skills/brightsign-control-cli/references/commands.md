@@ -1,6 +1,6 @@
 # `bsn-*` command index
 
-All 65 command-line programs, grouped by subsystem. Each builds to `bin/<name>` via
+All 66 command-line programs, grouped by subsystem. Each builds to `bin/<name>` via
 `make build`. Run `<name> --help` for exact flags; `examples/README.md` has the exhaustive
 per-command reference.
 
@@ -50,12 +50,13 @@ The cloud's inventory view of registered players.
 | `bsn-subscription-count` | Count device subscriptions on a network. |
 | `bsn-subscription-operations` | List subscription operations and permissions. |
 
-## Registration tokens (2)
+## Registration and provisioning (3)
 
 | Command | Purpose |
 |---|---|
 | `bsn-regtoken-get` | Create/fetch a device registration token used for provisioning. |
 | `bsn-regtoken-revoke` | Revoke a device registration token. |
+| `bsn-device-reg-script` | Mint a token and emit a ready-to-run **registration script** (`--type brs` or `sh`) that writes the five opt-out keys and reboots. Written to stdout, or to `--file <path>`. See `opt-out-provisioning.md`. |
 
 ## B-Deploy provisioning (12)
 

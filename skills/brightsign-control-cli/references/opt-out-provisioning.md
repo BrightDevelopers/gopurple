@@ -70,6 +70,22 @@ deliberately not the admin RDWS credential that delivers the keys.
 > (For a player already on your network, `bsn-rdws-registry-set` is the right tool — but
 > that is ordinary per-player control, not opt-out.)
 
+**Shortcut — generate the script with `bsn-device-reg-script`.** For the local methods
+(B and the BrightScript form), this tool mints the token *and* emits a ready-to-run script
+with all five keys and the reboot already in it, to stdout for redirection:
+
+```bash
+bsn-device-reg-script --network "My Network" --type sh  --file register-player.sh    # registry-CLI script
+bsn-device-reg-script --network "My Network" --type brs > register-player.brs         # or redirect stdout
+# sh is for an INSECURE player, run from its shell, e.g.: bash /storage/sd/register-player.sh
+```
+
+Use `--file <path>` to write the script to a file, or let it write to stdout and redirect.
+
+It does not deliver the keys for you — you still copy/run the script on the player — but it
+removes the hand-assembly below. The manual forms remain useful for Local DWS over curl and
+for understanding exactly what gets written.
+
 **A. Local DWS over the LAN** (hands-on / same network; needs the DWS password):
 ```bash
 PLAYER=192.0.2.50

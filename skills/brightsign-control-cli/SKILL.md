@@ -17,7 +17,7 @@ description: >-
 
 # BrightSign Control CLI (`bsn-*` tools)
 
-A suite of 65 single-purpose command-line programs for operating BrightSign players and
+A suite of 66 single-purpose command-line programs for operating BrightSign players and
 fleets through **BrightSign Control** (the cloud platform formerly called BSN.cloud,
 including its **B-Deploy** provisioning API and **rDWS** remote-player API). Each program
 does one thing, shares a common flag and auth convention, and can emit JSON for scripting.
@@ -179,17 +179,20 @@ a reusable registration token, write **five `networking` registry keys**
 the player self-registers over its existing WebSocket.
 
 ```bash
-BSNRT=$(./bin/bsn-regtoken-get --network "My Network" --json | jq -r '.token')
-# write bsnce, a, bsnrt, sut, inp to section networking, then reboot (see reference)
+# Easiest: generate a ready-to-run script (token already embedded); --file or redirect stdout:
+./bin/bsn-device-reg-script --network "My Network" --type sh  --file register-player.sh   # registry-CLI
+./bin/bsn-device-reg-script --network "My Network" --type brs > register-player.brs        # BrightScript
+# then run it on the player (sh is for an insecure player's shell, e.g. bash /storage/sd/register-player.sh)
 until ./bin/bsn-rdws-info --serial "$SERIAL" --json; do sleep 10; done   # verify (backoff)
 ```
 
-Of the `bsn-*` tools, only `bsn-regtoken-get` (mint) and `bsn-rdws-info` (verify)
-participate. **Do not try to write the keys with `bsn-rdws-registry-set`** — the
-`bsn-rdws-*` tools only address players *already registered on your network*, and an
-opt-out target is not registered yet. Deliver the keys out-of-band (local DWS curl, the
-`registry` CLI over SSH/telnet, or BrightScript). This is a privileged operation with real
-requirements and caveats — read `references/opt-out-provisioning.md` before running it.
+`bsn-device-reg-script` mints the token and writes the whole script to stdout; of the other
+`bsn-*` tools only `bsn-regtoken-get` (mint alone) and `bsn-rdws-info` (verify) participate.
+**Do not try to write the keys with `bsn-rdws-registry-set`** — the `bsn-rdws-*` tools only
+address players *already registered on your network*, and an opt-out target is not
+registered yet; the keys are delivered on the player (local DWS, the `registry` CLI over
+SSH/telnet, or BrightScript). This is a privileged operation with real requirements and
+caveats — read `references/opt-out-provisioning.md` before running it.
 
 ## When you need more detail
 

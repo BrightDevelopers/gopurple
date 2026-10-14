@@ -52,7 +52,7 @@ As the Go team notes, [Go is excellent for building LLM-powered applications](ht
 
 Go compiles to native machine code, delivering [significantly better performance](https://uvik.net/blog/go-vs-python/) than interpreted Python for CPU-bound operations. For an SDK making hundreds of API calls, parsing large responses, and processing device data, this translates to faster execution and lower resource usage.
 
-A comprehensive Go SDK providing type-safe access to BrightSign Network (BSN.cloud) APIs. Includes both the main REST API and Remote Diagnostic Web Server (RDWS) functionality with 65 working example programs.
+A comprehensive Go SDK providing type-safe access to BrightSign Network (BSN.cloud) APIs. Includes both the main REST API and Remote Diagnostic Web Server (RDWS) functionality with 66 working example programs.
 
 ## What It Does
 
@@ -330,7 +330,7 @@ client, err := gopurple.New(
 
 ## Examples
 
-The SDK includes **65 working example programs** demonstrating all functionality. Each example is a standalone CLI tool you can use immediately. Every program is named `bsn-[<subsystem>-]<object>-<verb>` and builds to `bin/<name>`.
+The SDK includes **66 working example programs** demonstrating all functionality. Each example is a standalone CLI tool you can use immediately. Every program is named `bsn-[<subsystem>-]<object>-<verb>` and builds to `bin/<name>`.
 
 See **[examples/README.md](examples/README.md)** for complete documentation of all examples with usage instructions, and the agent skill in **[skills/brightsign-control-cli/](skills/brightsign-control-cli/)** for a decision-oriented command index.
 
@@ -342,7 +342,7 @@ See **[examples/README.md](examples/README.md)** for complete documentation of a
 | **Account device management** | 11 | List, find, info, status, errors, operations, downloads, delete, group change, local-DWS |
 | **Group management** | 3 | Group info, updates, deletion |
 | **Subscription management** | 3 | Device subscriptions, counts, operations |
-| **Registration tokens** | 2 | Mint and revoke device registration tokens |
+| **Registration & provisioning** | 3 | Mint/revoke registration tokens, generate a player registration script |
 | **B-Deploy provisioning** | 12 | Setup records, device association, template rendering |
 | **Remote DWS (RDWS)** | 30 | Remote control, diagnostics, files, registry, network, screenshots |
 
@@ -369,7 +369,7 @@ make build
 
 ## Using with AI Coding Agents
 
-This repo ships an **Agent Skill** at [`skills/brightsign-control-cli/`](skills/brightsign-control-cli/) that teaches a coding agent how to drive these 65 `bsn-*` CLIs — choosing the right command, the shared flag conventions, and multi-step fleet workflows (including joining a fielded player to a network by registry keys, "opt-out" provisioning). It follows the portable **`SKILL.md`** standard (YAML frontmatter + Markdown), so it loads wherever Agent Skills are supported and can be referenced as plain context anywhere else.
+This repo ships an **Agent Skill** at [`skills/brightsign-control-cli/`](skills/brightsign-control-cli/) that teaches a coding agent how to drive these 66 `bsn-*` CLIs — choosing the right command, the shared flag conventions, and multi-step fleet workflows (including joining a fielded player to a network by registry keys, "opt-out" provisioning). It follows the portable **`SKILL.md`** standard (YAML frontmatter + Markdown), so it loads wherever Agent Skills are supported and can be referenced as plain context anywhere else.
 
 Build and install the CLIs first so the agent can run them:
 

@@ -1,6 +1,6 @@
 # Examples Documentation
 
-This directory contains 65 example programs demonstrating all SDK features. Each builds to `bin/<name>`; names follow `bsn-[<subsystem>-]<object>-<verb>`.
+This directory contains 66 example programs demonstrating all SDK features. Each builds to `bin/<name>`; names follow `bsn-[<subsystem>-]<object>-<verb>`.
 
 ## Quick Start
 
@@ -226,6 +226,24 @@ Update an existing B-Deploy setup record.
 **Usage:**
 ```bash
 ./bin/bsn-bdeploy-setup-update --setup-id setup-abc123 updated-config.json
+```
+
+### bsn-device-reg-script
+Mint a registration token for a network and emit a ready-to-run player **registration script** that writes the five "opt-out" registry keys (`bsnce`, `a`, `bsnrt`, `sut`, `inp`) and reboots. The script is written to stdout for redirection; status/diagnostics go to stderr.
+
+**Flags:**
+- `--network <name>` / `-n`: Network name to join (required; overrides `BS_NETWORK`)
+- `--type <brs|sh>`: Output format — `brs` (BrightScript via `roRegistrySection`) or `sh` (shell script using the on-player `registry` CLI, for insecure players). Required.
+- `--timeout 30`: Request timeout in seconds
+
+**Usage:**
+```bash
+# write to a file with --file
+./bin/bsn-device-reg-script --network "My Network" --type brs --file register-player.brs
+
+# or redirect stdout
+./bin/bsn-device-reg-script --network "My Network" --type sh  > register-player.sh
+# sh is for an insecure player, run from its shell, e.g.:  bash /storage/sd/register-player.sh
 ```
 
 ---
