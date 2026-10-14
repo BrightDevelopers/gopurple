@@ -52,7 +52,7 @@ As the Go team notes, [Go is excellent for building LLM-powered applications](ht
 
 Go compiles to native machine code, delivering [significantly better performance](https://uvik.net/blog/go-vs-python/) than interpreted Python for CPU-bound operations. For an SDK making hundreds of API calls, parsing large responses, and processing device data, this translates to faster execution and lower resource usage.
 
-A comprehensive Go SDK providing type-safe access to BrightSign Network (BSN.cloud) APIs. Includes both the main REST API and Remote Diagnostic Web Server (RDWS) functionality with 64 working example programs.
+A comprehensive Go SDK providing type-safe access to BrightSign Network (BSN.cloud) APIs. Includes both the main REST API and Remote Diagnostic Web Server (RDWS) functionality with 65 working example programs.
 
 ## What It Does
 
@@ -330,26 +330,27 @@ client, err := gopurple.New(
 
 ## Examples
 
-The SDK includes **64 working example programs** demonstrating all functionality. Each example is a standalone CLI tool you can use immediately.
+The SDK includes **65 working example programs** demonstrating all functionality. Each example is a standalone CLI tool you can use immediately. Every program is named `bsn-[<subsystem>-]<object>-<verb>` and builds to `bin/<name>`.
 
-See **[examples/README.md](examples/README.md)** for complete documentation of all examples with usage instructions.
+See **[examples/README.md](examples/README.md)** for complete documentation of all examples with usage instructions, and the agent skill in **[skills/brightsign-control-cli/](skills/brightsign-control-cli/)** for a decision-oriented command index.
 
 ### Example Categories
 
 | Category | Count | Examples |
 |----------|-------|----------|
-| **Authentication** | 2 | Token management, credential testing |
-| **B-Deploy Provisioning** | 14 | Setup records, device association, template rendering, token generation and revocation |
-| **Device Management** | 9 | List, status, errors, operations, group management |
-| **Group Management** | 3 | Group info, updates, deletion |
-| **Subscription Management** | 3 | Device subscriptions, counts, operations |
-| **Remote DWS (RDWS)** | 34 | Remote control, diagnostics, file operations, screenshots |
+| **Authentication & helpers** | 4 | `bsn-auth-info`, `bsn-token-test`, `bsn-generate-token-json`, `bsn-endpoints-test` |
+| **Account device management** | 11 | List, find, info, status, errors, operations, downloads, delete, group change, local-DWS |
+| **Group management** | 3 | Group info, updates, deletion |
+| **Subscription management** | 3 | Device subscriptions, counts, operations |
+| **Registration tokens** | 2 | Mint and revoke device registration tokens |
+| **B-Deploy provisioning** | 12 | Setup records, device association, template rendering |
+| **Remote DWS (RDWS)** | 30 | Remote control, diagnostics, files, registry, network, screenshots |
 
 ### Quick Example
 
 ```bash
 # Build all examples
-make build-examples
+make build
 
 # List devices
 ./bin/bsn-device-list --network Production
@@ -365,6 +366,71 @@ make build-examples
 ./bin/bsn-rdws-logs-get --serial BS123456789 --stdout | grep ERROR # to stdout
 ./bin/bsn-rdws-logs-get --serial BS123456789 --json                # as JSON
 ```
+
+## Using with AI Coding Agents
+
+This repo ships an **Agent Skill** at [`skills/brightsign-control-cli/`](skills/brightsign-control-cli/) that teaches a coding agent how to drive these 65 `bsn-*` CLIs — choosing the right command, the shared flag conventions, and multi-step fleet workflows (including joining a fielded player to a network by registry keys, "opt-out" provisioning). It follows the portable **`SKILL.md`** standard (YAML frontmatter + Markdown), so it loads wherever Agent Skills are supported and can be referenced as plain context anywhere else.
+
+Build and install the CLIs first so the agent can run them:
+
+```bash
+make build            # bin/bsn-*
+make install          # copies all bsn-* into ~/bin (override INSTALLDIR=...)
+```
+
+### Claude Code / Claude apps (native skills)
+
+Skills are auto-discovered from `.claude/skills/` (project) or `~/.claude/skills/` (personal). Symlink or copy the folder; it then triggers automatically when a task mentions BrightSign, BSN.cloud, a player serial, provisioning, etc.
+
+```bash
+# project-scoped (everyone who clones the repo gets it)
+mkdir -p .claude/skills
+ln -s ../../skills/brightsign-control-cli .claude/skills/brightsign-control-cli
+
+# or personal (available in every project)
+cp -r skills/brightsign-control-cli ~/.claude/skills/
+```
+
+### Cursor
+
+Cursor loads project rules from `.cursor/rules/`. Add a rule that points at the skill:
+
+```bash
+mkdir -p .cursor/rules
+cat > .cursor/rules/brightsign-control-cli.mdc <<'EOF'
+---
+description: BrightSign player/fleet CLI (bsn-* tools)
+alwaysApply: false
+---
+For any task involving BrightSign players, BSN.cloud / BrightSign Control, B-Deploy,
+rDWS, registration tokens, or provisioning, follow the skill at
+skills/brightsign-control-cli/SKILL.md and the files in its references/ directory.
+EOF
+```
+
+### GitHub Copilot
+
+Copilot reads repo-wide custom instructions from `.github/copilot-instructions.md`:
+
+```bash
+mkdir -p .github
+printf '%s\n' \
+  'For BrightSign player/fleet tasks (BSN.cloud, B-Deploy, rDWS, provisioning), follow' \
+  '`skills/brightsign-control-cli/SKILL.md` and the files in its `references/` directory.' \
+  >> .github/copilot-instructions.md
+```
+
+### Codex CLI, Gemini CLI, and other `AGENTS.md`-aware agents
+
+Agents that honor `AGENTS.md` pick up repo conventions from it:
+
+```bash
+printf '\n## BrightSign CLI tools\nFor BrightSign player/fleet tasks, follow `skills/brightsign-control-cli/SKILL.md`.\n' >> AGENTS.md
+```
+
+### Any other agent
+
+The skill is plain Markdown. Point the agent at [`skills/brightsign-control-cli/SKILL.md`](skills/brightsign-control-cli/SKILL.md) (and the `references/` files it links) as context, or register it with a cross-agent skill manager such as skills-mapper (`sm`), which syncs one skill source to Claude Code, Copilot, and others.
 
 ## Configuration Files
 
@@ -619,11 +685,14 @@ if err != nil {
 # Run all tests
 make test
 
-# Build all example programs
-make build-examples
+# Build all example programs into bin/
+make build
 
-# Build specific example
-make build-main--devices-list
+# List all example programs
+make list-examples
+
+# Install all example programs to ~/bin (override with INSTALLDIR=...)
+make install
 
 # Clean build artifacts
 make clean
@@ -716,6 +785,7 @@ This is an unofficial SDK for BSN.cloud integration.
 - **Version Management**: [docs/versioning.md](docs/versioning.md)
 - **Release Process**: [RELEASING.md](RELEASING.md)
 - **Example Programs Guide**: [examples/README.md](examples/README.md)
+- **Agent Skill (`bsn-*` CLI usage)**: [skills/brightsign-control-cli/](skills/brightsign-control-cli/)
 - **B-Deploy Template Guide**: [docs/bdeploy-template.md](docs/bdeploy-template.md)
 - **B-Deploy Configuration Reference**: [docs/bdeploy-config-reference.md](docs/bdeploy-config-reference.md)
 - **B-Deploy Device Association**: [docs/bdeploy-association.md](docs/bdeploy-association.md)

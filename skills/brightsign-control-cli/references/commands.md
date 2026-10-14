@@ -76,7 +76,7 @@ Setup records plus the device associations that let a player self-configure on f
 | `bsn-bdeploy-device-delete` | Permanently remove a device from B-Deploy (destructive). |
 | `bsn-render-setup-template` | Render a B-Deploy setup template into a concrete JSON config. |
 
-## Remote DWS — live single-player control (31)
+## Remote DWS — live single-player control (30)
 
 Every `bsn-rdws-*` command targets one player by `--serial` and acts on it now.
 

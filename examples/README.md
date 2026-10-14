@@ -1,6 +1,6 @@
 # Examples Documentation
 
-This directory contains 61 example programs demonstrating all SDK features.
+This directory contains 65 example programs demonstrating all SDK features. Each builds to `bin/<name>`; names follow `bsn-[<subsystem>-]<object>-<verb>`.
 
 ## Quick Start
 
@@ -11,10 +11,10 @@ export BS_SECRET=your_client_secret
 export BS_NETWORK=your_network_name  # Optional
 
 # Build all examples
-make build-examples
+make build
 
 # Run any example with --help
-./bin/list-devices --help
+./bin/bsn-device-list --help
 ```
 
 ## Common Environment Variables
@@ -159,25 +159,6 @@ Get B-Deploy device setup record by serial number.
 **Usage:**
 ```bash
 ./bin/bsn-bdeploy-device-get --serial BS123456789
-```
-
-### bdeploy-get-records
-Get B-Deploy setup records from network.
-
-**Flags:**
-- `--network <name>` / `-n`: Network name
-- `--username <user>`: Filter by username
-- `--package <name>`: Filter by package name
-- `--page-size 50`: Number of records per page
-- `--page 1`: Page number to retrieve
-- `--summary`: Show only summary count
-- `--verbose`: Show detailed information
-- `--timeout 30`: Request timeout in seconds
-
-**Usage:**
-```bash
-./bin/bdeploy-get-records
-./bin/bdeploy-get-records --package retail-display-v1
 ```
 
 ### bsn-bdeploy-setup-get
@@ -1176,11 +1157,14 @@ fi
 ## Building Examples
 
 ```bash
-# Build all examples
-make build-examples
+# Build all examples into bin/
+make build
 
-# Build specific example
-go build -o bin/list-devices ./examples/bsn-device-list
+# List all example programs
+make list-examples
+
+# Install all examples to ~/bin (override with INSTALLDIR=...)
+make install
 
 # Clean build artifacts
 make clean
