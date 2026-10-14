@@ -36,7 +36,7 @@ Generate a registration token for a specific network:
 export BS_CLIENT_ID="your-client-id"
 export BS_SECRET="your-client-secret"
 
-./bin/main-get-regtoken --network "My Network"
+./bin/bsn-regtoken-get --network "My Network"
 ```
 
 ### Using Environment Variable
@@ -48,7 +48,7 @@ export BS_CLIENT_ID="your-client-id"
 export BS_SECRET="your-client-secret"
 export BS_NETWORK="My Network"
 
-./bin/main-get-regtoken
+./bin/bsn-regtoken-get
 ```
 
 ### Verbose Output
@@ -56,7 +56,7 @@ export BS_NETWORK="My Network"
 Show detailed information including the full token:
 
 ```bash
-./bin/main-get-regtoken --network "My Network" --verbose
+./bin/bsn-regtoken-get --network "My Network" --verbose
 ```
 
 ### JSON Output
@@ -64,13 +64,13 @@ Show detailed information including the full token:
 Get machine-readable JSON output:
 
 ```bash
-./bin/main-get-regtoken --network "My Network" --json
+./bin/bsn-regtoken-get --network "My Network" --json
 ```
 
 Save to file:
 
 ```bash
-./bin/main-get-regtoken --network "My Network" --json > regtoken.json
+./bin/bsn-regtoken-get --network "My Network" --json > regtoken.json
 ```
 
 ## Command-Line Options
@@ -125,13 +125,13 @@ This tool calls:
 ### Generate Token for Production Network
 
 ```bash
-./bin/main-get-regtoken --network "Production" --verbose
+./bin/bsn-regtoken-get --network "Production" --verbose
 ```
 
 ### Get Token as JSON and Parse with jq
 
 ```bash
-./bin/main-get-regtoken --network "Production" --json | jq -r '.token'
+./bin/bsn-regtoken-get --network "Production" --json | jq -r '.token'
 ```
 
 ### Use Token in B-Deploy Setup
@@ -158,7 +158,7 @@ After generating a token, you can use it in a B-Deploy setup configuration:
 Then create the setup:
 
 ```bash
-./bin/bdeploy-add-setup config.json
+./bin/bsn-bdeploy-setup-add config.json
 ```
 
 ## Related Examples

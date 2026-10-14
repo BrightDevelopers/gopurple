@@ -202,7 +202,7 @@ Renders the template with CLI/env values and a fresh token, outputs JSON to
 stdout.
 
 ```bash
-bin/render-setup-template \
+bin/bsn-render-setup-template \
   --package-name "retail-v1" \
   --network "Production" \
   --username "admin@example.com" \
@@ -216,7 +216,7 @@ Generates just the `bsnDeviceRegistrationTokenEntity` JSON object for manual
 insertion into a setup file.
 
 ```bash
-bin/generate-token-json --network "Production" > token.json
+bin/bsn-generate-token-json --network "Production" > token.json
 ```
 
 Output:
@@ -235,7 +235,7 @@ Posts raw JSON to the API, preserving all fields. Accepts a rendered JSON file
 or stdin.
 
 ```bash
-bin/bdeploy-add-setup-raw setup.json
+bin/bsn-bdeploy-setup-add-raw setup.json
 ```
 
 ### bdeploy-get-setup
@@ -244,14 +244,14 @@ Retrieves a setup record as raw JSON, preserving all fields including
 `firmwareUpdatesByFamily`.
 
 ```bash
-bin/bdeploy-get-setup --setup-name "retail-v1" --json > retrieved.json
+bin/bsn-bdeploy-setup-get --setup-name "retail-v1" --json > retrieved.json
 ```
 
 ## Typical Workflow
 
 ```bash
 # 1. Render the template with your values
-bin/render-setup-template \
+bin/bsn-render-setup-template \
   --package-name "retail-v1" \
   --network "Production" \
   --username "admin@brightsign.biz" \
@@ -261,10 +261,10 @@ bin/render-setup-template \
 jq '.bsnDeviceRegistrationTokenEntity' setup.json
 
 # 3. Post to BSN.cloud
-bin/bdeploy-add-setup-raw setup.json
+bin/bsn-bdeploy-setup-add-raw setup.json
 
 # 4. Verify what was stored
-bin/bdeploy-get-setup --setup-name "retail-v1" --json | jq '.firmwareUpdatesByFamily | keys'
+bin/bsn-bdeploy-setup-get --setup-name "retail-v1" --json | jq '.firmwareUpdatesByFamily | keys'
 ```
 
 ## Why Raw JSON Matters

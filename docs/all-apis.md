@@ -457,8 +457,8 @@
 
 ## Logs Endpoints
 
-- `[DONE]` `GET /logs/` - Retrieves log files from the player (example: [rdws-logs-get](../examples/rdws-logs-get))
-- `[DONE]` `GET /crash-dump/` - Retrieves crash dump files (example: [rdws-crashdump-get](../examples/rdws-crashdump-get))
+- `[DONE]` `GET /logs/` - Retrieves log files from the player (example: [rdws-logs-get](../examples/bsn-rdws-logs-get))
+- `[DONE]` `GET /crash-dump/` - Retrieves crash dump files (example: [rdws-crashdump-get](../examples/bsn-rdws-crashdump-get))
 
 ## Storage & Provisioning Endpoints
 

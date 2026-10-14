@@ -22,7 +22,7 @@ export BS_CLIENT_ID="your-client-id"
 export BS_SECRET="your-client-secret"
 
 # Run with default config
-./bin/bdeploy-add-setup examples/bdeploy-add-setup/config.json
+./bin/bsn-bdeploy-setup-add examples/bsn-bdeploy-setup-add/config.json
 ```
 
 ## Configuration Files

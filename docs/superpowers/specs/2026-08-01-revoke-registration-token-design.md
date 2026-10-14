@@ -61,9 +61,9 @@ becomes reachable as soon as the interface method exists.
 
 ### CLI
 
-`examples/main-revoke-regtoken/` — named to pair with the existing
+`examples/bsn-regtoken-revoke/` — named to pair with the existing
 `main-get-regtoken`. The Makefile globs `examples/*/` (`Makefile:12`), so
-`bin/main-revoke-regtoken` builds with no Makefile change.
+`bin/bsn-regtoken-revoke` builds with no Makefile change.
 
 Flags:
 
@@ -80,7 +80,7 @@ Flow: authenticate, set network context, and then — unless `--force` or `--jso
 call `ValidateDeviceToken` first and print the token's scope and validity window so
 the operator sees what they are about to destroy, prompt, and only then revoke.
 
-The fetch-then-confirm shape is taken from `examples/bdeploy-delete-setup/main.go:215-227`,
+The fetch-then-confirm shape is taken from `examples/bsn-bdeploy-setup-delete/main.go:215-227`,
 which reads the record before prompting. The extra round trip earns its keep here
 because `cert`-scope tokens are shared by every player provisioned with them: an
 unconfirmed revoke can break registration for a whole fleet.
@@ -116,5 +116,5 @@ This is the honest ceiling without a mock server. See Non-Goals.
 
 ## Verification
 
-`make test` and `make build` both pass; `bin/main-revoke-regtoken --help` renders
+`make test` and `make build` both pass; `bin/bsn-regtoken-revoke --help` renders
 the documented flags.

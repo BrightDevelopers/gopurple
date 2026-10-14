@@ -8,6 +8,9 @@ GOMOD=$(GOCMD) mod
 # Build directory
 BUILDDIR=bin
 
+# Install directory for `make install` (override with: make install INSTALLDIR=/usr/local/bin)
+INSTALLDIR?=$(HOME)/bin
+
 # Discover all example directories (each contains a main package)
 EXAMPLES=$(shell ls -d examples/*/ 2>/dev/null | grep -v internal | sed 's|examples/||;s|/||')
 
@@ -55,9 +58,11 @@ build-linux:
 		CGO_ENABLED=0 GOOS=linux GOARCH=amd64 $(GOBUILD) -o $(BUILDDIR)/$${example}_linux -v ./examples/$$example; \
 	done
 
-install:
+install: build
+	@mkdir -p $(INSTALLDIR)
 	@for example in $(EXAMPLES); do \
-		$(GOCMD) install ./examples/$$example; \
+		echo "installing $(INSTALLDIR)/$$example"; \
+		cp -f $(BUILDDIR)/$$example $(INSTALLDIR)/$$example; \
 	done
 
 install-hooks:
@@ -86,7 +91,7 @@ help:
 	@echo "  make clean       - Clean build artifacts"
 	@echo "  make deps        - Download and tidy dependencies"
 	@echo "  make build-linux - Cross-compile all examples for Linux amd64"
-	@echo "  make install     - Install all examples to GOPATH/bin"
+	@echo "  make install     - Build, then copy all examples to ~/bin (override INSTALLDIR=...)"
 	@echo "  make install-hooks - Install git pre-commit guard (blocks binaries/secrets)"
 	@echo "  make fmt         - Format code"
 	@echo "  make lint        - Run linter"

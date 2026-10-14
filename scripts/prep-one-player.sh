@@ -31,9 +31,9 @@ cat > /tmp/simple-setup.json <<EOF
 EOF
 
 # add the setup package
-./bin/bdeploy-add-setup /tmp/simple-setup.json
+./bin/bsn-bdeploy-setup-add /tmp/simple-setup.json
 
 # associate the player with the setup package
-./bin/bdeploy-associate --setup-name "$PACKAGENAME" --serial "$SERIAL"
+./bin/bsn-bdeploy-device-associate --setup-name "$PACKAGENAME" --serial "$SERIAL"
 
-./bin/rdws-reformat-storage --serial "$SERIAL" --device sd -y
+./bin/bsn-rdws-storage-reformat --serial "$SERIAL" --device sd -y

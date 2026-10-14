@@ -52,3 +52,6 @@ examples/*/bdeploy-delete-record
 
 # scratch / temporary working dirs
 tmp-setups/
+bin/
+.llm/
+vendor/

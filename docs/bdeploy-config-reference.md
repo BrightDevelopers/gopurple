@@ -308,7 +308,7 @@ deployment-specific and not templated.
 
 ```bash
 # Render the template for SFN
-bin/render-setup-template \
+bin/bsn-render-setup-template \
   --setup-type sfn \
   --package-name "lobby-sfn" \
   --network "Production" \
@@ -322,7 +322,7 @@ jq '.sfnWebFolderUrl = "https://content.example.com/lobby/" |
     .inheritNetworkProperties = true' setup.json > setup-sfn.json
 
 # Post to BSN.cloud
-bin/bdeploy-add-setup-raw setup-sfn.json
+bin/bsn-bdeploy-setup-add-raw setup-sfn.json
 ```
 
 See also: [B-Deploy Template Guide](bdeploy-template.md) for full template
@@ -419,13 +419,13 @@ Minimal LFN setup:
 Use `render-setup-template` with `--setup-type lfn`:
 
 ```bash
-bin/render-setup-template \
+bin/bsn-render-setup-template \
   --setup-type lfn \
   --package-name "lobby-lfn" \
   --network "Production" \
   templates/DefaultSetupPackageTemplateMaster.json > setup-lfn.json
 
-bin/bdeploy-add-setup-raw setup-lfn.json
+bin/bsn-bdeploy-setup-add-raw setup-lfn.json
 ```
 
 No post-rendering `jq` injection is needed for LFN (unlike SFN) since there
@@ -524,7 +524,7 @@ Minimal partner application setup:
 Use `render-setup-template` with `--setup-type partnerApplication`:
 
 ```bash
-bin/render-setup-template \
+bin/bsn-render-setup-template \
   --setup-type partnerApplication \
   --package-name "partner-cms" \
   --network "Production" \
@@ -533,7 +533,7 @@ bin/render-setup-template \
 # Disable LWS (typical for partner app setups)
 jq '.lwsEnabled = false' setup.json > setup-partner.json
 
-bin/bdeploy-add-setup-raw setup-partner.json
+bin/bsn-bdeploy-setup-add-raw setup-partner.json
 ```
 
 ---
@@ -1213,19 +1213,19 @@ Maximum debugging and logging enabled:
 Create a setup record:
 
 ```bash
-./bin/bdeploy-add-setup config.json
+./bin/bsn-bdeploy-setup-add config.json
 ```
 
 With verbose output:
 
 ```bash
-./bin/bdeploy-add-setup --verbose config.json
+./bin/bsn-bdeploy-setup-add --verbose config.json
 ```
 
 With custom timeout:
 
 ```bash
-./bin/bdeploy-add-setup --timeout 120 config.json
+./bin/bsn-bdeploy-setup-add --timeout 120 config.json
 ```
 
 ## Field Validation

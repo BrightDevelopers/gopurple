@@ -36,7 +36,7 @@ Find a device by serial number:
 export BS_CLIENT_ID="your-client-id"
 export BS_SECRET="your-client-secret"
 
-./bin/main-device-find --serial UTD41X000009
+./bin/bsn-device-find --serial UTD41X000009
 ```
 
 ### Verbose Output
@@ -44,7 +44,7 @@ export BS_SECRET="your-client-secret"
 Show detailed search progress including which networks are being searched:
 
 ```bash
-./bin/main-device-find --serial UTD41X000009 --verbose
+./bin/bsn-device-find --serial UTD41X000009 --verbose
 ```
 
 ### JSON Output
@@ -52,13 +52,13 @@ Show detailed search progress including which networks are being searched:
 Get machine-readable JSON output:
 
 ```bash
-./bin/main-device-find --serial UTD41X000009 --json
+./bin/bsn-device-find --serial UTD41X000009 --json
 ```
 
 Save to file:
 
 ```bash
-./bin/main-device-find --serial UTD41X000009 --json > device-info.json
+./bin/bsn-device-find --serial UTD41X000009 --json > device-info.json
 ```
 
 ## Command-Line Options
@@ -148,7 +148,7 @@ Save to file:
 ### Find a Device with Verbose Output
 
 ```bash
-./bin/main-device-find --serial UTD41X000009 --verbose
+./bin/bsn-device-find --serial UTD41X000009 --verbose
 ```
 
 Output:
@@ -177,17 +177,17 @@ Output:
 
 Extract just the network name:
 ```bash
-./bin/main-device-find --serial UTD41X000009 --json | jq -r '.networkName'
+./bin/bsn-device-find --serial UTD41X000009 --json | jq -r '.networkName'
 ```
 
 Check if device was found:
 ```bash
-./bin/main-device-find --serial UTD41X000009 --json | jq -r '.found'
+./bin/bsn-device-find --serial UTD41X000009 --json | jq -r '.found'
 ```
 
 Get device model:
 ```bash
-./bin/main-device-find --serial UTD41X000009 --json | jq -r '.device.model'
+./bin/bsn-device-find --serial UTD41X000009 --json | jq -r '.device.model'
 ```
 
 ### Use in Scripts
@@ -196,7 +196,7 @@ Get device model:
 #!/bin/bash
 
 SERIAL="UTD41X000009"
-RESULT=$(./bin/main-device-find --serial "$SERIAL" --json)
+RESULT=$(./bin/bsn-device-find --serial "$SERIAL" --json)
 
 if echo "$RESULT" | jq -e '.found' > /dev/null; then
     NETWORK=$(echo "$RESULT" | jq -r '.networkName')
@@ -216,7 +216,7 @@ SERIALS=("UTD41X000009" "UTD41X000010" "UTD41X000011")
 
 for serial in "${SERIALS[@]}"; do
     echo "Searching for $serial..."
-    ./bin/main-device-find --serial "$serial" --json > "device-${serial}.json"
+    ./bin/bsn-device-find --serial "$serial" --json > "device-${serial}.json"
 done
 ```
 
@@ -234,7 +234,7 @@ done
 When managing multiple networks, quickly locate which network contains a specific device:
 
 ```bash
-./bin/main-device-find --serial UTD41X000009
+./bin/bsn-device-find --serial UTD41X000009
 ```
 
 ### 2. Device Migration
@@ -242,7 +242,7 @@ When managing multiple networks, quickly locate which network contains a specifi
 Before migrating a device, confirm which network it's currently in:
 
 ```bash
-CURRENT_NETWORK=$(./bin/main-device-find --serial UTD41X000009 --json | jq -r '.networkName')
+CURRENT_NETWORK=$(./bin/bsn-device-find --serial UTD41X000009 --json | jq -r '.networkName')
 echo "Device is currently in: $CURRENT_NETWORK"
 ```
 
@@ -252,7 +252,7 @@ Generate a report of devices across networks:
 
 ```bash
 for serial in $(cat device-serials.txt); do
-    ./bin/main-device-find --serial "$serial" --json
+    ./bin/bsn-device-find --serial "$serial" --json
 done | jq -s '.'
 ```
 
@@ -261,7 +261,7 @@ done | jq -s '.'
 Use in monitoring scripts to verify device presence:
 
 ```bash
-if ./bin/main-device-find --serial UTD41X000009 --json | jq -e '.found' > /dev/null; then
+if ./bin/bsn-device-find --serial UTD41X000009 --json | jq -e '.found' > /dev/null; then
     echo "OK: Device is registered"
 else
     echo "CRITICAL: Device not found"

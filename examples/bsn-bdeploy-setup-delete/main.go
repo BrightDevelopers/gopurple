@@ -355,16 +355,16 @@ func deleteOneSetup(ctx context.Context, client *gopurple.Client, setupID, setup
 			fmt.Fprintf(os.Stderr, "\n")
 			fmt.Fprintf(os.Stderr, "Option 1: List devices using this setup:\n")
 			if setupPackageName != "" {
-				fmt.Fprintf(os.Stderr, "  ./bin/bdeploy-list-devices --setup-name \"%s\" --network \"%s\"\n", setupPackageName, networkName)
+				fmt.Fprintf(os.Stderr, "  ./bin/bsn-bdeploy-device-list --setup-name \"%s\" --network \"%s\"\n", setupPackageName, networkName)
 			} else {
-				fmt.Fprintf(os.Stderr, "  ./bin/bdeploy-list-devices --setup-id \"%s\" --network \"%s\"\n", setupID, networkName)
+				fmt.Fprintf(os.Stderr, "  ./bin/bsn-bdeploy-device-list --setup-id \"%s\" --network \"%s\"\n", setupID, networkName)
 			}
 			fmt.Fprintf(os.Stderr, "\n")
 			fmt.Fprintf(os.Stderr, "Option 2: Dissociate a device from this setup:\n")
-			fmt.Fprintf(os.Stderr, "  ./bin/bdeploy-associate --serial <SERIAL> --dissociate --network \"%s\"\n", networkName)
+			fmt.Fprintf(os.Stderr, "  ./bin/bsn-bdeploy-device-associate --serial <SERIAL> --dissociate --network \"%s\"\n", networkName)
 			fmt.Fprintf(os.Stderr, "\n")
 			fmt.Fprintf(os.Stderr, "Option 3: Delete devices associated with this setup:\n")
-			fmt.Fprintf(os.Stderr, "  ./bin/bdeploy-delete-device --serial <SERIAL> --network \"%s\"\n", networkName)
+			fmt.Fprintf(os.Stderr, "  ./bin/bsn-bdeploy-device-delete --serial <SERIAL> --network \"%s\"\n", networkName)
 			fmt.Fprintf(os.Stderr, "\n")
 			os.Exit(1)
 		}

@@ -34,11 +34,11 @@ echo
 # Step 4: Delete the test record (replace with actual ID)
 # echo "🗑️  4. Deleting the test record..."
 # echo "To delete a record, run:"
-# echo "./bin/bdeploy-delete-setup --network \"$BS_NETWORK\" --setup-id \"<RECORD_ID_FROM_STEP_3>\""
+# echo "./bin/bsn-bdeploy-setup-delete --network \"$BS_NETWORK\" --setup-id \"<RECORD_ID_FROM_STEP_3>\""
 
 echo "✅ Test completed!"
 echo
 echo "💡 To test deletion:"
 echo "1. Look at the record IDs from the list above"
-echo "2. Run: ./bin/bdeploy-delete-setup --network \"$BS_NETWORK\" --setup-id \"<VALID_ID>\""
-echo "3. Use --force to skip confirmation: ./bin/bdeploy-delete-setup --network \"$BS_NETWORK\" --setup-id \"<VALID_ID>\" --force"
+echo "2. Run: ./bin/bsn-bdeploy-setup-delete --network \"$BS_NETWORK\" --setup-id \"<VALID_ID>\""
+echo "3. Use --force to skip confirmation: ./bin/bsn-bdeploy-setup-delete --network \"$BS_NETWORK\" --setup-id \"<VALID_ID>\" --force"

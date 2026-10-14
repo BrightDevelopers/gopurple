@@ -352,25 +352,25 @@ See **[examples/README.md](examples/README.md)** for complete documentation of a
 make build-examples
 
 # List devices
-./bin/main--devices-list --network Production
+./bin/bsn-device-list --network Production
 
 # Get device info via RDWS
-./bin/rdws-info --serial BS123456789
+./bin/bsn-rdws-info --serial BS123456789
 
 # Capture screenshot
-./bin/rdws-snapshot --serial BS123456789 --output screenshot.png
+./bin/bsn-rdws-snapshot --serial BS123456789 --output screenshot.png
 
 # Get device logs (flexible output modes)
-./bin/rdws-logs-get --serial BS123456789 --logfile device.log  # to file
-./bin/rdws-logs-get --serial BS123456789 --stdout | grep ERROR # to stdout
-./bin/rdws-logs-get --serial BS123456789 --json                # as JSON
+./bin/bsn-rdws-logs-get --serial BS123456789 --logfile device.log  # to file
+./bin/bsn-rdws-logs-get --serial BS123456789 --stdout | grep ERROR # to stdout
+./bin/bsn-rdws-logs-get --serial BS123456789 --json                # as JSON
 ```
 
 ## Configuration Files
 
 Example configuration files are provided in multiple locations:
 
-### B-Deploy Setup Configurations (`examples/bdeploy-add-setup/`)
+### B-Deploy Setup Configurations (`examples/bsn-bdeploy-setup-add/`)
 
 - **`config.json`** - Basic B-Deploy setup configuration
 - **`config-comprehensive.json`** - Full setup with all debugging/logging enabled
@@ -390,7 +390,7 @@ The comprehensive configuration includes:
 - **`bsn-control.json`** - BSN.cloud network control setup example
 - **`lfn-control.json`** - Local File Network (LFN) control setup example
 
-### Update Configurations (`examples/bdeploy-update-setup/`)
+### Update Configurations (`examples/bsn-bdeploy-setup-update/`)
 
 - **`example-config.json`** - Partial setup update example
 - **`example-full-update.json`** - Complete setup reconfiguration example
@@ -649,14 +649,14 @@ gopurple/
 ├── setups/                          # Rendered setup templates
 │   └── setup-template.json         # Reference setup template
 ├── examples/                        # 64 example CLI programs
-│   ├── render-setup-template/      # Render template + generate token -> stdout
-│   ├── generate-token-json/        # Generate registration token JSON
-│   ├── bdeploy-add-setup-raw/      # Create setup from raw JSON (preserves all fields)
-│   ├── bdeploy-add-setup/          # Create setup via Go struct
+│   ├── bsn-render-setup-template/      # Render template + generate token -> stdout
+│   ├── bsn-generate-token-json/        # Generate registration token JSON
+│   ├── bsn-bdeploy-setup-add-raw/      # Create setup from raw JSON (preserves all fields)
+│   ├── bsn-bdeploy-setup-add/          # Create setup via Go struct
 │   │   ├── config.json             # Basic setup example
 │   │   ├── config-comprehensive.json
 │   │   └── config-wifi-example.json
-│   ├── bdeploy-update-setup/
+│   ├── bsn-bdeploy-setup-update/
 │   │   ├── example-config.json
 │   │   └── example-full-update.json
 │   ├── README.md                   # Complete examples documentation

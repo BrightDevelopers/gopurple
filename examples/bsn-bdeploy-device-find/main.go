@@ -172,7 +172,7 @@ func main() {
 		}
 		fmt.Fprintf(os.Stderr, "\n")
 		fmt.Fprintf(os.Stderr, "💡 To associate this device with a setup:\n")
-		fmt.Fprintf(os.Stderr, "   ./bin/bdeploy-associate --serial %s --setup-name <SETUP_NAME> --network \"%s\"\n", *serialFlag, foundNetwork)
+		fmt.Fprintf(os.Stderr, "   ./bin/bsn-bdeploy-device-associate --serial %s --setup-name <SETUP_NAME> --network \"%s\"\n", *serialFlag, foundNetwork)
 	} else {
 		fmt.Fprintf(os.Stderr, "❌ DEVICE NOT FOUND\n")
 		fmt.Fprintf(os.Stderr, "%s\n", strings.Repeat("=", 70))
@@ -184,6 +184,6 @@ func main() {
 		fmt.Fprintf(os.Stderr, "  3. You don't have access to the network containing this device\n")
 		fmt.Fprintf(os.Stderr, "\n")
 		fmt.Fprintf(os.Stderr, "💡 To create a new device record:\n")
-		fmt.Fprintf(os.Stderr, "   ./bin/bdeploy-associate --serial %s --setup-name <SETUP_NAME> --network <NETWORK> --create\n", *serialFlag)
+		fmt.Fprintf(os.Stderr, "   ./bin/bsn-bdeploy-device-associate --serial %s --setup-name <SETUP_NAME> --network <NETWORK> --create\n", *serialFlag)
 	}
 }

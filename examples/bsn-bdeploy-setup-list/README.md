@@ -24,7 +24,7 @@ export BS_CLIENT_ID="your-client-id"
 export BS_SECRET="your-client-secret"
 
 # List all setups for a network
-./bin/bdeploy-list-setups --network "Production Network"
+./bin/bsn-bdeploy-setup-list --network "Production Network"
 ```
 
 ## Command Line Options
@@ -47,7 +47,7 @@ export BS_SECRET="your-client-secret"
 List all setups for a network:
 
 ```bash
-./bin/bdeploy-list-setups --network "Production Network"
+./bin/bsn-bdeploy-setup-list --network "Production Network"
 ```
 
 **Output:**
@@ -74,7 +74,7 @@ setup-jkl345mno678                conference-room-v1        bsn              Pro
 Show only setups created by a specific user:
 
 ```bash
-./bin/bdeploy-list-setups --network "Production Network" --username "admin@example.com"
+./bin/bsn-bdeploy-setup-list --network "Production Network" --username "admin@example.com"
 ```
 
 ### Filter by Package Name
@@ -82,7 +82,7 @@ Show only setups created by a specific user:
 Find a specific setup package:
 
 ```bash
-./bin/bdeploy-list-setups --network "Production Network" --package "retail-display-v1"
+./bin/bsn-bdeploy-setup-list --network "Production Network" --package "retail-display-v1"
 ```
 
 ### Verbose Output
@@ -90,7 +90,7 @@ Find a specific setup package:
 Get detailed information about each setup:
 
 ```bash
-./bin/bdeploy-list-setups --network "Production Network" --verbose
+./bin/bsn-bdeploy-setup-list --network "Production Network" --verbose
 ```
 
 **Verbose Output:**
@@ -147,7 +147,7 @@ Use this program to find the setup-id you need for the `associate-player-with-se
 
 ```bash
 # Step 1: List setups to find the one you want
-./bin/bdeploy-list-setups --network "Production Network"
+./bin/bsn-bdeploy-setup-list --network "Production Network"
 
 # Step 2: Copy the setup-id from the output
 # Step 3: Use it with associate-player-with-setup
@@ -160,10 +160,10 @@ Regularly list setups to audit your deployment:
 
 ```bash
 # Check all setups in production
-./bin/bdeploy-list-setups --network "Production Network" --verbose > production-setups.txt
+./bin/bsn-bdeploy-setup-list --network "Production Network" --verbose > production-setups.txt
 
 # Compare with staging
-./bin/bdeploy-list-setups --network "Staging Network" --verbose > staging-setups.txt
+./bin/bsn-bdeploy-setup-list --network "Staging Network" --verbose > staging-setups.txt
 
 # Review differences
 diff production-setups.txt staging-setups.txt
@@ -174,7 +174,7 @@ diff production-setups.txt staging-setups.txt
 See which setups a specific user created:
 
 ```bash
-./bin/bdeploy-list-setups --network "Production Network" --username "installer@company.com"
+./bin/bsn-bdeploy-setup-list --network "Production Network" --username "installer@company.com"
 ```
 
 ## Understanding Setup Records
